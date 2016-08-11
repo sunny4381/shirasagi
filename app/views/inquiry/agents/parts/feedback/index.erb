@@ -1,4 +1,6 @@
+<% if !@cur_part.amp_state_enabled? %>
 <%= jquery do %>Inquiry_Form.render();<% end %>
+<% end %>
 
 <%== @cur_part.upper_html %>
 
@@ -11,13 +13,21 @@
 
   <%
     confirmation_enabled = @cur_part.feedback_confirmation_enabled? || @cur_parent.captcha_enabled?
-    if confirmation_enabled
-      url = "#{@cur_parent.url}confirm.html"
+    if @cur_part.amp_state_enabled?
+      if confirmation_enabled
+        url = "#{@cur_parent.full_url}confirm.html"
+      else
+        url = "#{@cur_parent.full_url}create.html"
+      end
     else
-      url = "#{@cur_parent.url}create.html"
+      if confirmation_enabled
+        url = "#{@cur_parent.url}confirm.html"
+      else
+        url = "#{@cur_parent.url}create.html"
+      end
     end
   %>
-  <%= form_for :item, url: url, html: { multipart: true }, authenticity_token: false do |f| %>
+  <%= form_for :item, url: url, html: { multipart: true, target: :_top }, authenticity_token: false do |f| %>
     <div class="inquiry-form">
       <%= error_messages_for :answer, header_message: false %>
       <% if @columns.count > 0 %>

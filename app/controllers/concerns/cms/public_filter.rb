@@ -127,7 +127,7 @@ module Cms::PublicFilter
 
     def send_page(page)
       if response.content_type == "text/html" && page.layout
-        render inline: render_layout(page.layout), layout: (request.xhr? ? false : "cms/page")
+        render inline: render_layout(page.layout), layout: (request.xhr? ? false : ENV.fetch('SS_LAYOUT', "cms/page"))
       else
         @_response_body = response.body
       end
