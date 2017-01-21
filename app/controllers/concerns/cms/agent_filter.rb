@@ -5,6 +5,7 @@ module Cms::AgentFilter
   included do
     helper Cms::PublicHelper
     helper_method :render_layout_parts
+    helper_method :render_layout_part
     alias_method_chain :render, :cms_layout
   end
 
@@ -21,7 +22,7 @@ module Cms::AgentFilter
     erb_layout = options.delete(:layout)
     erb_layout ||= 'cms/nil' if @cur_layout.blank?
     erb_layout ||= 'cms/nil' if request.xhr?
-    erb_layout ||= 'cms/page'
+    erb_layout ||= @cur_layout.html? ? 'cms/page' : 'cms/liquid'
     options[:layout] = erb_layout
 
     render_without_cms_layout(*args, options, &block)

@@ -133,6 +133,10 @@ module Cms::Model::Page
     nil
   end
 
+  def to_liquid
+    Cms::Liquid::PageDrop.new(self)
+  end
+
   private
     def set_released
       now = Time.zone.now

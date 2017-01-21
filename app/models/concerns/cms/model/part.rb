@@ -11,6 +11,7 @@ module Cms::Model::Part
     field :mobile_view, type: String, default: "show"
     field :ajax_view, type: String, default: "disabled"
     permit_params :mobile_view, :ajax_view
+    liquid_methods :mobile_view, :ajax_view
   end
 
   def route_options
@@ -60,6 +61,10 @@ module Cms::Model::Part
     end
 
     nil
+  end
+
+  def to_liquid
+    Cms::Liquid::PartDrop.new(self)
   end
 
   private

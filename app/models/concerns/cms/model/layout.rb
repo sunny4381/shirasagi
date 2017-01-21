@@ -53,6 +53,10 @@ module Cms::Model::Layout
     nil
   end
 
+  def to_liquid
+    Cms::Liquid::LayoutDrop.new(self)
+  end
+
   private
     def fix_extname
       ".layout.html"

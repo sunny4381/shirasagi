@@ -7,6 +7,7 @@ module Cms::Addon
       field :html, type: String
       field :markdown, type: String
       permit_params :html, :markdown
+      liquid_methods :html
 
       if respond_to?(:template_variable_handler)
         template_variable_handler('img.src', :template_variable_handler_img_src)

@@ -197,6 +197,7 @@ GEM
     kramdown (1.10.0)
     levenshtein (0.2.2)
     libv8 (3.16.14.15)
+    liquid (4.0.0)
     listen (3.0.6)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9.7)
@@ -533,6 +534,7 @@ DEPENDENCIES
   kaminari-mongoid
   kramdown
   levenshtein
+  liquid
   mail-iso-2022-jp
   marked-rails
   momentjs-rails

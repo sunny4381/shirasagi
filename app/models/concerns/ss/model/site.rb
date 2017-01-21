@@ -24,6 +24,7 @@ module SS::Model::Site
     attr_accessor :cur_domain
 
     permit_params :name, :host, :domains, :subdir, :parent_id, :https, :document_root, group_ids: []
+    liquid_methods :name, :host, :https
 
     validates :name, presence: true, length: { maximum: 40 }
     validates :host, uniqueness: true, presence: true, length: { minimum: 3, maximum: 16 }

@@ -155,6 +155,10 @@ module Cms::Model::Node
     %w(category/node category/page opendata/category).include?(route)
   end
 
+  def to_liquid
+    Cms::Liquid::NodeDrop.new(self)
+  end
+
   private
     def validate_invalid_filename
       if filename == "fs"

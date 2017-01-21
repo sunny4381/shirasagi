@@ -24,6 +24,9 @@ module Cms::Content
     field :md5, type: String
 
     permit_params :state, :name, :index_name, :filename, :basename, :order, :released, :route
+    liquid_methods :name, :index_name, :filename, :order, :route
+    liquid_methods :released, :first_released, :date
+    liquid_methods :url, :full_url
 
     validates :state, presence: true
     validates :name, presence: true, length: { maximum: 80 }

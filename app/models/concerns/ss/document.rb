@@ -4,6 +4,7 @@ module SS::Document
   include Mongoid::Document
   include SS::Fields::Sequencer
   include SS::Fields::Normalizer
+  include SS::Liquidable
 
   attr_accessor :in_updated
 
@@ -19,6 +20,8 @@ module SS::Document
     before_save :set_db_changes
     before_save :set_updated
     before_save :set_text_index
+
+    liquid_methods :created, :updated
 
     scope :keyword_in, ->(words, *fields) {
       options = fields.extract_options!
