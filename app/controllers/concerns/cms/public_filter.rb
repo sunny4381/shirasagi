@@ -143,11 +143,7 @@ module Cms::PublicFilter
     end
 
     def send_page(page)
-      if response.content_type == "text/html" && page.layout
-        render inline: render_layout(page.layout), layout: (request.xhr? ? false : "cms/page")
-      else
-        @_response_body = response.body
-      end
+      @_response_body = response.body
     end
 
     def page_not_found

@@ -52,12 +52,7 @@ module Cms::PublicFilter::Node
         raise e unless Rails.env.producton?
       end
 
-      if response.content_type == "text/html" && node.layout
-        html = render_to_string inline: render_layout(node.layout), layout: "cms/page"
-      else
-        html = response.body
-      end
-
+      html = response.body
       file = opts[:file] || "#{node.path}/index.html"
       write_file node, html, file: file
     end

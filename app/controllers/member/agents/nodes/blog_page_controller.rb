@@ -15,12 +15,10 @@ class Member::Agents::Nodes::BlogPageController < ApplicationController
       return if response.content_type != "text/html"
 
       node = @cur_node.becomes_with_route
-      layout = @cur_node.layout
-      layout.html = layout.html.gsub(/\#\{(.+?)\}/) do |m|
+      response.body = response.body.gsub(/\#\{(.+?)\}/) do |m|
         name = $1
         view_context.render_blog_template(name, node: node) || m
       end
-      @cur_node.layout = layout
     end
 
   public

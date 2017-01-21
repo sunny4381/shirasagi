@@ -51,12 +51,7 @@ class Cms::PreviewController < ApplicationController
     resp = render_page(page, method: "GET")
     return page_not_found unless resp
     self.response = resp
-
-    if page.layout
-      render inline: render_layout(page.layout), layout: "cms/page"
-    else
-      @_response_body = response.body
-    end
+    @_response_body = response.body
   rescue
     render_error 400, status: 400
   end

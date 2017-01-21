@@ -11,9 +11,19 @@ module SS::AgentFilter
     end
 
     def inherit_variables
-      controller.instance_variables.select {|m| m =~ /^@[a-z]/ }.each do |name|
+      controller.instance_variables.select {|m| inheritable_variable?(m) }.each do |name|
         next if instance_variable_defined?(name)
         instance_variable_set name, controller.instance_variable_get(name)
+      end
+    end
+
+    def inheritable_variable?(name)
+      return inheritable_variables.include?(name[1..-1])
+    end
+
+    def inheritable_variables
+      @inheritable_variables ||= begin
+        %w(cur_site cur_path cur_main_path cur_node cur_page cur_part cur_item csrf_token)
       end
     end
 

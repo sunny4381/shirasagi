@@ -20,11 +20,7 @@ class Inquiry::Agents::Tasks::Node::FormsController < ApplicationController
       raise e unless Rails.env.producton?
     end
 
-    if response.content_type == "text/html" && node.layout
-      html = render_to_string inline: render_layout(node.layout), layout: "cms/page"
-    else
-      html = response.body
-    end
+    html = response.body
     html.gsub!(/<\s*input\s+type="hidden"\s+name="authenticity_token"\s+value=".+?"\s*\/>/, '')
 
     file = opts[:file] || "#{node.path}/index.html"

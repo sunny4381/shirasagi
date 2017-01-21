@@ -18,6 +18,33 @@ module Cms::PublicHelper
     nodes.join(" ")
   end
 
+  def render_layout(layout: @cur_layout, path: @cur_main_path, item: @cur_item)
+    return if layout.blank?
+
+    body = layout.body.to_s
+    body = body.sub(/<body.*?>/) do |m|
+      m = m.sub(/ class="/, %( class="#{body_class(path)} )     ) if m =~ / class="/
+      m = m.sub(/<body/,    %(<body class="#{body_class(path)}")) unless m =~ / class="/
+      m = m.sub(/<body/,    %(<body id="#{body_id(path)}")      ) unless m =~ / id="/
+      m
+    end
+
+    html = render_layout_parts(body)
+
+    if notice
+      notice_html   = %(<div id="ss-notice"><div class="wrap">#{notice}</div></div>)
+      response.body = %(#{notice_html}#{response.body})
+    end
+
+    html.gsub!('#{page_name}', ERB::Util.html_escape(item.name))
+    html.gsub!('#{parent_name}', ERB::Util.html_escape(item.parent ? item.parent.name : ""))
+    html.sub!(/(\{\{ yield \}\}|<\/ yield \/>)/) do
+      yield if block_given?
+    end
+
+    html.html_safe
+  end
+
   private
     def convert_static_url(url)
       path, query = url.split("?")

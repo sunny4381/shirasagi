@@ -7,8 +7,15 @@ module Cms::GeneratorFilter::Rss
       return if Cms::Page.site(node.site).and_public.filename(path).first
 
       @cur_path   = opts[:url] || "#{node.url}rss.xml"
+      @cur_main_path = @cur_path
       @cur_site   = node.site
       @csrf_token = false
+
+      if @cur_site.subdir.present?
+        @cur_main_path = @cur_path.sub(/^\/#{@cur_site.subdir}/, "")
+      else
+        @cur_main_path = @cur_path.dup
+      end
 
       params.merge! opts[:params] if opts[:params]
 
@@ -23,12 +30,7 @@ module Cms::GeneratorFilter::Rss
         raise e unless Rails.env.producton?
       end
 
-      if response.content_type == "text/html" && node.layout
-        html = render_to_string inline: render_layout(node.layout), layout: "cms/page"
-      else
-        html = response.body
-      end
-
+      html = response.body
       file = opts[:file] || "#{node.path}/rss.xml"
       write_file node, html, file: file
     end

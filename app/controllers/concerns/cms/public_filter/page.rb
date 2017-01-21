@@ -47,12 +47,7 @@ module Cms::PublicFilter::Page
         raise e unless Rails.env.producton?
       end
 
-      if response.content_type == "text/html" && page.layout
-        html = render_to_string inline: render_layout(page.layout), layout: "cms/page"
-      else
-        html = response.body
-      end
-
+      html = response.body
       write_file page, html
     end
 end
