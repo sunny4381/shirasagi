@@ -217,6 +217,7 @@ SS::Application.routes.draw do
     get "sns_share" => "public#index", cell: "parts/sns_share"
     get "calendar_nav" => "public#index", cell: "parts/calendar_nav"
     get "monthly_nav" => "public#index", cell: "parts/monthly_nav"
+    get "liquid" => "public#index", cell: "parts/liquid"
   end
 
   page "cms" do

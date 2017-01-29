@@ -90,4 +90,14 @@ class Cms::Part
 
     default_scope ->{ where(route: "cms/monthly_nav") }
   end
+
+  class Liquid
+    include Cms::Model::Part
+    include Cms::Addon::HtmlWithType
+    include Cms::Addon::Release
+    include Cms::Addon::GroupPermission
+    include History::Addon::Backup
+
+    default_scope ->{ where(route: "cms/liquid") }
+  end
 end

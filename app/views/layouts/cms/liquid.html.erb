@@ -7,6 +7,7 @@
   template.registers['cur_site'] = @cur_site if @cur_site.present?
   template.registers['cur_node'] = @cur_node if @cur_node.present?
   template.registers['cur_page'] = @cur_page if @cur_page.present?
+  template.registers['cur_part'] = @cur_part if @cur_part.present?
   template.registers['cur_item'] = @cur_item if @cur_item.present?
   # assings: variables are used in a liquid template
   template.assigns['cms'] = Cms::Liquid::BaseDrop.new

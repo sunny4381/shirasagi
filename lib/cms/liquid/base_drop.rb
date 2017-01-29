@@ -67,10 +67,6 @@ class Cms::Liquid::BaseDrop < SS::Liquid::BaseDrop
     body_classes.join(' ')
   end
 
-  def layouts
-    @layouts ||= Cms::Liquid::LayoutsDrop.new
-  end
-
   def parts
     @parts ||= Cms::Liquid::PartsDrop.new
   end
