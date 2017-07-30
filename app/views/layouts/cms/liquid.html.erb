@@ -11,11 +11,11 @@
   template.registers['cur_item'] = @cur_item if @cur_item.present?
   # assings: variables are used in a liquid template
   template.assigns['cms'] = Cms::Liquid::BaseDrop.new
-  template.assigns['site'] = proc { |context| context['cms'].cur_site }
-  template.assigns['node'] = proc { |context| context['cms'].cur_node }
-  template.assigns['page'] = proc { |context| context['cms'].cur_page }
-  template.assigns['part'] = proc { |context| context['cms'].cur_part }
-  template.assigns['item'] = proc { |context| context['cms'].cur_item }
+  template.assigns['site'] = proc { |context| context.find_variable('cms').cur_site }
+  template.assigns['node'] = proc { |context| context.find_variable('cms').cur_node }
+  template.assigns['page'] = proc { |context| context.find_variable('cms').cur_page }
+  template.assigns['part'] = proc { |context| context.find_variable('cms').cur_part }
+  template.assigns['item'] = proc { |context| context.find_variable('cms').cur_item }
   template.assigns['yield'] = proc do
     yield
   end
