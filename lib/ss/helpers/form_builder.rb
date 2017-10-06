@@ -32,6 +32,12 @@ module SS::Helpers
       @template.check_box_tag(object_method, checked_value, checked, options)
     end
 
+    def ss_file_field(*args, &block)
+      self.multipart = true
+      options = args.extract_options!
+      @template.ss_file_field(@object_name, *args, objectify_options(options))
+    end
+
     private
 
     def array_value(method)

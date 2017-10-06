@@ -249,6 +249,8 @@ ja:
       mega_byte: MB
       days_after: 日後
       mobile_size: KB(キロバイト)
+    file_upload:
+      index: ここにファイルをドロップするかここをクリックしてファイルを選択してください。
 
   modules:
     addons:

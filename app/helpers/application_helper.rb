@@ -139,4 +139,37 @@ module ApplicationHelper
       end
     end
   end
+
+  def ss_file_field(*args, &block)
+    if !support_file_api?
+      return file_field(*args, &block)
+    end
+
+    content_tag(:div, class: 'file-upload') do
+      output_buffer << file_field(*args, &block)
+      output_buffer << content_tag(:p) do
+        I18n.t('ss.file_upload.index')
+      end
+    end
+  end
+
+  def ss_file_field_tag(*args, &block)
+    if !support_file_api?
+      return file_field_tag(*args, &block)
+    end
+
+    content_tag(:div, class: 'file-upload') do
+      output_buffer << file_field_tag(*args, &block)
+      output_buffer << content_tag(:p) do
+        I18n.t('ss.file_upload.index')
+      end
+    end
+  end
+
+  private
+
+  def support_file_api?
+    browser = controller.send(:browser)
+    return !browser.ie?
+  end
 end
