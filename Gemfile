@@ -51,6 +51,7 @@ gem 'romaji'
 gem 'simple_captcha2', require: 'simple_captcha'
 gem 'ungarbled'
 gem 'rubyzip'
+gem 'active_model_serializers'
 
 # OAuth
 gem 'omniauth'

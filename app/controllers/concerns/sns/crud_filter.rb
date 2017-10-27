@@ -26,7 +26,10 @@ module Sns::CrudFilter
 
   def show
     raise "403" unless @item.allowed?(:read, @cur_user)
-    render
+    respond_to do |format|
+      format.html { render }
+      format.json { render json: @item, status: :ok, content_type: json_content_type }
+    end
   end
 
   def new

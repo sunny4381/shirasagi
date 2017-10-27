@@ -77,7 +77,11 @@ module SS::CrudFilter
   end
 
   def show
-    render
+    # render
+    respond_to do |format|
+      format.html { render }
+      format.json { render json: @item, status: :ok, content_type: json_content_type }
+    end
   end
 
   def new
@@ -122,7 +126,7 @@ module SS::CrudFilter
     if result
       respond_to do |format|
         format.html { redirect_to location, notice: notice }
-        format.json { render json: @item.to_json, status: :created, content_type: json_content_type }
+        format.json { render json: @item, status: :created, content_type: json_content_type }
       end
     else
       respond_to do |format|

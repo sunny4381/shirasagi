@@ -1,0 +1,43 @@
+<dl class="see gws-addon-file">
+  <dd class="wide file-upload">
+    <span class="upload-menu-new">
+      <%= button_tag(t('ss.links.upload'), name: 'file-upload-btn', type: :button, class: 'btn') %>
+      <%= file_field_tag('file', id: nil, style: 'display: none;') %>
+      <%= link_to t('ss.links.upload'), sns_apis_temp_files_path(@cur_user), class: "ajax-box btn" %>
+    </span>
+
+    <div id="modal-edit" style="display: none">
+      <a href="#modal-edit-form"></a>
+
+      <div id="modal-edit-form">
+        <div class="addon-views">
+          <div class="addon-view">
+            <dl class="see">
+              <dt>名前</dt>
+              <dd><%= text_field_tag('name') %></dd>
+
+              <dt>ファイル名</dt>
+              <dd><%= text_field_tag('filename') %></dd>
+
+              <dt><%= t('ss.resize_image') %></dt>
+              <dd>
+                <%= select_tag(:resizing, options_for_select(SS::File.resizing_options), include_blank: t('ss.resize_image')) %>
+              </dd>
+            </dl>
+          </div>
+        </div>
+        <footer class="send">
+          <%= button_tag(t('ss.buttons.save'), name: 'save', type: :button, class: 'btn-primary save') %>
+          <%= button_tag(t('ss.buttons.cancel'), name: 'cancel', type: :reset, class: 'btn-default') %>
+        </footer>
+      </div>
+    </div>
+  </dd>
+</dl>
+
+<%= jquery do %>
+  var dnd = new SS_FileDnd(
+    '.gws-addon-file .file-upload',
+    '<%= sns_apis_temp_files_path(user: @cur_user, format: :json) %>',
+    '<%= meta_sns_apis_temp_files_path(user: @cur_user, format: :json) %>');
+<% end %>

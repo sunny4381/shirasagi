@@ -51,6 +51,7 @@ SS::Application.routes.draw do
         get :view, on: :member
         get :thumb, on: :member
         get :download, on: :member
+        post :meta, on: :collection
       end
 
       resources :user_files, concerns: :deletion do
