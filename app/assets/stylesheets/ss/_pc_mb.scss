@@ -1180,7 +1180,36 @@ footer.send {
     }
   }
 }
+.dnd-files {
+  .dnd-file {
+    display: inline-block;
+    border: 1px solid #bbb;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 
+    .cell {
+      display: table-cell;
+      vertical-align: middle;
+      padding: 4px;
+    }
+
+    .icon {
+      text-align: center;
+      width: 52px;
+      height: 52px;
+
+      img {
+        max-width: 40px;
+        max-height: 40px;
+      }
+    }
+
+    .filename {
+      width: 200px;
+    }
+  }
+}
 // -------------------------------------------------------------------------------------------------
 // memner photo
 #addon-member-agents-addons-photo-spot .see {

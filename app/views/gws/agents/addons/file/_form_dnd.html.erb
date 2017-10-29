@@ -1,10 +1,64 @@
 <dl class="see gws-addon-file">
-  <dd class="wide file-upload">
+  <dd class="wide">
+    <%= f.hidden_field "file_ids[]", value: "" %>
     <span class="upload-menu-new">
       <%= button_tag(t('ss.links.upload'), name: 'file-upload-btn', type: :button, class: 'btn') %>
       <%= file_field_tag('file', id: nil, style: 'display: none;') %>
-      <%= link_to t('ss.links.upload'), sns_apis_temp_files_path(@cur_user), class: "ajax-box btn" %>
+      <%# link_to t('ss.links.upload'), sns_apis_temp_files_path(@cur_user), class: "ajax-box btn" %>
     </span>
+    <span class="upload-menu-select">
+      <%= link_to t("sns.user_file"), sns_apis_user_files_path(@cur_user), class: "ajax-box btn" %>
+      <%= link_to t("modules.gws/share"), gws_apis_files_path, class: "ajax-box btn" %>
+    </span>
+
+    <div class="dnd-files">
+      <% @item.files.each do |file| %>
+        <label for="<%= "#{f.object_name}_file_ids_#{file.id}" %>" class="dnd-file">
+          <span class="cell selected">
+            <%= check_box_tag("#{f.object_name}[file_ids][]", file.id, true, id: "#{f.object_name}_file_ids_#{file.id}") %>
+          </span>
+          <span class="cell icon">
+            <% if file.image? %>
+            <%= image_tag(file.thumb_url, alt: file.name) %>
+            <% else %>
+            <i class="material-icons">&#xE24D;</i><br>
+            <span class="ext icon-<%= file.extname %>"><%= file.extname %></span>
+            <% end %>
+          </span>
+          <span class="cell filename">
+            <%= file.humanized_name %>
+          </span>
+          <span class="cell ctrl">
+            <%= button_tag("編集", type: :button, name: 'edit', class: 'btn') %>
+            <%= button_tag("貼り付け", type: :button, name: 'paste', class: 'btn') %>
+            <%= button_tag("削除", type: :button, name: 'delete', class: 'btn') %>
+          </span>
+        </label>
+      <% end %>
+      <% SS::TempFile.allow(:read, @cur_user).order_by(filename: 1).each do |file| %>
+        <label for="<%= "#{f.object_name}_file_ids_#{file.id}" %>" class="dnd-file">
+          <span class="cell selected">
+            <%= check_box_tag("#{f.object_name}[file_ids][]", file.id, false, id: "#{f.object_name}_file_ids_#{file.id}") %>
+          </span>
+            <span class="cell icon">
+            <% if file.image? %>
+            <%= image_tag(file.thumb_url, alt: file.name) %>
+            <% else %>
+            <i class="material-icons">&#xE24D;</i><br>
+            <span class="ext icon-<%= file.extname %>"><%= file.extname %></span>
+            <% end %>
+          </span>
+          <span class="cell filename">
+            <%= file.humanized_name %>
+          </span>
+          <span class="cell ctrl">
+            <%= button_tag("編集", type: :button, name: 'edit', class: 'btn') %>
+            <%= button_tag("貼り付け", type: :button, name: 'paste', class: 'btn') %>
+            <%= button_tag("削除", type: :button, name: 'delete', class: 'btn') %>
+          </span>
+        </label>
+      <% end %>
+    </div>
 
     <div id="modal-edit" style="display: none">
       <a href="#modal-edit-form"></a>
@@ -37,7 +91,7 @@
 
 <%= jquery do %>
   var dnd = new SS_FileDnd(
-    '.gws-addon-file .file-upload',
+    '#addon-gws-agents-addons-file .addon-body',
     '<%= sns_apis_temp_files_path(user: @cur_user, format: :json) %>',
     '<%= meta_sns_apis_temp_files_path(user: @cur_user, format: :json) %>');
 <% end %>

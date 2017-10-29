@@ -32,14 +32,13 @@ $(function() {
       width: "90%",
       height: "90%",
       closeButton: false,
-      onOpen: function() { console.log('onOpen'); },
-      onLoad: function() { console.log('onLoad'); },
+      onOpen: function() {  },
+      onLoad: function() {  },
       onComplete: function() {
-        console.log('onComplete');
         pThis.loadMeta();
       },
-      onCleanup: function() { console.log('onCleanup'); },
-      onClosed: function() { console.log('onClosed'); }
+      onCleanup: function() {  },
+      onClosed: function() {  }
     });
 
     this.$el.find('.addon-view').hide();
@@ -84,6 +83,7 @@ $(function() {
         },
         error: function(req, status, error) {
           console.log('error');
+          console.log(error);
         }
       });
     },
@@ -107,6 +107,8 @@ $(function() {
 
   SS_FileDnd = function(el, createPath, metaPath) {
     this.$el = $(el);
+    this.$el.addClass('file-upload');
+    this.dragEnterCount = 0;
     this.createPath = createPath;
     this.modal = new SS_FileEditModal(this.$el.find('#modal-edit'), metaPath);
     this.bindEvents();
@@ -115,20 +117,14 @@ $(function() {
   SS_FileDnd.prototype = {
     bindEvents: function() {
       var pThis = this;
-      this.$el.on('dragenter', function() {
-        $(this).addClass('active');
-      });
-      this.$el.on('dragover', function(ev) {
-        ev.preventDefault();
-      });
-      this.$el.on('drop', function(ev) {
-        ev.preventDefault();
-        $(this).removeClass('active');
-        pThis.uploadFiles(ev.originalEvent.dataTransfer.files);
-      });
-      this.$el.on('dragleave', function() {
-        $(this).removeClass('active')
-      });
+      this.$el.on('dragenter', function(ev) { pThis.onDragEnter(ev); });
+      this.$el.on('dragover', function(ev) { pThis.onDragOver(ev); });
+      this.$el.on('drop', function(ev) { pThis.onDrop(ev); });
+      this.$el.on('dragleave', function(ev) { pThis.onDragLeave(ev); });
+      this.$el.on('dragenter', '*', function(ev) { pThis.onDragEnter(ev); });
+      this.$el.on('dragover', '*', function(ev) { pThis.onDragOver(ev); });
+      this.$el.on('drop', '*', function(ev) { pThis.onDrop(ev); });
+      this.$el.on('dragleave', '*', function(ev) { pThis.onDragLeave(ev); });
       this.$el.find('[name="file-upload-btn"]').on('click', function() {
         pThis.$el.find('[type=file]').click();
       });
@@ -137,14 +133,32 @@ $(function() {
         this.value = '';
       });
     },
+    onDragEnter: function(ev) {
+      if (this.dragEnterCount == 0) {
+        this.$el.addClass('active');
+      }
+      this.dragEnterCount++;
+    },
+    onDragOver: function(ev) { ev.preventDefault(); },
+    onDragLeave: function(ev) {
+      if (this.dragEnterCount > 0) {
+        this.dragEnterCount--;
+      }
+      if (this.dragEnterCount <= 0) {
+        this.$el.removeClass('active');
+      }
+    },
+    onDrop: function(ev) {
+      ev.preventDefault();
+      this.$el.removeClass('active');
+      this.dragEnterCount = 0;
+      this.uploadFiles(ev.originalEvent.dataTransfer.files);
+    },
     uploadFiles: function(files) {
       var pThis = this;
       var file = files[0];
       console.log(file);
       this.modal.open_with(file, function(data) {
-        console.log('onSave');
-        console.log(data);
-
         var token = $('meta[name="csrf-token"]').attr('content');
 
         var formData = new FormData();
@@ -159,7 +173,6 @@ $(function() {
         request.onload = function (ev) {
           if (request.readyState === XMLHttpRequest.DONE) {
             if (request.status === 200 || request.status === 201) {
-              console.log('success');
               var data = JSON.parse(request.responseText);
               pThis.appendUploadedFile(data);
             } else {
@@ -173,22 +186,26 @@ $(function() {
       });
     },
     appendUploadedFile: function(data) {
-      console.log(data);
+      var $root = $('<label class="dnd-file" for="item__file_ids_' + data._id + '"/>');
 
-      var $root = $('<div class="fileview" style="display: table" />');
+      var $selected = $('<span class="cell selected"/>');
+      $selected.html('<input type="checkbox" name="item[file_ids][]" id="item_file_ids_' + data._id + '" value="' + data._id + '">');
 
-      var $icon = $('<span class="icon" style="display: table-cell; text-align: center; vertical-align: middle; padding: 4px; width: 48px" />');
+      var $icon = $('<span class="cell icon"/>');
       if (data.isImage) {
-        $icon.html('<img alt="' + data.name + '" style="max-width: 40px; max-height: 40px" src="' + data.thumb_url + '">');
+        $icon.html('<img alt="' + data.name + '" src="' + data.thumb_url + '">');
       } else {
         $icon.html('<i class="material-icons">&#xE24D;</i><br><span class="ext icon-' + data.extname +'">' + data.extname + '</span>');
       }
 
-      var $filename = $('<span class="filename" style="display: table-cell; vertical-align: middle; padding: 4px" />');
-      $filename.html('<a href="' + data.url + '">' + data.humanized_name + '</a>');
+      var $filename = $('<span class="cell filename"/>');
+      $filename.html(data.humanized_name);
 
-      $root.append($icon).append($filename);
-      this.$el.append($root);
+      var $ctrl = $('<span class="cell ctrl"/>');
+      $ctrl.html('<button name="edit" type="button" class="btn">編集</button>\n<button name="paste" type="button" class="btn">貼り付け</button>\n<button name="delete" type="button" class="btn">削除</button>');
+
+      $root.append($selected).append($icon).append($filename).append($ctrl);
+      this.$el.find('.dnd-files').append($root);
     }
   };
 });
