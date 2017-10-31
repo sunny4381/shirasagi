@@ -30,7 +30,7 @@
           </span>
           <span class="cell ctrl">
             <%= button_tag("編集", type: :button, name: 'edit', class: 'btn') %>
-            <%= button_tag("貼り付け", type: :button, name: 'paste', class: 'btn') %>
+            <%= button_tag(type: :button, name: 'paste', class: 'btn') do %>貼り付け<i class="material-icons md-13"></i><% end %>
             <%= button_tag("削除", type: :button, name: 'delete', class: 'btn') %>
           </span>
         </label>
@@ -53,7 +53,7 @@
           </span>
           <span class="cell ctrl">
             <%= button_tag("編集", type: :button, name: 'edit', class: 'btn') %>
-            <%= button_tag("貼り付け", type: :button, name: 'paste', class: 'btn') %>
+            <%= button_tag(type: :button, name: 'paste', class: 'btn') do %>貼り付け<i class="material-icons md-13"></i><% end %>
             <%= button_tag("削除", type: :button, name: 'delete', class: 'btn') %>
           </span>
         </label>
