@@ -1,4 +1,8 @@
 .gws-chat-posts {
+  button {
+    @include clear();
+  }
+
   .post {
     margin: 5px;
     padding: 5px;

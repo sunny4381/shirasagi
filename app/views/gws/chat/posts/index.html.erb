@@ -3,7 +3,7 @@
 
   <div class="posts">
     <% @items.each do |item| %>
-    <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>">
+    <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>" data-item-id="<%= item.id %>">
       <div class="row">
         <div class="aside">
           <%= render_avatar_image(item.user) %>
@@ -18,8 +18,8 @@
       </div>
       <div class="row">
         <span>
-          <button type="button"><i class="material-icons md-13">&#xE254;</i></button>
-          <button type="button"><i class="material-icons md-13">&#xE872;</i></button>
+          <button type="button" name="edit"><i class="material-icons md-13">&#xE254;</i></button>
+          <button type="button" name="delete"><i class="material-icons md-13">&#xE872;</i></button>
         </span>
       </div>
     </div>
@@ -28,3 +28,12 @@
 
   <%= render 'post_form' %>
 </div>
+
+<%= jquery do %>
+  var post = new Gws_Chat_Post('.gws-chat-posts', {
+    createUrl: <%== url_for(action: :create).to_json %>,
+    editUrl: <%== url_for(action: :edit, id: ':item_id').to_json %>,
+    deleteUrl: <%== url_for(action: :delete, id: ':item_id').to_json %>
+  });
+  post.render();
+<% end %>
