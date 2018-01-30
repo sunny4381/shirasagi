@@ -35,6 +35,10 @@
     <h2><%= link_to @cur_site.menu_bookmark_label || t('modules.gws/bookmark'), gws_bookmarks_path, class: "icon-bookmark" %></h2>
   <% end %>
 
+  <% if Gws::Chat::Room.allowed?(:edit, @cur_user, site: @cur_site) %>
+    <h2><%= link_to t('modules.gws/chat'), gws_chat_main_path, class: "icon-memo" %></h2>
+  <% end %>
+
   <% if @cur_site.menu_memo_visible? %>
     <% if Gws::Memo::Message.allowed?(:edit, @cur_user, site: @cur_site) %>
       <h2><%= link_to @cur_site.menu_memo_label || t('modules.gws/memo'), gws_memo_main_path, class: "icon-memo" %></h2>

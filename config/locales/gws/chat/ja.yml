@@ -1,0 +1,24 @@
+ja:
+  gws_role:
+    read_other_gws_chat_rooms: 部屋の閲覧（全て）
+    read_private_gws_chat_rooms: 部屋の閲覧（所有）
+    edit_other_gws_chat_rooms: 部屋の編集（全て）
+    edit_private_gws_chat_rooms: 部屋の編集（所有）
+    delete_other_gws_chat_rooms: 部屋の削除（全て）
+    delete_private_gws_chat_rooms: 部屋の削除（所有）
+
+  modules:
+    gws/chat: チャット
+
+  mongoid:
+    models:
+      gws/chat/room: 部屋
+      gws/chat/post: 投稿
+    attributes:
+      gws/chat/room:
+        name: タイトル
+
+  tooltip:
+    gws/chat/room:
+      name:
+        - タイトルを入力します。
