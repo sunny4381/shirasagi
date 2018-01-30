@@ -1,15 +1,19 @@
 class Gws::Chat::Post
   extend SS::Translation
   include SS::Document
+  include SS::Relation::File
   include Gws::Reference::User
   include Gws::Reference::Site
 
   attr_accessor :cur_room
   belongs_to :room, class_name: 'Gws::Chat::Room'
   field :text, type: String
+  belongs_to_file :file, resizing: [ 1024, 1024 ]
   permit_params :text
 
   before_validation :set_room
+  validates :text, presence: true, if: ->{ in_file.blank? && file.blank? }
+  validates :text, length: { maximum: 400 }
 
   scope :room, ->(room) { where(room_id: room.id) }
 

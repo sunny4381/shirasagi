@@ -13,7 +13,18 @@
             <span class="user"><%= item.user.long_name %></span>
             <span class="time"><%= item.updated.strftime('%Y/%m/%d %H:%M') %></span>
           </div>
-          <div class="body"><%= br item.text %></div>
+          <div class="body">
+            <% if item.file.present? %>
+              <a href="<%= item.file.url %>" target="_blank">
+                <% if item.file.image? %>
+                  <img src="<%= item.file.thumb.url %>" alt="<%= item.file.basename %>" />
+                <% else %>
+                  <span class="ext icon-<%= item.file.extname %>"><%= item.file.extname %></span>
+                <% end %>
+              </a>
+            <% end %>
+            <%= br item.text %>
+          </div>
         </div>
       </div>
       <div class="row">
