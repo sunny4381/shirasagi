@@ -1,0 +1,7 @@
+<dl class="see mod-gws-chat-avatar">
+  <dt><%= @model.t :avatar_image_id %><%= @model.tt :avatar_image_id %></dt>
+  <dd><%= f.file_field :in_avatar_image %></dd>
+  <% if @item.avatar_image %>
+    <dd><label><%= f.check_box :rm_avatar_image %><%= t "ss.buttons.delete" %> (<%= @item.avatar_image.filename %>)</label></dd>
+  <% end %>
+</dl>

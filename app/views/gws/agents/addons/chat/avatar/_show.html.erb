@@ -1,0 +1,14 @@
+<% return if @item.avatar_image.blank? %>
+
+<dl class="see mod-gws-chat-avatar">
+  <dt><%= @model.t :avatar_image_id %></dt>
+  <dd>
+    <a class="thumb" href="/fs/<%= @item.avatar_image.id %>/<%= @item.avatar_image.filename %>" target="_blank">
+      <% if @item.avatar_image.image? %>
+        <img src="/fs/<%= @item.avatar_image.id %>/thumb/<%= @item.avatar_image.filename %>" alt="<%= @item.avatar_image.basename %>" />
+      <% else %>
+        <span class="ext icon-<%= @item.avatar_image.extname %>"><%= @item.avatar_image.extname %></span>
+      <% end %>
+    </a>
+  </dd>
+</dl>

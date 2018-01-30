@@ -9,6 +9,8 @@ ja:
 
   modules:
     gws/chat: チャット
+    addons:
+      gws/chat/avatar: アバター
 
   mongoid:
     models:
@@ -17,8 +19,14 @@ ja:
     attributes:
       gws/chat/room:
         name: タイトル
+      gws/addon/chat/avatar:
+        avatar_image_id: 画像
 
   tooltip:
     gws/chat/room:
       name:
         - タイトルを入力します。
+    gws/addon/chat/avatar:
+      avatar_image_id:
+        - アバター画像を設定してください。
+        - 大きな画像をアップロードすると自動で 114x114 のボックス内に収まるように縮小されます。
