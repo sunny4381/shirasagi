@@ -32,7 +32,7 @@ class Gws::Chat::PostsController < ApplicationController
     if user && user.avatar_image
       view_context.image_tag(user.avatar_image.url)
     else
-      view_context.image_tag('assets/img/dummy.png')
+      view_context.image_tag('/assets/img/dummy.png')
     end
   end
 

@@ -1,13 +1,27 @@
 <div class="index gws-chat-posts">
-  <%= render file: "_list_head" %>
+  <%= render file: '_list_head' %>
 
   <div class="posts">
     <% @items.each do |item| %>
     <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>">
-      <div><%= render_avatar_image(item.user) %></div>
-      <div><%= item.user.long_name %></div>
-      <div><%= item.updated.strftime('%Y/%m/%d %H:%M') %></div>
-      <div><%= br item.text %></div>
+      <div class="row">
+        <div class="aside">
+          <%= render_avatar_image(item.user) %>
+        </div>
+        <div class="main">
+          <div class="header">
+            <span class="user"><%= item.user.long_name %></span>
+            <span class="time"><%= item.updated.strftime('%Y/%m/%d %H:%M') %></span>
+          </div>
+          <div class="body"><%= br item.text %></div>
+        </div>
+      </div>
+      <div class="row">
+        <span>
+          <button type="button"><i class="material-icons md-13">&#xE254;</i></button>
+          <button type="button"><i class="material-icons md-13">&#xE872;</i></button>
+        </span>
+      </div>
     </div>
     <% end %>
   </div>

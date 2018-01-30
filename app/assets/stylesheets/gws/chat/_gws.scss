@@ -1,0 +1,75 @@
+.gws-chat-posts {
+  .post {
+    margin: 5px;
+    padding: 5px;
+
+    .row {
+      -js-display: flex;
+      @include display-flex;
+    }
+
+    .aside {
+      //@include flex-grow(1);
+      @include flex-basis(70px);
+      text-align: center;
+
+      img {
+        max-width: 60px;
+        max-height: 60px;
+      }
+    }
+
+    .main {
+      //@include flex-grow(10);
+      @include flex-basis(auto);
+
+      .user {
+        color: #217bac;
+      }
+
+      .time {
+        color: $gray2;
+      }
+    }
+
+    &.mines {
+      .row {
+        @include flex-direction(row-reverse);
+      }
+
+      .main {
+        text-align: right;
+      }
+    }
+  }
+
+  .post ~ .post {
+    border-top: 1px solid $gray1;
+  }
+
+  .post-toolbar {
+    margin: 5px;
+    padding: 5px;
+  }
+
+  form#item-form {
+    margin: 5px;
+    padding: 5px 20px;
+    border-top: 1px solid $gray1;
+
+    textarea {
+      display: inline-block;
+      width: 90%;
+    }
+
+    .toolbar {
+      display: inline-block;
+
+      vertical-align: top;
+
+      button {
+        display: list-item;
+      }
+    }
+  }
+}
