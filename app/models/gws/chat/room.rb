@@ -11,6 +11,8 @@ class Gws::Chat::Room
 
   attr_accessor :cur_user
   field :name, type: String
+  permit_params :name
+  validates :name, presence: true, length: { maximum: 80 }
 
   class << self
     def search(params = {})

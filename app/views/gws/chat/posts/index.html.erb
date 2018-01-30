@@ -1,0 +1,15 @@
+<div class="index gws-chat-posts">
+  <%= render file: "_list_head" %>
+
+  <div class="posts">
+    <% @items.each do |item| %>
+    <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>">
+      <div><%= item.user.long_name %></div>
+      <div><%= item.updated.strftime('%Y/%m/%d %H:%M') %></div>
+      <div><%= br item.text %></div>
+    </div>
+    <% end %>
+  </div>
+
+  <%= render 'post_form' %>
+</div>
