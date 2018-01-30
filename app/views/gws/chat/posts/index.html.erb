@@ -4,6 +4,7 @@
   <div class="posts">
     <% @items.each do |item| %>
     <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>">
+      <div><%= render_avatar_image(item.user) %></div>
       <div><%= item.user.long_name %></div>
       <div><%= item.updated.strftime('%Y/%m/%d %H:%M') %></div>
       <div><%= br item.text %></div>

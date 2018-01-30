@@ -7,6 +7,8 @@ class Gws::Chat::PostsController < ApplicationController
   before_action :set_cur_room
   before_action :set_crumbs
 
+  helper_method :render_avatar_image
+
   private
 
   def set_crumbs
@@ -24,6 +26,14 @@ class Gws::Chat::PostsController < ApplicationController
 
   def crud_redirect_url
     { action: :index }
+  end
+
+  def render_avatar_image(user)
+    if user && user.avatar_image
+      view_context.image_tag(user.avatar_image.url)
+    else
+      view_context.image_tag('assets/img/dummy.png')
+    end
   end
 
   public
