@@ -26,15 +26,19 @@ class Gws::Chat::PostsController < ApplicationController
     { action: :index }
   end
 
+  def set_items
+    @items = @model.site(@cur_site).room(@cur_room).
+      search(params[:s]).
+      order_by(created: -1)
+  end
+
   public
 
   def index
     raise '403' unless @cur_room.allowed?(:read, @cur_user, site: @cur_site)
 
-    @items = @model.site(@cur_site).room(@cur_room).
-      search(params[:s]).
-      order_by(created: -1).
-      page(params[:page]).per(20)
+    set_items
+    @items = @items.page(params[:page]).per(20)
 
     @post = @model.new pre_params.merge(fix_params)
 
@@ -74,5 +78,29 @@ class Gws::Chat::PostsController < ApplicationController
   def destroy
     raise '403' unless @cur_room.allowed?(:delete, @cur_user, site: @cur_site)
     render_destroy @item.destroy
+  end
+
+  def check_updates
+    safe_params = params.permit(:version, :timestamp)
+    version = Integer(safe_params[:version])
+    timestamp = Integer(safe_params[:timestamp])
+
+    if version.blank? || timestamp.blank?
+      head :no_content
+      return
+    end
+
+    if @cur_room.version <= version
+      head :no_content
+      return
+    end
+
+    set_items
+    @items = @items.gte(created: Time.zone.at(timestamp)).reorder(created: 1)
+    # render file: '_index', layout: false
+    respond_to do |format|
+      format.html { render file: '_index', layout: false }
+      format.json { render file: 'index' }
+    end
   end
 end

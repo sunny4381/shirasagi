@@ -10,7 +10,9 @@ SS::Application.routes.draw do
     get '/' => redirect { |p, req| "#{req.path}/rooms" }, as: :main
 
     resources :rooms, concerns: [:deletion] do
-      resources :posts, concerns: [:deletion]
+      resources :posts, concerns: [:deletion] do
+        get :check_updates, on: :collection
+      end
     end
   end
 end

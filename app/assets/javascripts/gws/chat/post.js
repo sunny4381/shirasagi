@@ -2,6 +2,9 @@ Gws_Chat_Post = function (el, options) {
   this.$el = $(el);
   this.options = options;
   this.$postsElement = this.$el.find('.posts');
+  this.version = this.options.version;
+  this.timestamp = Math.floor(Date.now() / 1000);
+  this.interval = 5000;
 };
 
 Gws_Chat_Post.prototype.render = function() {
@@ -40,6 +43,8 @@ Gws_Chat_Post.prototype.render = function() {
   $(window).resize(function() {
     _this.setPostsHeight()
   });
+
+  setTimeout(function() { _this.checkUpdates(); }, this.interval);
 
   this.setPostsHeight();
   this.initPostsScrollTop();
@@ -165,4 +170,92 @@ Gws_Chat_Post.prototype.keepScrollTop = function(callback) {
   callback();
 
   elem.scrollTop = elem.scrollHeight - offsetFromBottom;
+};
+
+Gws_Chat_Post.prototype.checkUpdates = function() {
+  var _this = this;
+  $.ajax({
+    type: 'GET',
+    url: this.options.checkUpdatesUrl,
+    dataType: 'json',
+    data: { version: this.version, timestamp: this.timestamp },
+    // data: { version: 0, timestamp: 0 },
+    success: function(data) { _this.renderUpdates(data) },
+    error: function(xhr, status, error) { _this.showError(); },
+    complete: function() {
+      _this.timestamp = Math.floor(Date.now() / 1000);
+      setTimeout(function() { _this.checkUpdates(); }, _this.interval);
+    }
+  });
+};
+
+Gws_Chat_Post.prototype.renderUpdates = function(data) {
+  if (! data) {
+    this.interval *= 2;
+    if (this.interval > 60000) {
+      this.interval = 60000;
+    }
+    return;
+  }
+
+  this.version = data.version;
+  this.interval = 5000;
+
+  var _this = this;
+  var template = this.$el.find('script#post-template').html();
+  $.each(data.items, function(index, item) {
+    var selector = '.post[data-item-id=":item_id"]'.replace(':item_id', item.id);
+    var $post = _this.$el.find(selector);
+    if ($post.length > 0) {
+      return;
+    }
+
+    var html = template.replace(/:item_id/g, item.id.toString());
+    html = html.replace(/:user_name/g, item.user.name);
+    html = html.replace(/:avatar_url/g, item.user.avatar.url);
+    html = html.replace(/:user_long_name/g, item.user.long_name);
+    html = html.replace(/:item_updated/g, _this.formatTime(item.updated));
+    if (item.file) {
+      html = html.replace(/:file_url/g, item.file.url);
+      if (item.file.is_image) {
+        html = html.replace(/:file_thumb_url/g, item.file.thumb_url);
+      }
+      html = html.replace(/:file_basename/g, item.file.basename);
+      html = html.replace(/:file_extname/g, item.file.extname);
+    }
+    html = html.replace(/:text/g, item.text || '');
+
+    var $post = $(html);
+    $post.removeClass('template');
+    if (_this.options.userId === item.user.id) {
+      $post.addClass('mines');
+    } else {
+      $post.addClass('theirs');
+    }
+
+    if (item.file) {
+      if (item.file.is_image) {
+        $post.find('.body a span').remove();
+      } else {
+        $post.find('.body a img').remove();
+      }
+    } else {
+      $post.find('.body a').remove();
+    }
+
+    _this.$el.find('.posts').append($post);
+  });
+};
+
+Gws_Chat_Post.prototype.formatTime = function(timestamp) {
+  var date = new Date(timestamp * 1000);
+
+  var format = '%Y/%m/%d %H:%M';
+  format = format.replace('%Y', date.getFullYear());
+  format = format.replace('%m', ('0' + (date.getMonth() + 1)).slice(-2));
+  format = format.replace('%d', ('0' + date.getDate()).slice(-2));
+  format = format.replace('%H', ('0' + date.getHours()).slice(-2));
+  format = format.replace('%M', ('0' + date.getMinutes()).slice(-2));
+
+  return format;
 };
