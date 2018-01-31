@@ -54,4 +54,27 @@ class Gws::Chat::PostsController < ApplicationController
     @post = @model.new params.require(:post).permit(permit_fields).merge(fix_params)
     render_create @post.save, render: { file: :index }
   end
+
+  def edit
+    raise '403' unless @cur_room.allowed?(:edit, @cur_user, site: @cur_site)
+    render
+  end
+
+  def update
+    raise '403' unless @cur_room.allowed?(:edit, @cur_user, site: @cur_site)
+
+    @item.attributes = get_params
+    @item.in_updated = params[:_updated] if @item.respond_to?(:in_updated)
+    render_update @item.update
+  end
+
+  def delete
+    raise '403' unless @cur_room.allowed?(:delete, @cur_user, site: @cur_site)
+    render
+  end
+
+  def destroy
+    raise '403' unless @cur_room.allowed?(:delete, @cur_user, site: @cur_site)
+    render_destroy @item.destroy
+  end
 end

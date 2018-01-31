@@ -19,6 +19,9 @@ ja:
     attributes:
       gws/chat/room:
         name: タイトル
+      gws/chat/post:
+        text: 本文
+        file_id: 添付ファイル
       gws/addon/chat/avatar:
         avatar_image_id: 画像
 

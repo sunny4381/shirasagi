@@ -1,0 +1,19 @@
+<dl class="see">
+  <% if @item.file.present? %>
+  <dt><%= @model.t :file_id %></dt>
+  <dd>
+    <a class="thumb" href="/fs/<%= @item.file.id %>/<%= @item.file.filename %>" target="_blank">
+      <% if @item.file.image? %>
+        <img src="/fs/<%= @item.file.id %>/thumb/<%= @item.file.filename %>" alt="<%= @item.file.basename %>" />
+      <% else %>
+        <span class="ext icon-<%= @item.file.extname %>"><%= @item.file.extname %></span>
+      <% end %>
+    </a>
+  </dd>
+  <% end %>
+
+  <% if @item.text.present? %>
+  <dt><%= @model.t :text %></dt>
+  <dd><%= br @item.text %></dd>
+  <% end %>
+</dl>
