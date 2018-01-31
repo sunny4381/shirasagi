@@ -1,6 +1,7 @@
 Gws_Chat_Post = function (el, options) {
   this.$el = $(el);
   this.options = options;
+  this.$postsElement = this.$el.find('.posts');
 };
 
 Gws_Chat_Post.prototype.render = function() {
@@ -25,6 +26,27 @@ Gws_Chat_Post.prototype.render = function() {
     ev.preventDefault();
     _this.submitMessage($(this));
   });
+
+  $(window).resize(function() {
+    _this.setPostsHeight()
+  });
+
+  this.setPostsHeight();
+  this.initPostsScrollTop();
+};
+
+Gws_Chat_Post.prototype.initPostsScrollTop = function() {
+  var elem = this.$postsElement[0];
+  elem.scrollTop = elem.scrollHeight;
+};
+
+Gws_Chat_Post.prototype.setPostsHeight = function() {
+  var screenHeight = $(window).height();
+  var headerHeight = $('header#head').height();
+  var crumbHeight = $('ol#crumbs').height();
+
+  // TODO: save current scroll position and restore it after change height
+  this.$postsElement.css('height', (screenHeight - headerHeight - crumbHeight - 200) + 'px');
 };
 
 Gws_Chat_Post.prototype.edit = function($button, itemId) {

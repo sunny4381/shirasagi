@@ -1,8 +1,14 @@
 <div class="index gws-chat-posts">
   <%= render file: '_list_head' %>
 
-  <div class="posts">
-    <% @items.each do |item| %>
+  <div class="posts" style="height: 300px;">
+    <% if !@items.last_page? %>
+    <div class="more">
+      <a href="<%= url_for(action: :index, page: @items.next_page) %>" class="btn btn-more">もっと見る</a>
+    </div>
+    <% end %>
+
+    <% @items.to_a.sort_by { |item| item.created }.each do |item| %>
     <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>" data-item-id="<%= item.id %>">
       <div class="row">
         <div class="aside">

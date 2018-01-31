@@ -1,6 +1,19 @@
 .gws-chat-posts {
+  height: 100%;
   button {
     @include clear();
+  }
+
+  .posts {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .more {
+    margin: 5px;
+    padding: 10px 5px;
+    text-align: center;
+    border-bottom: 1px solid $gray1;
   }
 
   .post {

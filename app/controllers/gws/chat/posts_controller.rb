@@ -43,7 +43,8 @@ class Gws::Chat::PostsController < ApplicationController
 
     @items = @model.site(@cur_site).room(@cur_room).
       search(params[:s]).
-      page(params[:page]).per(50)
+      order_by(created: -1).
+      page(params[:page]).per(20)
 
     @post = @model.new pre_params.merge(fix_params)
   end
