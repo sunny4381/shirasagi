@@ -12,7 +12,7 @@
     <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>" data-item-id="<%= item.id %>">
       <div class="row">
         <div class="aside">
-          <%= render_avatar_image(item.user) %>
+          <%= image_tag(avatar_gws_user_path(id: item.user), alt: "#{item.user.name}のアバター", title: "#{item.user.name}のアバター") %>
         </div>
         <div class="main">
           <div class="header">

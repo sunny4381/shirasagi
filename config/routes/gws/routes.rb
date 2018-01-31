@@ -28,7 +28,9 @@ SS::Application.routes.draw do
     resource  :site
     resources :groups, concerns: [:deletion]
     resources :custom_groups, concerns: [:deletion]
-    resources :users, concerns: [:deletion, :download, :import]
+    resources :users, concerns: [:deletion, :download, :import] do
+      get :avatar, on: :member
+    end
     resources :user_titles, concerns: [:deletion]
     resources :roles, concerns: [:deletion]
     resources :notices, concerns: [:deletion]

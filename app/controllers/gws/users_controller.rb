@@ -168,4 +168,18 @@ class Gws::UsersController < ApplicationController
     flash.now[:notice] = t("ss.notice.saved") if !result && @item.imported > 0
     render_create result, location: { action: :index }, render: { file: :import }
   end
+
+  def avatar
+    set_item
+
+    if @item.avatar_image.present?
+      path = @item.avatar_image.path
+      type = @item.avatar_image.content_type
+    else
+      path = Rails.root.join('public/assets/img/dummy.png')
+      type = 'image/png'
+    end
+
+    send_file(path, status: :ok, type: type, disposition: :inline, x_sendfile: true)
+  end
 end
