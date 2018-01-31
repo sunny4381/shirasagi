@@ -41,4 +41,8 @@ class Gws::Chat::Room
   def increment_version
     self.inc(version: 1)
   end
+
+  def cache_key
+    "#{model_key}/#{id}-#{version}"
+  end
 end

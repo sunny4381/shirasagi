@@ -1,0 +1,57 @@
+<div class="index gws-chat-posts">
+  <%= render file: '_list_head' %>
+
+  <div class="posts" style="height: 300px;">
+    <% if !@items.last_page? %>
+    <div class="more">
+      <a href="<%= url_for(action: :index, page: @items.next_page) %>" class="btn btn-more" data-page="<%= @items.next_page %>">もっと見る</a>
+    </div>
+    <% end %>
+
+    <% @items.to_a.sort_by { |item| item.created }.each do |item| %>
+    <div class="post <%= item.user == @cur_user ? 'mines' : 'theirs' %>" data-item-id="<%= item.id %>">
+      <div class="row">
+        <div class="aside">
+          <%= render_avatar_image(item.user) %>
+        </div>
+        <div class="main">
+          <div class="header">
+            <span class="user"><%= item.user.long_name %></span>
+            <span class="time"><%= item.updated.strftime('%Y/%m/%d %H:%M') %></span>
+          </div>
+          <div class="body">
+            <% if item.file.present? %>
+              <a href="<%= item.file.url %>" target="_blank">
+                <% if item.file.image? %>
+                  <img src="<%= item.file.thumb.url %>" alt="<%= item.file.basename %>" />
+                <% else %>
+                  <span class="ext icon-<%= item.file.extname %>"><%= item.file.extname %></span>
+                <% end %>
+              </a>
+            <% end %>
+            <%= br item.text %>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <span>
+          <button type="button" name="edit"><i class="material-icons md-13">&#xE254;</i></button>
+          <button type="button" name="delete"><i class="material-icons md-13">&#xE872;</i></button>
+        </span>
+      </div>
+    </div>
+    <% end %>
+  </div>
+
+  <%= render 'post_form' %>
+</div>
+
+<%= jquery do %>
+  var post = new Gws_Chat_Post('.gws-chat-posts', {
+    indexUrl: <%== url_for(action: :index).to_json %>,
+    createUrl: <%== url_for(action: :create).to_json %>,
+    editUrl: <%== url_for(action: :edit, id: ':item_id').to_json %>,
+    deleteUrl: <%== url_for(action: :delete, id: ':item_id').to_json %>
+  });
+  post.render();
+<% end %>
