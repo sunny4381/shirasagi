@@ -17,6 +17,9 @@ class Gws::Chat::Post
 
   scope :room, ->(room) { where(room_id: room.id) }
 
+  after_save :increment_room_version
+  after_destroy :increment_room_version
+
   class << self
     def search(params = {})
       all.search_keyword(params)
@@ -33,5 +36,10 @@ class Gws::Chat::Post
   def set_room
     return if @cur_room.blank?
     self.room = @cur_room
+  end
+
+  def increment_room_version
+    return unless room
+    room.increment_version
   end
 end

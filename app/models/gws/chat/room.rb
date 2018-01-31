@@ -11,8 +11,14 @@ class Gws::Chat::Room
 
   attr_accessor :cur_user
   field :name, type: String
+  field :version, type: Integer, default: 0
+  has_many :posts, inverse_of: :room, class_name: 'Gws::Chat::Post', dependent: :destroy
+
   permit_params :name
+
   validates :name, presence: true, length: { maximum: 80 }
+
+  after_save :increment_version
 
   class << self
     def search(params = {})
@@ -30,5 +36,9 @@ class Gws::Chat::Room
       return all if params.blank? || params[:name].blank?
       all.search_text(params[:name])
     end
+  end
+
+  def increment_version
+    self.inc(version: 1)
   end
 end
