@@ -47,6 +47,13 @@ class Gws::Chat::PostsController < ApplicationController
       page(params[:page]).per(20)
 
     @post = @model.new pre_params.merge(fix_params)
+
+    render_opts = { file: 'index' }
+    if request.xhr?
+      render_opts[:layout] = false
+    end
+
+    render render_opts
   end
 
   def create

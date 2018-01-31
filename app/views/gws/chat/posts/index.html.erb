@@ -4,7 +4,7 @@
   <div class="posts" style="height: 300px;">
     <% if !@items.last_page? %>
     <div class="more">
-      <a href="<%= url_for(action: :index, page: @items.next_page) %>" class="btn btn-more">もっと見る</a>
+      <a href="<%= url_for(action: :index, page: @items.next_page) %>" class="btn btn-more" data-page="<%= @items.next_page %>">もっと見る</a>
     </div>
     <% end %>
 
@@ -48,6 +48,7 @@
 
 <%= jquery do %>
   var post = new Gws_Chat_Post('.gws-chat-posts', {
+    indexUrl: <%== url_for(action: :index).to_json %>,
     createUrl: <%== url_for(action: :create).to_json %>,
     editUrl: <%== url_for(action: :edit, id: ':item_id').to_json %>,
     deleteUrl: <%== url_for(action: :delete, id: ':item_id').to_json %>
