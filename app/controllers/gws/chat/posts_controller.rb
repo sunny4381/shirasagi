@@ -26,9 +26,17 @@ class Gws::Chat::PostsController < ApplicationController
     { action: :index }
   end
 
+  def set_search_params
+    @s ||= begin
+      s = params[:s] || {}
+      s.delete_if { |_, v| v.blank? }
+    end
+  end
+
   def set_items
+    set_search_params
     @items = @model.site(@cur_site).room(@cur_room).
-      search(params[:s]).
+      search(@s).
       order_by(created: -1)
   end
 
@@ -42,7 +50,12 @@ class Gws::Chat::PostsController < ApplicationController
 
     @post = @model.new pre_params.merge(fix_params)
 
-    render_opts = { file: 'index' }
+    if @s.blank? && @items.first_page?
+      render_opts = { file: 'index_with_cache' }
+    else
+      render_opts = { file: 'index' }
+    end
+
     if request.xhr?
       render_opts[:layout] = false
     end
