@@ -23,17 +23,16 @@ Gws_Chat_Post.prototype.render = function() {
 
   this.$el.on('click', 'form#item-form button[name=attach-file]', function(ev) {
     ev.preventDefault();
+    ev.stopPropagation();
     _this.attachFile($(this));
+    return false;
   });
 
   this.$el.on('click', 'form#item-form button[name=submit]', function(ev) {
     ev.preventDefault();
+    ev.stopPropagation();
     _this.submitMessage($(this));
-  });
-
-  this.$el.on('click', 'form#item-form button[name=submit]', function(ev) {
-    ev.preventDefault();
-    _this.submitMessage($(this));
+    return false;
   });
 
   this.$el.on('click', '.btn-more', function(ev) {
