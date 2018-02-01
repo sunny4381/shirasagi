@@ -13,4 +13,8 @@ class Gws::Chat::RoomsController < ApplicationController
   def fix_params
     { cur_user: @cur_user, cur_site: @cur_site }
   end
+
+  def crud_redirect_url
+    { action: :index }
+  end
 end
