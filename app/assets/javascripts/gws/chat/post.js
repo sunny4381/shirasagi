@@ -4,7 +4,8 @@ Gws_Chat_Post = function (el, options) {
   this.$postsElement = this.$el.find('.posts');
   this.version = this.options.version;
   this.timestamp = Math.floor(Date.now() / 1000);
-  this.interval = 5000;
+  this.interval = 5000; // 5 秒
+  this.maxInterval = 60000; // 1 分
 };
 
 Gws_Chat_Post.prototype.render = function() {
@@ -194,7 +195,7 @@ Gws_Chat_Post.prototype.checkUpdates = function() {
         }
       } else {
         _this.showError();
-        _this.interval = 60000;
+        _this.interval = _this.maxInterval;
         setTimeout(function() { _this.checkUpdates(); }, _this.interval);
       }
     }
@@ -204,8 +205,8 @@ Gws_Chat_Post.prototype.checkUpdates = function() {
 Gws_Chat_Post.prototype.renderUpdates = function(data) {
   if (! data) {
     this.interval *= 2;
-    if (this.interval > 60000) {
-      this.interval = 60000;
+    if (this.interval > this.maxInterval) {
+      this.interval = this.maxInterval;
     }
     return;
   }
