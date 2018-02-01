@@ -91,6 +91,8 @@ Gws_Chat_Post.prototype.attachFile = function() {
       ev.preventDefault();
       _this.submitFile();
     });
+    this.$inputFile.hide();
+    this.$el.find('form#item-form').append(this.$inputFile);
   }
 
   this.$inputFile.click();
