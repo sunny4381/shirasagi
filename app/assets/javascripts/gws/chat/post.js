@@ -228,15 +228,6 @@ Gws_Chat_Post.prototype.renderUpdates = function(data) {
     html = html.replace(/:avatar_url/g, item.user.avatar.url);
     html = html.replace(/:user_long_name/g, item.user.long_name);
     html = html.replace(/:item_updated/g, _this.formatTime(item.updated));
-    if (item.file) {
-      html = html.replace(/:file_url/g, item.file.url);
-      if (item.file.is_image) {
-        html = html.replace(/:file_thumb_url/g, item.file.thumb_url);
-      }
-      html = html.replace(/:file_basename/g, item.file.basename);
-      html = html.replace(/:file_extname/g, item.file.extname);
-    }
-    html = html.replace(/:text/g, item.text || '');
 
     var $post = $(html);
     $post.removeClass('template');
@@ -246,14 +237,20 @@ Gws_Chat_Post.prototype.renderUpdates = function(data) {
       $post.addClass('theirs');
     }
 
+    if (item.text) {
+      $post.find('.body').html(item.text.toString().replace(/\r?\n/g, '<br>'));
+    }
+
     if (item.file) {
+      var $a = $('<a/>', { href: item.file.url, target: '_blank' });
       if (item.file.is_image) {
-        $post.find('.body a span').remove();
+        $a.html($('<img/>', { src: item.file.thumb_url, alt: item.file.name }));
       } else {
-        $post.find('.body a img').remove();
+        $a.append('<i class="material-icons md-15">&#xE2C4;</i>');
+        $a.append($('<span />', { class: 'ext icon-' + item.file.extname }).html(item.file.name));
       }
-    } else {
-      $post.find('.body a').remove();
+
+      $post.find('.body').prepend($a);
     }
 
     _this.$el.find('.posts').append($post);

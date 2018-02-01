@@ -23,9 +23,10 @@
             <% if item.file.present? %>
               <a href="<%= item.file.url %>" target="_blank">
                 <% if item.file.image? %>
-                  <img src="<%= item.file.thumb.url %>" alt="<%= item.file.basename %>" />
+                  <img src="<%= item.file.thumb.url %>" alt="<%= item.file.name %>" />
                 <% else %>
-                  <span class="ext icon-<%= item.file.extname %>"><%= item.file.extname %></span>
+                  <i class="material-icons md-15">&#xE2C4;</i>
+                  <span class="ext icon-<%= item.file.extname %>"><%= item.file.name %></span>
                 <% end %>
               </a>
             <% end %>
@@ -56,13 +57,7 @@
             <span class="user">:user_long_name</span>
             <span class="time">:item_updated</span>
           </div>
-          <div class="body">
-            <a href=":file_url" target="_blank">
-              <img src=":file_thumb_url" alt=":file_basename" />
-              <span class="ext icon-:file_extname">:file_extname</span>
-            </a>
-            :text
-          </div>
+          <div class="body"></div>
         </div>
       </div>
       <div class="row">
