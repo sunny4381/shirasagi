@@ -82,11 +82,11 @@ class Gws::Chat::PostsController < ApplicationController
 
   def check_updates
     safe_params = params.permit(:version, :timestamp)
-    version = Integer(safe_params[:version])
-    timestamp = Integer(safe_params[:timestamp])
+    version = safe_params[:version].to_i
+    timestamp = safe_params[:timestamp].to_i
 
-    if version.blank? || timestamp.blank?
-      head :no_content
+    if version <= 0 || timestamp <= 0
+      head :bad_request
       return
     end
 
@@ -95,12 +95,24 @@ class Gws::Chat::PostsController < ApplicationController
       return
     end
 
-    set_items
-    @items = @items.gte(created: Time.zone.at(timestamp)).reorder(created: 1)
-    # render file: '_index', layout: false
-    respond_to do |format|
-      format.html { render file: '_index', layout: false }
-      format.json { render file: 'index' }
+    if timestamp <= Gws::Chat::Room::RECENT_HOURS.hours.ago.to_i
+      # 新着チェックできるのは Gws::Chat::Room::RECENT_HOURS 時間以内の範囲
+      # 指定されたタイムスタンプが古過ぎで新着をチェックできない。
+      #
+      # 次のようなケースが想定される
+      # 1. パソコンがスリープ状態になり、翌日復帰した。
+      # 2. スマホがスリープ状態になり、Gws::Chat::Room::RECENT_HOURS 時間以上経過してから復帰した。
+      #
+      # この場合、ブラウザをリロードすることで復旧させる。
+      # （ブラウザをリローする処理は javascript に記述する）
+      head :not_acceptable
+      return
     end
+
+    if !::File.exist?(@cur_room.recent_cache_filepath)
+      @cur_room.generate_recent_cache
+    end
+
+    send_file(@cur_room.recent_cache_filepath, content_type: json_content_type)
   end
 end

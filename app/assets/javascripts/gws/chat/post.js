@@ -180,11 +180,23 @@ Gws_Chat_Post.prototype.checkUpdates = function() {
     dataType: 'json',
     data: { version: this.version, timestamp: this.timestamp },
     // data: { version: 0, timestamp: 0 },
-    success: function(data) { _this.renderUpdates(data) },
-    error: function(xhr, status, error) { _this.showError(); },
-    complete: function() {
+    success: function(data) {
+      _this.renderUpdates(data);
       _this.timestamp = Math.floor(Date.now() / 1000);
       setTimeout(function() { _this.checkUpdates(); }, _this.interval);
+    },
+    error: function(xhr, status, error) {
+      if (xhr.status === 406) {
+        // サーバーに送信した timestamp が古すぎた（＝前回チェックしてから相当時間経過している）
+        // この場合、新着を取得でいないので、ブラウザをリロードさせる
+        if (confirm('新着を取得できません。ブラウザをリロードしてください。')) {
+          location.reload();
+        }
+      } else {
+        _this.showError();
+        _this.interval = 60000;
+        setTimeout(function() { _this.checkUpdates(); }, _this.interval);
+      }
     }
   });
 };
