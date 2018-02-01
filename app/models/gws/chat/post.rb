@@ -18,7 +18,9 @@ class Gws::Chat::Post
   scope :room, ->(room) { where(room_id: room.id) }
 
   after_save :increment_room_version
+  after_save :generate_room_recent_cache
   after_destroy :increment_room_version
+  after_destroy :generate_room_recent_cache
 
   class << self
     def search(params = {})
@@ -41,5 +43,10 @@ class Gws::Chat::Post
   def increment_room_version
     return unless room
     room.increment_version
+  end
+
+  def generate_room_recent_cache
+    return unless room
+    room.generate_recent_cache
   end
 end
