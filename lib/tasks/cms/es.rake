@@ -35,5 +35,19 @@ namespace :cms do
     task feed_all_nodes: :environment do
       ::Tasks::Cms::Es.feed_all_nodes(ENV['site'])
     end
+
+    namespace :ingest do
+      task drop: :environment do
+        ::Tasks::Cms::Es.ingest_drop(ENV['site'])
+      end
+
+      task init: :environment do
+        ::Tasks::Cms::Es.ingest_init(ENV['site'])
+      end
+
+      task info: :environment do
+        ::Tasks::Cms::Es.ingest_info(ENV['site'])
+      end
+    end
   end
 end

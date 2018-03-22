@@ -88,10 +88,10 @@ namespace :gws do
         break
       end
 
-      settings = ::File.read(Rails.root.join('vendor', 'elasticsearch', 'settings.json'))
+      settings = ::File.read(Rails.root.join('vendor', 'elasticsearch', 'gws', 'settings.json'))
       settings = JSON.parse(settings)
 
-      mappings = ::File.read(Rails.root.join('vendor', 'elasticsearch', 'mappings.json'))
+      mappings = ::File.read(Rails.root.join('vendor', 'elasticsearch', 'gws', 'mappings.json'))
       mappings = JSON.parse(mappings)
 
       puts site.elasticsearch_client.indices.create(index: "g#{site.id}", body: { settings: settings, mappings: mappings}).to_json
