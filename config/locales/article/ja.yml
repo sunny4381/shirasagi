@@ -42,3 +42,4 @@ ja:
   job:
     models:
       article/page/import_job: 記事ページインポート
+      article/agents/pages/page_indexing_job: 記事ページ全文検索ジョブ
