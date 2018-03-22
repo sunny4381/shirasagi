@@ -19,6 +19,21 @@ module Gws::Addon::Elasticsearch::GroupSetting
 
   def elasticsearch_client
     return unless menu_elasticsearch_visible?
-    @elasticsearch_client ||= Elasticsearch::Client.new(hosts: elasticsearch_hosts, logger: Rails.logger)
+    @elasticsearch_client ||= Elasticsearch::Client.new(
+      hosts: elasticsearch_normalize_urls(elasticsearch_hosts),
+      logger: Rails.logger
+    )
+  end
+
+  private
+
+  def elasticsearch_normalize_urls(urls)
+    urls.select(&:present?).map do |url|
+      if url.ends_with?('/')
+        url = url[0..-2]
+      end
+
+      url
+    end
   end
 end
