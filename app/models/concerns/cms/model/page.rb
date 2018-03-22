@@ -3,6 +3,7 @@ module Cms::Model::Page
   extend SS::Translation
   include Cms::Content
   include Cms::Reference::Layout
+  include Cms::Es::Indexing::Page
 
   included do
     define_model_callbacks :generate_file
@@ -39,18 +40,23 @@ module Cms::Model::Page
   end
 
   def generate_file
-    return false unless serve_static_file?
-    return false unless public?
-    return false unless public_node?
+    @generate_page_result = false
+    return @generate_page_result unless serve_static_file?
+    return @generate_page_result unless public?
+    return @generate_page_result unless public_node?
     run_callbacks :generate_file do
-      Cms::Agents::Tasks::PagesController.new.generate_page(self)
+      @generate_page_result = Cms::Agents::Tasks::PagesController.new.generate_page(self)
     end
+  ensure
+    add_page_to_elasticsearch
   end
 
   def remove_file
     run_callbacks :remove_file do
       Fs.rm_rf path
     end
+
+    remove_page_from_elasticsearch
   end
 
   def rename_file
@@ -65,6 +71,8 @@ module Cms::Model::Page
       Fs.mkdir_p dst_dir unless Fs.exists?(dst_dir)
       Fs.mv src, dst if Fs.exists?(src)
     end
+
+    rename_page_in_elasticsearch(src, dst)
   end
 
   def validate_destination_filename(dst)
