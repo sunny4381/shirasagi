@@ -383,6 +383,9 @@ Performance/HashEachMethods:
     - 'app/models/concerns/workflow/addon/branch.rb'
     - 'lib/migrations/ezine/20150423044546_update_results.rb'
 
+Performance/RegexpMatch:
+  Enabled: false
+
 # Offense count: 1
 Performance/UnfreezeString:
   Exclude:
