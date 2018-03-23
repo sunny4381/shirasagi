@@ -9,6 +9,12 @@ FactoryGirl.define do
 
   factory :facility_node_page, class: Facility::Node::Page, traits: [:cms_node] do
     route "facility/page"
+    kana { unique_id }
+    postcode { unique_id }
+    address { unique_id }
+    tel { unique_id }
+    fax { unique_id }
+    related_url { "http://#{unique_id}.example.jp/#{unique_id}/" }
   end
 
   factory :facility_node_search, class: Facility::Node::Search, traits: [:cms_node] do
