@@ -33,11 +33,13 @@ module Cms::PublicFilter
     elsif page = find_page(@cur_main_path)
       if resp = render_page(page)
         self.response = resp
+        request.env['ss.undecorated_body'] = response.body if filters.include?(:indexing)
         return send_page(page)
       end
     elsif node = find_node(@cur_main_path)
       if resp = render_node(node)
         self.response = resp
+        request.env['ss.undecorated_body'] = response.body if filters.include?(:indexing)
         return send_page(node)
       end
     end
@@ -149,7 +151,7 @@ module Cms::PublicFilter
 
   def send_page(page)
     if response.content_type == "text/html" && page.layout
-      render html: render_layout(page.layout).html_safe, layout: (request.xhr? ? false : "cms/page")
+      render html: render_layout(page.layout).html_safe, layout: request.xhr? ? false : "cms/page"
     else
       @_response_body = response.body
     end
