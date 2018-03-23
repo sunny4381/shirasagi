@@ -51,25 +51,20 @@ module Tasks
         def feed_all(site_or_name)
           with_site(site_or_name) do |site|
             feed_all_pages(site)
+            # feed_all_nodes(site)
           end
         end
 
         def feed_all_pages(site_or_name)
           with_site(site_or_name) do |site|
             criteria = ::Cms::Page.site(site).and_public
-            all_ids = criteria.pluck(:id)
-            all_ids.each_slice(100) do |ids|
-              criteria.in(id: ids).to_a.each do |page|
-                job_klass = page.elasticsearch_indexing_class
-                next if !job_klass
+            each_slice_items(criteria) do |page|
+              job_klass = page.elasticsearch_indexing_class
+              next if !job_klass
 
-                job = job_klass.bind(site_id: site.id, node_id: page.parent.try(:id))
-                job.perform_now(action: 'index', id: page.id)
-
-                break
-              end
-
-              break
+              puts "#{page.name}(#{page.url})"
+              job = job_klass.bind(site_id: site.id, node_id: page.parent.try(:id))
+              job.perform_now(action: 'index', id: page.id)
             end
           end
         end
@@ -77,16 +72,31 @@ module Tasks
         def feed_all_nodes(site_or_name)
           with_site(site_or_name) do |site|
             criteria = ::Cms::Node.site(site).and_public
-            all_ids = criteria.pluck(:id)
-            all_ids.each_slice(100) do |ids|
-              criteria.in(id: ids).to_a.each do |node|
-                job_klass = node.elasticsearch_indexing_class
-                next if !job_klass
+            each_slice_items(criteria) do |node|
+              job_klass = node.elasticsearch_indexing_class
+              next if !job_klass
 
-                job = job_klass.bind(site_id: site.id, node_id: node.id)
-                job.perform_now(action: 'index', id: node.id)
-              end
+              puts "#{node.name}(#{node.url})"
+              job = job_klass.bind(site_id: site.id, node_id: node.id)
+              job.perform_now(action: 'index', id: node.id)
             end
+          end
+        end
+
+        def search(site_or_name, options)
+          if options[:q].blank?
+            puts 'q (query as json) must be specified'
+            return
+          end
+
+          with_site(site_or_name) do |site|
+            params = {
+              index: site.elasticsearch_index_name,
+              from: options[:from] || 0,
+              size: options[:size] || 50,
+              q: options[:q]
+            }
+            puts site.elasticsearch_client.search(params).to_json
           end
         end
 
@@ -114,14 +124,21 @@ module Tasks
         private
 
         def with_site(site_or_name)
-          if site_or_name.is_a?(String)
+          if site_or_name.blank?
+            puts "site must be specified"
+            return
+          end
+
+          case site_or_name
+          when String
             site = ::SS::Site.find_by(host: site_or_name) rescue nil
-            if !site
-              puts "#{site_or_name}: site not found"
-              return
-            end
           else
             site = site_or_name
+          end
+
+          if !site
+            puts "#{site_or_name}: site not found"
+            return
           end
 
           if !site.elasticsearch_enabled?
@@ -135,6 +152,15 @@ module Tasks
           end
 
           yield site
+        end
+
+        def each_slice_items(criteria, batch_size: 100)
+          all_ids = criteria.pluck(:id)
+          all_ids.each_slice(batch_size) do |ids|
+            criteria.in(id: ids).to_a.each do |item|
+              yield item
+            end
+          end
         end
       end
     end

@@ -36,6 +36,15 @@ namespace :cms do
       ::Tasks::Cms::Es.feed_all_nodes(ENV['site'])
     end
 
+    task search: :environment do
+      options = {
+        q: ENV['q'],
+        from: ENV['from'],
+        size: ENV['size'],
+      }
+      ::Tasks::Cms::Es.search(ENV['site'], options)
+    end
+
     namespace :ingest do
       task drop: :environment do
         ::Tasks::Cms::Es.ingest_drop(ENV['site'])
