@@ -51,7 +51,7 @@ module Tasks
         def feed_all(site_or_name)
           with_site(site_or_name) do |site|
             feed_all_pages(site)
-            # feed_all_nodes(site)
+            feed_all_nodes(site)
           end
         end
 
