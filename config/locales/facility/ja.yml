@@ -124,6 +124,7 @@ ja:
   job:
     models:
       facility/import_job: 施設情報インポート
+      facility/agents/nodes/page_indexing_job: 施設情報全文検索ジョブ
 
   tooltip:
     facility/addon/body:
