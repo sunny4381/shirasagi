@@ -8,6 +8,7 @@ module Cms::Model::Node
   include Facility::Reference::Category
   include Facility::Reference::Service
   include Facility::Reference::Location
+  include Cms::Es::Indexing::Node
 
   included do
     store_in collection: "cms_nodes"
@@ -161,10 +162,12 @@ module Cms::Model::Node
   def remove_files_recursively
     remove_owned_files
     remove_children_recursively
+    remove_node_from_elasticsearch
   end
 
   def remove_all
     Fs.rm_rf path
+    remove_node_from_elasticsearch
   end
 
   private
@@ -215,6 +218,8 @@ module Cms::Model::Node
         item.set(filename: dst_filename, depth: dst_filename.scan("/").size + 1)
       end
     end
+
+    rename_node_in_elasticsearch(src, dst)
   end
 
   def destroy_children

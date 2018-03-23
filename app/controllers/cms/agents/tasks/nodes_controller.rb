@@ -10,6 +10,25 @@ class Cms::Agents::Tasks::NodesController < ApplicationController
     #
   end
 
+  def generate_node(node)
+    return unless node.public?
+    return unless node.public_node?
+
+    cname = node.route.sub("/", "/agents/tasks/node/").camelize.pluralize + "Controller"
+    klass = cname.constantize rescue nil
+    return if klass.nil? || klass.to_s != cname
+
+    agent = SS::Agent.new klass
+    agent.controller.instance_variable_set :@task, @task
+    agent.controller.instance_variable_set :@site, @site
+    agent.controller.instance_variable_set :@node, node
+    agent.invoke :generate
+
+    #generate_node_pages node
+  ensure
+    node.add_node_to_elasticsearch
+  end
+
   public
 
   def generate
@@ -24,21 +43,9 @@ class Cms::Agents::Tasks::NodesController < ApplicationController
     ids.each do |id|
       node = Cms::Node.site(@site).and_public.where(id: id).first
       next unless node
-      next unless node.public?
-      next unless node.public_node?
 
-      node  = node.becomes_with_route
-      cname = node.route.sub("/", "/agents/tasks/node/").camelize.pluralize + "Controller"
-      klass = cname.constantize rescue nil
-      next if klass.nil? || klass.to_s != cname
-
-      agent = SS::Agent.new klass
-      agent.controller.instance_variable_set :@task, @task
-      agent.controller.instance_variable_set :@site, @site
-      agent.controller.instance_variable_set :@node, node
-      agent.invoke :generate
-
-      #generate_node_pages node
+      node = node.becomes_with_route
+      generate_node node
     end
   end
 
