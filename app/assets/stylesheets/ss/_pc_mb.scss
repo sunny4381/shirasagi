@@ -1593,12 +1593,10 @@ dl.see {
   > dd {
     @include clear;
     margin: 0px 0px 0px 180px;
-    padding: 5px 0;
     @include mb {
       margin: 0;
     }
     input, select {
-      margin: -5px 0;
       @include mb  {
         &[type="text"] ~ .btn, &[type="text"] ~ label, & ~ select {
           margin-top: 10px;
@@ -2098,7 +2096,7 @@ div.index {
     margin: 6px 0 6px -5px;
   }
   .btn {
-    @include bmd-outline-border();
+    @include button-outline-variant($secondary);
   }
 }
 .list-head-title {

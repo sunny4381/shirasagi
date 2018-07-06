@@ -61,7 +61,7 @@ module SS::BootstrapSupport::FormTagHelper
     css_class = bt_sup_normalize_css_class(options[:class])
 
     additions = []
-    if (css_class & %w(save btn-primary btn-default btn-danger')).present?
+    if (css_class & %w(save btn-primary btn-default btn-danger)).present?
       additions += %w(btn btn-raised btn-lg)
     end
     if css_class.include?('save')

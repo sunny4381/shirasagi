@@ -1,6 +1,7 @@
 .mod-custom-form {
   .text-field-column, .url-field-column {
     width: 80%;
+    @include align-items(center);
   }
   .prefix {
     margin-right: 4px;
@@ -9,6 +10,7 @@
     margin-left: 4px;
   }
   .date-field-column {
+    @include align-items(center);
     input {
       @include flex-grow(unset);
     }
@@ -20,6 +22,7 @@
     }
   }
   .number-field-column {
+    @include align-items(center);
     input {
       @include flex-grow(unset);
       width: 12em;
@@ -39,6 +42,7 @@
     }
   }
   .select-column {
+    @include align-items(center);
     select {
       @include flex-grow(unset);
       width: auto;
