@@ -17,6 +17,7 @@ module Gws::Portal::PortletModel
   include Gws::Addon::Portal::Portlet::Workflow
   include Gws::Addon::Portal::Portlet::Attendance
   include Gws::Addon::Portal::Portlet::Notice
+  include Gws::Addon::Portal::Portlet::Survey
 
   PORTLETS = {
     free:       { size_x: 2, size_y: 2, addons: [Gws::Addon::Portal::Portlet::Free] },
@@ -35,6 +36,7 @@ module Gws::Portal::PortletModel
     workflow:   { size_x: 2, size_y: 3, addons: [Gws::Addon::Portal::Portlet::Workflow] },
     attendance: { size_x: 2, size_y: 2, addons: [Gws::Addon::Portal::Portlet::Attendance] },
     notice:     { size_x: 2, size_y: 3, addons: [Gws::Addon::Portal::Portlet::Notice] },
+    survey:     { size_x: 2, size_y: 3, addons: [Gws::Addon::Portal::Portlet::Survey] },
   }.freeze
 
   included do
