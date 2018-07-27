@@ -1,0 +1,22 @@
+<% if notice %>
+  <div><%= notice %></div>
+<% end %>
+
+<table>
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% @items.each do |item| %>
+  <tr>
+    <td><%= link_to item.name, action: :show, id: item %></td>
+    <td><%= item.email %></td>
+  </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<%= link_to("New User", action: :new) %>
