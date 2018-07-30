@@ -27,4 +27,9 @@ class UsersController < ApplicationController
     @item.save
     redirect_to({ action: :show }, { notice: "保存しました。" })
   end
+
+  def destroy
+    @item = User.find(params[:id])
+    @item.destroy
+  end
 end
