@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  layout "layout"
+
   def index
     @items = User.all
   end
