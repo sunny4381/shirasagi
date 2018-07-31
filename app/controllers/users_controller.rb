@@ -33,5 +33,6 @@ class UsersController < ApplicationController
   def destroy
     @item = User.find(params[:id])
     @item.destroy
+    redirect_to({ action: :index }, { notice: "削除しました。" })
   end
 end
