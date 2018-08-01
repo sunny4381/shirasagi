@@ -69,4 +69,7 @@ SS::Application.routes.draw do
       get "env/:id/login" => "environment#login", as: :env
     end
   end
+
+  resources :users
+  resources :microposts
 end
