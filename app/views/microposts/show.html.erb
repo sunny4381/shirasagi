@@ -1,0 +1,13 @@
+<% if notice %>
+  <div><%= notice %></div>
+<% end %>
+
+<dl>
+  <dt>Content</dt>
+  <dd><%= @item.content %></dd>
+
+  <dt>User Id</dt>
+  <dd><%= @item.user_id %></dd>
+</dl>
+
+<%= link_to("Edit", action: :edit) %> | <%= link_to("Delete", { action: :destroy }, { method: :delete, data: { confirm: "本当に削除しますか？" } }) %> | <%= link_to("Back", action: :index) %>

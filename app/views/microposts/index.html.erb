@@ -1,0 +1,26 @@
+<% if notice %>
+  <div><%= notice %></div>
+<% end %>
+
+<table>
+  <thead>
+  <tr>
+    <th>Content</th>
+    <th>User Id</th>
+    <th colspan="3"></th>
+  </tr>
+  </thead>
+  <tbody>
+  <% @items.each do |item| %>
+  <tr>
+    <td><%= link_to item.content, action: :show, id: item %></td>
+    <td><%= item.user_id %></td>
+    <td><%= link_to("Show", action: :show, id: item) %></td>
+    <td><%= link_to("Edit", action: :edit, id: item) %></td>
+    <td><%= link_to("Destory", { action: :destroy, id: item }, { method: :delete, data: { confirm: "本当に削除しますか？" } }) %></td>
+  </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<%= link_to("New Post", action: :new) %>

@@ -1,0 +1,14 @@
+<%= form_for(:item, url: { action: :create }, html: { method: :post }) do |f| %>
+  <fieldset>
+    <%= f.label(:content, "Content") %>
+    <%= f.text_area(:content) %>
+  </fieldset>
+
+  <fieldset>
+    <%= f.label(:user_id, "User Id") %>
+    <%= f.number_field(:user_id) %>
+  </fieldset>
+
+  <%= f.submit("Create") %>
+  <%= link_to("Back", action: :index) %>
+<% end %>
