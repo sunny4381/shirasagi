@@ -1,4 +1,6 @@
 <%= form_for(:item, url: { action: :update }, html: { method: :put }) do |f| %>
+  <%= error_messages_for :item %>
+
   <fieldset>
     <%= f.label(:content, "Content") %>
     <%= f.text_area(:content) %>

@@ -11,8 +11,12 @@ class MicropostsController < ApplicationController
 
   def create
     @item = Micropost.new(params.require(:item).permit(:content, :user_id))
-    @item.save
-    redirect_to({ action: :index }, { notice: "作成しました。" })
+    if @item.save
+      redirect_to({ action: :index }, { notice: "作成しました。" })
+    else
+      # 失敗した
+      render action: :new
+    end
   end
 
   def show
@@ -26,8 +30,11 @@ class MicropostsController < ApplicationController
   def update
     @item = Micropost.all.find(params[:id])
     @item.attributes = params.require(:item).permit(:content, :user_id)
-    @item.save
-    redirect_to({ action: :show }, { notice: "保存しました。" })
+    if @item.save
+      redirect_to({ action: :show }, { notice: "保存しました。" })
+    else
+      render action: :edit
+    end
   end
 
   def destroy
