@@ -6,4 +6,7 @@ class User
   field :email, type: String
 
   has_many :microposts, class_name: "Micropost"
+
+  validates :name, presence: true, length: { maximum: 80 }
+  validates :email, presence: true, email: true
 end

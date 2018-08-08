@@ -11,8 +11,11 @@ class UsersController < ApplicationController
 
   def create
     @item = User.new(params.require(:item).permit(:name, :email))
-    @item.save
-    redirect_to({ action: :index }, { notice: "作成しました。" })
+    if @item.save
+      redirect_to({ action: :index }, { notice: "作成しました。" })
+    else
+      render action: :new
+    end
   end
 
   def show
@@ -26,8 +29,11 @@ class UsersController < ApplicationController
   def update
     @item = User.find(params[:id])
     @item.attributes = params.require(:item).permit(:name, :email)
-    @item.save
-    redirect_to({ action: :show }, { notice: "保存しました。" })
+    if @item.save
+      redirect_to({ action: :show }, { notice: "保存しました。" })
+    else
+      render action: :edit
+    end
   end
 
   def destroy
