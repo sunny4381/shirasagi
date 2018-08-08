@@ -3,7 +3,7 @@ class Micropost
 
   seqid :id
   field :content, type: String
-  field :user_id, type: Integer
+  belongs_to :user, class_name: "User"
 
   validates :content, length: { maximum: 140 }
 end
