@@ -72,4 +72,6 @@ SS::Application.routes.draw do
 
   resources :users
   resources :microposts
+  get "static_pages/home" => "static_pages#home"
+  get "static_pages/help" => "static_pages#help"
 end
