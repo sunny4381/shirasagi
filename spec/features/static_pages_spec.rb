@@ -26,4 +26,12 @@ describe StaticPagesController, type: :feature do
       expect(page).to have_selector("title", text: "About | #{base_title}")
     end
   end
+
+  describe "#contact" do
+    it "should get contact" do
+      visit static_pages_contact_path
+      expect(status_code).to eq(200)
+      expect(page).to have_selector("title", text: "Contact | #{base_title}")
+    end
+  end
 end
