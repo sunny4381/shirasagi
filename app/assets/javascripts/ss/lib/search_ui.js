@@ -180,14 +180,11 @@ this.SS_SearchUI = (function () {
       return false;
     }
     this.$table.find("tr[data-id]").each(function () {
-      if ($source.find("input[value]").length) {
-        $source.remove();
-        return true;
-      }
+      $(this).remove();
     });
 
     //append newly selected item
-    this.select($el);
+    this.select($source);
     this.showTable();
 
     $.colorbox.close();
@@ -224,7 +221,7 @@ this.SS_SearchUI = (function () {
     $.each(dataEl.data(), function(key, value) {
       html = html.replace(new RegExp("#" + key.toString(), "g"), value.toString());
     });
-    var name = dataEl.data("name") || dataEl.find(".select-item").text() || item.text() || dataEl.text();
+    var name = dataEl.data("name") || dataEl.find(".select-item").text() || $item.text() || dataEl.text();
     html = html.replace(/#name/g, name);
 
     this.$table.find("tbody").prepend(html);

@@ -3,6 +3,19 @@
   addon[:display_body] = "hide"
 %>
 
+<%= jquery do %>
+  $('#addon-contact-agents-addons-page a.ajax-box').data('on-select', function(item) {
+    var searchUI = $('#addon-contact-agents-addons-page a.ajax-box').data("searchUI")
+    searchUI.defaultSelector(item);
+
+    $("#item_contact_tel").val(item.data("tel"));
+    $("#item_contact_fax").val(item.data("fax"));
+    $("#item_contact_email").val(item.data("email"));
+    $("#item_contact_link_url").val(item.data("linkurl"));
+    $("#item_contact_link_name").val(item.data("linkname"));
+  });
+<% end %>
+
 <%= f.ss_select_set :contact_state, tt: true, include_blank: true %>
 
 <%= f.ss_field_set :contact_group_id, tt: true, include_blank: true do %>
