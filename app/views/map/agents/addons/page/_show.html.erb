@@ -1,5 +1,10 @@
 <% return if @item.map_points.blank? %>
 
+<%
+  addon ||= local_assigns.fetch(:addon, {})
+  addon[:disabled] = false
+%>
+
 <%= render_map "#map-canvas", site: @cur_site, markers: @item.map_points, map: { zoom: @item.map_zoom_level } %>
 
 <dl class="see mod-page">

@@ -15,7 +15,7 @@ this.Openlayers_Map_Form = (function () {
     this.markerFeature = null;
     this.markerLayer = null;
     this.popup = null;
-    this.maxPointForm = 10;
+    this.maxPointForm = this.opts['max_point_form'] || Openlayers_Map_Form.defaultMaxPointForm;
     this.deleteMessage = "<%= I18n.t('map.confirm.delete_marker') %>";
     this.dataID = 0;
     this.markerIcon = '/assets/img/map-marker.png';
@@ -23,6 +23,24 @@ this.Openlayers_Map_Form = (function () {
     this.clickMarkerId = null;
     this.render();
   }
+
+  Openlayers_Map_Form.defaultMaxPointForm = 10;
+
+  Openlayers_Map_Form.defaultZoom = 10;
+
+  Openlayers_Map_Form.defaultMinZoom = 3;
+
+  Openlayers_Map_Form.defaultMaxZoom = 18;
+
+  Openlayers_Map_Form.defaultCenter = <%= SS.config.map.map_center.reverse.to_json %>;
+
+  Openlayers_Map_Form.defaultLayerOpts = [
+    {
+      source: "XYZ",
+      url: "http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
+      projection: "EPSG:3857"
+    }
+  ];
 
   Openlayers_Map_Form.prototype.getMapLoc = function (ele) {
     var latlon;
@@ -64,17 +82,8 @@ this.Openlayers_Map_Form = (function () {
   };
 
   Openlayers_Map_Form.prototype.initMap = function () {
-    var center, layerOpts;
-    center = this.opts['center'] || [138.252924, 36.204824];
-    layerOpts = this.opts['layers'];
-    layerOpts || (layerOpts = [
-      {
-        source: "XYZ",
-        url: "http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
-        projection: "EPSG:3857"
-      }
-    ]);
-    this.maxPointForm = this.opts['max_point_form'] || 10;
+    var center = this.opts['center'] || Openlayers_Map_Form.defaultCenter;
+    var layerOpts = this.opts['layers'] || Openlayers_Map_Form.defaultLayerOpts;
     return this.map = new ol.Map({
       target: this.canvas,
       renderer: ['canvas', 'dom'],
@@ -87,9 +96,9 @@ this.Openlayers_Map_Form = (function () {
       view: new ol.View({
         projection: "EPSG:3857",
         center: ol.proj.transform(center, "EPSG:4326", "EPSG:3857"),
-        minZoom: 3,
-        maxZoom: 18,
-        zoom: this.opts['zoom'] || 10
+        minZoom: Openlayers_Map_Form.defaultMinZoom,
+        maxZoom: Openlayers_Map_Form.defaultMaxZoom,
+        zoom: this.opts['zoom'] || Openlayers_Map_Form.defaultZoom
       }),
       logo: false
     });
@@ -130,7 +139,7 @@ this.Openlayers_Map_Form = (function () {
   };
 
   Openlayers_Map_Form.prototype.renderMarkers = function () {
-    return $(".mod-map dd.marker").each((function (_this) {
+    return $(".mod-map .marker").each((function (_this) {
       return function (i, e) {
         var loc;
         $(e).attr("data-id", _this.dataID);
@@ -154,7 +163,7 @@ this.Openlayers_Map_Form = (function () {
       return;
     }
     markerHtml = "";
-    $('dd[data-id = "' + markerId + '"]').each(function () {
+    $('[data-id = "' + markerId + '"]').each(function () {
       var name, text;
       name = $(this).find(".marker-name").val();
       text = $(this).find(".marker-text").val();
@@ -266,7 +275,7 @@ this.Openlayers_Map_Form = (function () {
           source.removeFeature(feature);
         }
         pos = ol.proj.transform(e.coordinate, "EPSG:3857", "EPSG:4326");
-        while (pos[0] < 180) {
+        while (pos[0] < -180) {
           pos[0] += 360;
         }
         while (pos[0] > 180) {
@@ -297,7 +306,7 @@ this.Openlayers_Map_Form = (function () {
       return function (e) {
         var ele;
         ele = e.target;
-        _this.clearPointForm($(ele).closest("dd.marker"));
+        _this.clearPointForm($(ele).closest(".marker"));
         return false;
       };
     })(this));
@@ -305,7 +314,7 @@ this.Openlayers_Map_Form = (function () {
       return function (e) {
         var ele;
         ele = e.target;
-        _this.createMarker($(ele).closest("dd.marker"));
+        _this.createMarker($(ele).closest(".marker"));
         return false;
       };
     })(this));
@@ -316,7 +325,7 @@ this.Openlayers_Map_Form = (function () {
     });
     $(".mod-map .marker-loc-input").on('keypress', function (e) {
       if (e.which === 13) {
-        $(this).closest("dd.marker").find(".set-marker").trigger("click");
+        $(this).closest(".marker").find(".set-marker").trigger("click");
         return false;
       }
     });
@@ -336,52 +345,51 @@ this.Openlayers_Map_Form = (function () {
   };
 
   Openlayers_Map_Form.prototype.clonePointForm = function () {
-    var cln;
-    if ($(".mod-map dd.marker").length < this.maxPointForm) {
-      cln = $(".mod-map dd.marker:last").clone(false).insertAfter($(".mod-map dd.marker:last"));
-      cln.attr("data-id", this.dataID);
-      this.dataID += 1;
-      cln.find("input,textarea").val("");
-      cln.find(".marker-name").val("");
-      cln.find(".clear-marker").on('click', (function (_this) {
-        return function () {
-          return _this.clearPointForm(cln);
-        };
-      })(this));
-      cln.find(".set-marker").on('click', (function (_this) {
-        return function () {
-          return _this.createMarker(cln);
-        };
-      })(this));
-      cln.find(".marker-name").on('keypress', (function (_this) {
-        return function (e) {
-          if (e.which === 13) {
-            return false;
-          }
-        };
-      })(this));
-      cln.find(".marker-loc-input").on('keypress', function (e) {
+    if ($(".mod-map .marker").length >= this.maxPointForm) {
+      $(".mod-map .add-marker").parent().hide();
+      return;
+    }
+
+    var cln = $(".mod-map .marker:last").clone(false).insertAfter($(".mod-map .marker:last"));
+    cln.attr("data-id", this.dataID);
+    this.dataID += 1;
+    cln.find("input,textarea").val("");
+    cln.find(".marker-name").val("");
+    cln.find(".clear-marker").on('click', (function (_this) {
+      return function () {
+        return _this.clearPointForm(cln);
+      };
+    })(this));
+    cln.find(".set-marker").on('click', (function (_this) {
+      return function () {
+        return _this.createMarker(cln);
+      };
+    })(this));
+    cln.find(".marker-name").on('keypress', (function (_this) {
+      return function (e) {
         if (e.which === 13) {
-          $(e.target).closest("dd.marker").find(".set-marker").trigger("click");
           return false;
         }
-      });
-      cln.find(".marker-loc-input").on('focus', (function (_this) {
-        return function (e) {
-          var feature, source;
-          if (_this.clickMarkerId) {
-            feature = _this.getMarker(_this.clickMarkerId);
-            source = _this.markerLayer.getSource();
-            source.removeFeature(feature);
-            _this.clickMarkerId = null;
-            return $(".mod-map .clicked").val("");
-          }
-        };
-      })(this));
-    }
-    if ($(".mod-map dd.marker").length === this.maxPointForm) {
-      $(".mod-map dd .add-marker").parent().hide();
-    }
+      };
+    })(this));
+    cln.find(".marker-loc-input").on('keypress', function (e) {
+      if (e.which === 13) {
+        $(e.target).closest(".marker").find(".set-marker").trigger("click");
+        return false;
+      }
+    });
+    cln.find(".marker-loc-input").on('focus', (function (_this) {
+      return function (e) {
+        var feature, source;
+        if (_this.clickMarkerId) {
+          feature = _this.getMarker(_this.clickMarkerId);
+          source = _this.markerLayer.getSource();
+          source.removeFeature(feature);
+          _this.clickMarkerId = null;
+          return $(".mod-map .clicked").val("");
+        }
+      };
+    })(this));
   };
 
   Openlayers_Map_Form.prototype.createMarker = function (ele) {
@@ -415,7 +423,7 @@ this.Openlayers_Map_Form = (function () {
         dataId = parseInt(ele.attr("data-id"));
         this.removeMarker(dataId);
         ele.find("input,textarea").val("");
-        if ($(".mod-map dd.marker").length > 1) {
+        if ($(".mod-map .marker").length > 1) {
           ele.remove();
         }
       }
@@ -423,11 +431,11 @@ this.Openlayers_Map_Form = (function () {
       dataId = parseInt(ele.attr("data-id"));
       this.removeMarker(dataId);
       ele.find("input,textarea").val("");
-      if ($(".mod-map dd.marker").length > 1) {
+      if ($(".mod-map .marker").length > 1) {
         ele.remove();
       }
     }
-    $(".mod-map dd .add-marker").parent().show();
+    $(".mod-map .add-marker").parent().show();
   };
 
   Openlayers_Map_Form.prototype.resize = function () {
