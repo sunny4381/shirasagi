@@ -1231,26 +1231,34 @@ this.Form_Alert = (function () {
       submit = this;
       form = $(submit).closest("form");
       if (!Form_Alert.validate(form, submit)) {
-        div = $('<div id="alertExplanation" class="errorExplanation">');
-        div.append("<h2><%= I18n.t('cms.alert') %></h2>");
+        html = '<div id="alertExplanation" class="alert alert-warning" role="alert">';
+        html += "<h4 class=\"alert-heading\"><%= I18n.t('cms.alert') %></h4>";
         ref = Form_Alert.alerts;
         for (addon in ref) {
           fields = ref[addon];
-          div.append('<p>' + addon + '</p>');
-          ul = $("<ul>").appendTo(div);
-          for (i = j = 0, len = fields.length; j < len; i = ++j) {
-            field = fields[i];
-            if (field["msg"]) {
-              ul.append('<li>' + field["msg"] + '</li>');
+          html += '<p>' + addon + '</p>';
+
+          if (fields.length > 0) {
+            html += '<ul>'
+            for (i = j = 0, len = fields.length; j < len; i = ++j) {
+              field = fields[i];
+              if (field["msg"]) {
+                html += '<li>' + field["msg"] + '</li>';
+              }
             }
+            html += '</ul>'
           }
         }
-        // caution: below IE8, you must use document.createElement() method to create <footer>
-        footer = $(document.createElement("footer")).addClass('send');
-        footer.append('<button name="button" type="button" class="btn-primary save"><%= I18n.t("ss.buttons.ignore_alert") %></button>');
-        footer.append('<button name="button" type="button" class="btn-default cancel"><%= I18n.t("ss.buttons.cancel") %></button>');
+        html += '<hr>';
+        html += '<p class="mb-0">';
+        html += '<button name="button" type="button" class="btn btn-primary btn-raised save"><%= I18n.t("ss.buttons.ignore_alert") %></button>';
+        html += ' ';
+        html += '<button name="button" type="button" class="btn btn-default btn-raised cancel"><%= I18n.t("ss.buttons.cancel") %></button>';
+        html += '</p>';
+        html += '</div>';
+
         $.colorbox({
-          html: div.get(0).outerHTML + footer.get(0).outerHTML,
+          html: html,
           maxHeight: "80%",
           fixed: true
         });
