@@ -4,7 +4,10 @@
 @item.in_share_files_capacity_mb = @item.share_files_capacity.to_i / (1_024 * 1_024)
 
 %>
-<%= jquery do %> SS_AddonTabs.hide(".addon-gws-share-group-setting"); <% end %>
+<%
+  addon ||= local_assigns.fetch(:addon, {})
+  addon[:display_body] = "hide"
+%>
 
 <dl class="see addon-gws-share-group-setting">
   <dt><%= @model.t :share_max_file_size %><%= @model.tt :share_max_file_size %></dt>

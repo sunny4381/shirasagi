@@ -1,4 +1,6 @@
 <%
+addon ||= local_assigns.fetch(:addon, {})
+addon[:display_body] = "hide"
 
 @f = f
 
@@ -35,7 +37,6 @@ def cate_form(item)
 end
 
 %>
-<%= jquery do %> SS_AddonTabs.hide(".mod-category-category"); <% end %>
 
 <div class="see mod-category-category category-form form-row">
   <div class="col-12 mb-3">
