@@ -1,9 +1,13 @@
 <% return "" if @cur_node.blank? %>
 <% return "" if @cur_node.becomes_with_route.try(:opendata_site_ids).blank? %>
 <% return "" if @item.file_ids.blank? %>
+<%
+  addon ||= local_assigns.fetch(:addon, {})
+  addon[:display_body] = "hide"
+%>
 
 <% if @item.allowed?(:edit, @cur_user) %>
-  <%= render partial: 'cms/agents/addons/opendata_ref/resource/show_edit' %>
+  <%= render partial: 'cms/agents/addons/opendata_ref/resource/show_edit', locals: { f: f, addon: addon } %>
 <% else %>
-  <%= render partial: 'cms/agents/addons/opendata_ref/resource/show_show' %>
+  <%= render partial: 'cms/agents/addons/opendata_ref/resource/show_show', locals: { f: f, addon: addon } %>
 <% end %>

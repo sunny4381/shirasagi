@@ -1,7 +1,10 @@
 <% return "" if @item.opendata_area_ids.blank? %>
-<%= jquery do %> SS_AddonTabs.hide(".mod-cms-opendata-area"); <% end %>
+<%
+  addon ||= local_assigns.fetch(:addon, {})
+  addon[:display_body] = "hide"
+%>
 
-<% f.ss_field_set :opendata_area_ids do %>
+<%= f.ss_field_set :opendata_area_ids, disabled: true do %>
   <div id="item_opendata_area_ids" class="table-responsive">
     <table class="table table-striped">
       <tbody>

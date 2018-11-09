@@ -59,7 +59,7 @@
                 </thead>
                 <tbody>
                   <% @item.opendata_datasets.each do |dataset| %>
-                    <% render_template.call(dataset.id, dataset.host) %>
+                    <% render_template.call(dataset.id, dataset.name) %>
                   <% end %>
                 </tbody>
               </table>
