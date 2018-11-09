@@ -4,5 +4,5 @@ return if @item.release_date.blank? && @item.close_date.blank?
 
 %>
 
-<% f.ss_field_set :release_date %>
-<% f.ss_field_set :close_date %>
+<%= f.ss_field_set :release_date, disabled: true %>
+<%= f.ss_field_set :close_date, disabled: true %>
