@@ -1,41 +1,51 @@
 <%= jquery do %> SS_SearchUI.modal(); <% end %>
 
-<div class="search-ui-form">
-<%= form_for :s, url: { action: :index }, html: { method: "GET", class: :search } do |f| %>
-  <%= f.text_field :keyword, value: params[:s].try(:[], :keyword) %>
-  <%= f.submit  t("jmaxml.apis.water_level_stations.search"), class: :btn %>
-<% end %>
+<div class="content-search card mb-3">
+  <div class="card-body search-ui-form">
+  <%= form_for :s, url: { action: :index }, html: { method: "GET", class: "search no-form-inline" } do |f| %>
+    <div class="input-group">
+      <%= f.text_field :keyword, value: params[:s].try(:[], :keyword) %>
+      <div class="input-group-append">
+        <%= f.submit  t("jmaxml.apis.water_level_stations.search"), class: :btn %>
+      </div>
+    </div>
+  <% end %>
+  </div>
 </div>
 
-<table class="index">
-  <thead class="list-head">
-    <tr>
-      <% if @multi %>
-      <th class="checkbox"><input type="checkbox" /></th>
-      <% end %>
-      <th class="name"><%= @model.t :name %></th>
-      <th class="code"><%= @model.t :code %></th>
-      <th class="code"><%= @model.t :region_name %></th>
-    </tr>
-  </thead>
-  <tbody class="items">
-    <% @items.each do |item| %>
-      <tr data-id="<%= item.id %>" class="list-item">
+<%= paginate @items if @items.try(:current_page) %>
+
+<div class="table-responsive">
+  <table class="table table-striped index">
+    <thead class="list-head">
+      <tr>
         <% if @multi %>
-        <td class="checkbox">
-          <input type="checkbox" name="ids[]" value="<%= item.id %>" />
-        </td>
+        <th class="checkbox"><input type="checkbox" /></th>
         <% end %>
-        <td><%= link_to item.name, "#", class: @multi ? "select-item" : "select-single-item" %></td>
-        <td><%= item.code %></td>
-        <td><%= item.region_name %></td>
+        <th class="name"><%= @model.t :name %></th>
+        <th class="code"><%= @model.t :code %></th>
+        <th class="code"><%= @model.t :region_name %></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody class="items">
+      <% @items.each do |item| %>
+        <tr data-id="<%= item.id %>" class="list-item">
+          <% if @multi %>
+          <td class="checkbox">
+            <input type="checkbox" name="ids[]" value="<%= item.id %>" />
+          </td>
+          <% end %>
+          <td><%= link_to item.name, "#", class: @multi ? "select-item" : "select-single-item" %></td>
+          <td><%= item.code %></td>
+          <td><%= item.region_name %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= paginate @items if @items.try(:current_page) %>
 
 <div class="search-ui-select">
   <%= button_tag t("jmaxml.apis.water_level_stations.select"), { type: :button, class: "select-items btn" } %>
 </div>
-
-<%= paginate @items if @items.try(:current_page) %>

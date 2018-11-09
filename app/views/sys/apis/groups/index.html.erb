@@ -3,8 +3,12 @@
 <div class="content-search card mb-3">
   <div class="card-body search-ui-form">
     <%= form_for :s, url: { action: :index }, html: { method: "GET", class: "search no-form-inline" } do |f| %>
-      <%= f.text_field :name, value: params[:s].try(:[], :name) %>
-      <%= f.submit  t("ss.apis.groups.search"), class: "btn btn-outline-primary" %>
+      <div class="input-group">
+        <%= f.text_field :name, value: params[:s].try(:[], :name) %>
+        <div class="input-group-append">
+          <%= f.submit  t("ss.apis.groups.search"), class: "btn btn-outline-primary" %>
+        </div>
+      </div>
     <% end %>
   </div>
 </div>

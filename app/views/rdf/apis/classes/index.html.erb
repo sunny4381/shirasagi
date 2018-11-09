@@ -1,41 +1,49 @@
-<%= scss do %>
-.name {
-  width: 200px;
-}
-<% end %>
+<style>
+  .name {
+    width: 200px;
+  }
+</style>
 
-<div class="rdf-search-classes-search-form" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd;">
-<%= form_for :s, url: { action: :index, target: @target }, html: { method: "GET", class: :search, multipart: true } do |f| %>
-  <dl class="see rdf-search-classes-search-options">
-    <dt><%= t "rdf.apis.search_options.vocab" %></dt>
-    <dd><%= select_tag "s[vocab]",  options_for_select(@vocab_options, params[:s][:vocab]) %></dd>
-    <dt><%= t "rdf.apis.search_options.name" %></dt>
-    <dd><%= f.text_field :name, value: params[:s].try(:[], :name) %></dd>
-    <dd><%= f.submit  t("rdf.apis.search_options.search") %></dd>
-  </dl>
-<% end %>
+<div class="content-search card mb-3">
+  <div class="card-body rdf-search-classes-search-form">
+  <%= form_for :s, url: { action: :index, target: @target }, html: { method: "GET", class: "search no-form-inline", multipart: true } do |f| %>
+    <div class="see rdf-search-classes-search-options">
+      <%= f.ss_field_set :vocab, label: t("rdf.apis.search_options.vocab") do %>
+        <%= select_tag "s[vocab]",  options_for_select(@vocab_options, params[:s][:vocab]) %>
+      <% end %>
+      <%= f.ss_field_set :name, label: t("rdf.apis.search_options.name") do %>
+        <%= f.text_field :name, value: params[:s].try(:[], :name) %>
+      <% end %>
+      <%= f.submit  t("rdf.apis.search_options.search") %>
+    </div>
+  <% end %>
+  </div>
 </div>
 
-<table class="index rdf-search-classes-class-list" data-target="<%= @target %>">
-  <thead>
-    <tr>
-      <th class="name"><%= @model.t :name %></th>
-      <th><%= @model.t :comment %></th>
-    </tr>
-  </thead>
-  <tbody class="items">
-    <% @items.each do |item| %>
-      <tr data-id="<%= item.id %>" data-uri="<%= "#{item.vocab.uri}#{item.name}" %>">
-        <td class="name"><%= link_to "#{item.vocab.prefix}:#{item.name}", "#", class: "select-item" %></td>
-        <td><%= item.comments.try(:preferred_value) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<%= paginate @items if @items.try(:current_page) %>
 
-<div class="rdf-search-classes-loading" style="display: none"></div>
+<div class="table-responsive">
+  <table class="table table-striped index rdf-search-classes-class-list" data-target="<%= @target %>">
+    <thead class="list-head">
+      <tr>
+        <th class="name"><%= @model.t :name %></th>
+        <th><%= @model.t :comment %></th>
+      </tr>
+    </thead>
+    <tbody class="items">
+      <% @items.each do |item| %>
+        <tr data-id="<%= item.id %>" data-uri="<%= "#{item.vocab.uri}#{item.name}" %>">
+          <td class="name"><%= link_to "#{item.vocab.prefix}:#{item.name}", "#", class: "select-item" %></td>
+          <td><%= item.comments.try(:preferred_value) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
 
 <%= paginate @items if @items.try(:current_page) %>
+
+<div class="rdf-search-classes-loading" style="display: none"></div>
 
 <%= jquery do %>
 

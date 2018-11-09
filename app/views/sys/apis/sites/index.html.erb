@@ -49,36 +49,40 @@
   SS_SearchUI.remoteEndCopySite();
 <% end %>
 
-<div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd;">
-<%= form_for :s, url: { action: :index }, html: { method: "GET", class: :search } do |f| %>
-  <%= f.text_field :name, value: params[:s].try(:[], :name) %>
-  <%= f.submit  t("sys.apis.sites.search"), class: :btn %>
-<% end %>
+<div class="content-search card mb-3">
+  <div class="card-body search-ui-form">
+    <%= form_for :s, url: { action: :index }, html: { method: "GET", class: "search no-form-inline" } do |f| %>
+      <div class="input-group">
+        <%= f.text_field :name, value: params[:s].try(:[], :name) %>
+        <div class="input-group-append">
+          <%= f.submit  t("sys.apis.sites.search"), class: :btn %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
 
-<table class="index sys-copy">
-  <thead>
-    <tr>
-      <th class="checkbox">&nbsp;</th>
-      <th class="name"><%= @model.t :name %></th>
-    </tr>
-  </thead>
-  <tbody class="items">
-    <% @items.each do |item| %>
-      <tr data-id="<%= item.id %>">
-        <td class="checkbox">
-          <input type="radio" name="ids[]-radio" value="<%= item.id %>" id="radio-<%= item.id %>" />
-          <input type="checkbox" name="ids[]" value="<%= item.id %>" style="position: absolute; left: -9999px; top: -9999px;" />
-        </td>
-        <td><label for="radio-<%= item.id %>" style="cursor:pointer;"><span class="select-item"><%= item.name %></span></label><%=
-=begin
-link_to item.name, "#", class: "select-item" 
-=end
-%></td>
+<div class="table-responsive">
+  <table class="table table-striped index sys-copy">
+    <thead class="list-head">
+      <tr>
+        <th class="checkbox">&nbsp;</th>
+        <th class="name"><%= @model.t :name %></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody class="items">
+      <% @items.each do |item| %>
+        <tr data-id="<%= item.id %>">
+          <td class="checkbox">
+            <input type="radio" name="ids[]-radio" value="<%= item.id %>" id="radio-<%= item.id %>" />
+            <input type="checkbox" name="ids[]" value="<%= item.id %>" style="position: absolute; left: -9999px; top: -9999px;" />
+          </td>
+          <td><label for="radio-<%= item.id %>" style="cursor:pointer;"><span class="select-item"><%= item.name %></span></label></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
 
 <div class="sys-copy" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd;">
   <%= button_tag t("sys.apis.sites.select"), { type: :button, class: "select-items btn" } %>

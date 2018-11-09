@@ -19,45 +19,42 @@
   });
 <% end %>
 
-<%= form_tag(event_apis_repeat_dates_path(site: @cur_site.id), :method => :put, class: "event-repeat-dates") do |f| %>
+<%= form_tag(event_apis_repeat_dates_path(site: @cur_site.id), method: :put, class: "event-repeat-dates") do %>
   <div class="event-repeat-dates-ui-form">
-    <dl class="see">
-      <dt><%= t("event.apis.repeat_dates.start") %></dt>
-      <dd><%= text_field_tag :repeat_start, "", class: "date event-repeat-js-date repeat_start" %></dd>
+    <%= ss_field_tag_set :repeat_start, nil, label: t("event.apis.repeat_dates.start") do %>
+      <%= text_field_tag :repeat_start, "", class: "date event-repeat-js-date repeat_start" %>
+    <% end %>
 
-      <dt><%= t("event.apis.repeat_dates.end") %></dt>
-      <dd><%= text_field_tag :repeat_end, "", class: "date event-repeat-js-date repeat_end" %></dd>
+    <%= ss_field_tag_set :repeat_end, nil, label: t("event.apis.repeat_dates.end") do %>
+      <%= text_field_tag :repeat_end, "", class: "date event-repeat-js-date repeat_end" %>
+    <% end %>
 
-      <dt><%= t("event.apis.repeat_dates.wdays") %></dt>
-      <dd>
-        <table>
-          <%= hidden_field_tag "wdays[]", "" %>
+    <%= ss_field_tag_set "wdays[]", nil, label: t("event.apis.repeat_dates.wdays") do %>
+      <%= hidden_field_tag "wdays[]", "" %>
+      <table>
+        <tr>
+        <% (0..6).each do |i| %>
+          <td><label><%= check_box_tag "wdays[]", i.to_s, false %> <%= t("date.abbr_day_names")[i] %></label></td>
+        <% end %>
+        </tr>
+      </table>
+    <% end %>
+
+    <%= ss_field_tag_set "days[]", nil, label: t("event.apis.repeat_dates.days") do %>
+      <%= hidden_field_tag "days[]", "" %>
+      <table>
+        <% [(1..7), (8..14), (15..21), (22..28), (29..31)].each do |w| %>
           <tr>
-          <% (0..6).each do |i| %>
-            <td><label><%= check_box_tag "wdays[]", i.to_s, false %> <%= t("date.abbr_day_names")[i] %></label></td>
+          <% w.each do |i| %>
+            <td><label><%= check_box_tag "days[]", i.to_s, false %> <%= i.to_s %></label></td>
           <% end %>
           </tr>
-        </table>
-      </dd>
-
-      <dt><%= t("event.apis.repeat_dates.days") %></dt>
-      <dd>
-        <%= hidden_field_tag "days[]", "" %>
-        <table>
-          <% [(1..7), (8..14), (15..21), (22..28), (29..31)].each do |w| %>
-            <tr>
-            <% w.each do |i| %>
-              <td><label><%= check_box_tag "days[]", i.to_s, false %><%= i.to_s %></label></td>
-            <% end %>
-            </tr>
-          <% end %>
-        </table>
-      </dd>
-    </dl>
+        <% end %>
+      </table>
+    <% end %>
   </div>
 
   <div class="event-repeat-dates-ui-select">
     <%= button_tag t("event.apis.repeat_dates.add_dates"), class: "save btn", style: "margin-left: 10px;" %>
   </div>
-
 <% end %>

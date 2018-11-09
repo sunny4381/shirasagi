@@ -25,8 +25,8 @@
   </table>
 </div>
 
+<%= paginate @items if @items.try(:current_page) %>
+
 <div class="search-ui-select">
   <%= button_tag t("cms.apis.pages_routes.select"), { type: :button, class: "select-items btn btn-outline-primary" } %>
 </div>
-
-<%= paginate @items if @items.try(:current_page) %>
