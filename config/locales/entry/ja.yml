@@ -1,0 +1,32 @@
+ja:
+  entry:
+
+  modules:
+    entry: 投稿
+
+  cms:
+    nodes:
+      entry/page: 投稿リスト
+
+  cms_role:
+    read_other_entry_pages: ページの閲覧（全て）
+    read_private_entry_pages: ページの閲覧（所有）
+    edit_other_entry_pages: ページの編集（全て）
+    edit_private_entry_pages: ページの編集（所有）
+    delete_other_entry_pages: ページの削除（全て）
+    delete_private_entry_pages: ページの削除（所有）
+    move_other_entry_pages: ページの移動（全て）
+    move_private_entry_pages: ページの移動（所有）
+    unlock_other_entry_pages: ページのロック解除（全て）
+    release_other_entry_pages: ページの公開（全て）
+    release_private_entry_pages: ページの公開（所有）
+    approve_other_entry_pages: ページの承認（全て）
+    approve_private_entry_pages: ページの承認（所有）
+    reroute_other_entry_pages: ページの承認経路変更（全て）
+    reroute_private_entry_pages: ページの承認経路変更（所有）
+    revoke_other_entry_pages: ページの承認申請取消（全て）
+    revoke_private_entry_pages: ページの承認申請取消（所有）
+
+  mongoid:
+    models:
+      entry/page: 投稿ページ
