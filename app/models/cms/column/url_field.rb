@@ -14,7 +14,7 @@ class Cms::Column::UrlField < Cms::Column::Base
   end
 
   def serialize_value(value)
-    Cms::Column::Value::UrlField.new(
+    value_type.new(
       column_id: self.id, name: self.name, order: self.order, html_tag: self.html_tag,
       html_additional_attr: self.html_additional_attr, value: value
     )

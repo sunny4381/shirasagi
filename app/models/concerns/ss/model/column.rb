@@ -59,6 +59,10 @@ module SS::Model::Column
         column.serialize_value(value)
       end
     end
+
+    def value_type
+      @value_type ||= name.insert(name.rindex("::"), "::Value").constantize
+    end
   end
 
   def required_options
@@ -98,6 +102,12 @@ module SS::Model::Column
     file = "#{Rails.root}/app/views/#{path}/_column_show.html.erb"
     File.exists?(file) ? file : nil
   end
+
+  def entry_form_path
+    "#{Rails.root}/app/views/#{path}/_entry_form.html.erb"
+  end
+
+  delegate :value_type, to: :class
 
   def serialize_value(*args)
     raise NotImplementedError

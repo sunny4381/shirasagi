@@ -1,0 +1,11 @@
+<% disabled ||= false %>
+<%= render "cms/columns/column_entry_form_layout", f: f, column: column, value: value, disabled: disabled do %>
+  <div class="input-group radio-button-column">
+    <% column.select_options.each do |val| %>
+      <label>
+        <%= radio_button_tag("#{f.object_name}[][value]", val, value.try(:value) == val, column.form_options.merge(id: nil)) %>
+        <%= val %>
+      </label>
+    <% end %>
+  </div>
+<% end %>

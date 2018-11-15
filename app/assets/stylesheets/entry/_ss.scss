@@ -1,0 +1,31 @@
+.entry-unit {
+  @include display-flex;
+  @include flex-direction(column);
+  border: $border-gray4;
+  border-radius: 2px;
+  margin-bottom: 8px;
+
+  .entry-unit-header {
+    @include display-flex;
+    @include flex-direction(row);
+    padding: 4px;
+    background-color: $gray3;
+    border-bottom: $border-gray4;
+
+    h3 {
+      margin-right: auto;
+    }
+
+    .entry-unit-controller ~ .entry-unit-controller {
+      margin-left: 16px;
+    }
+  }
+  .entry-unit-body {
+    padding: 4px;
+
+    textarea {
+      width: 100%;
+      height: 10rem;
+    }
+  }
+}

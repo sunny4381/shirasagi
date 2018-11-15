@@ -5,6 +5,7 @@ class Entry::Page
   include Workflow::Addon::Branch
   include Workflow::Addon::Approver
   include Cms::Addon::Meta
+  include Entry::Addon::Form
   include Cms::Addon::Release
   include Cms::Addon::ReleasePlan
   include Cms::Addon::GroupPermission

@@ -8,6 +8,8 @@ class Cms::Column::Value::Base
   field :order, type: Integer
   field :class_name, type: String
 
+  after_initialize :copy_column_settings, if: ->{ new_record? }
+
   def to_html
     ApplicationController.helpers.sanitize(self.value)
   end
@@ -38,5 +40,14 @@ class Cms::Column::Value::Base
   end
 
   def remove_public_files
+  end
+
+  private
+
+  def copy_column_settings
+    return if column.blank?
+
+    self.name ||= column.name
+    self.order ||= column.order
   end
 end

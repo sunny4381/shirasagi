@@ -19,7 +19,7 @@ class Cms::Column::TextField < Cms::Column::Base
   end
 
   def serialize_value(value)
-    Cms::Column::Value::TextField.new(
+    value_type.new(
       column_id: self.id, name: self.name, order: self.order,
       value: value
     )

@@ -1,0 +1,6 @@
+<%
+  addon ||= local_assigns.fetch(:addon, {})
+  addon[:toggle] = true
+%>
+
+<%= render file: 'app/views/cms/pages/_form', locals: { f: f, addon: addon } %>

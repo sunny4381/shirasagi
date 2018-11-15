@@ -1,0 +1,12 @@
+<% disabled ||= false %>
+<% values = value.try(:values) || [] %>
+<%= render "cms/columns/column_entry_form_layout", f: f, column: column, value: value, disabled: disabled do %>
+  <div class="input-group check-box-column">
+    <% column.select_options.each do |val| %>
+      <label>
+        <%= check_box_tag("#{f.object_name}[][values][]", val, values.include?(val), column.form_options.merge(id: nil)) %>
+        <%= val %>
+      </label>
+    <% end %>
+  </div>
+<% end %>

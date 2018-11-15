@@ -3,6 +3,8 @@ ja:
 
   modules:
     entry: 投稿
+    addons:
+      entry/form: 本文
 
   cms:
     nodes:
