@@ -14,8 +14,9 @@ module SS::Model::Column
     field :prefix_label, type: String
     field :postfix_label, type: String
     field :class_name, type: String
+    field :layout, type: String
 
-    permit_params :name, :order, :required, :tooltips, :prefix_label, :postfix_label
+    permit_params :name, :order, :required, :tooltips, :prefix_label, :postfix_label, :layout
 
     before_validation :set_form_id, if: ->{ @cur_form }
 

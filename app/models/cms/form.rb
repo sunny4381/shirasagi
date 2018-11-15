@@ -12,15 +12,17 @@ class Cms::Form
   field :name, type: String
   field :order, type: Integer, default: 0
   field :state, type: String
+  field :sub_type, type: String
   has_many :columns, class_name: 'Cms::Column::Base', dependent: :destroy, inverse_of: :form
 
   attr_accessor :cur_user
 
-  permit_params :name, :order, :state
+  permit_params :name, :order, :state, :sub_type
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :order, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 999_999, allow_blank: true }
   validates :state, presence: true, inclusion: { in: %w(public closed), allow_blank: true }
+  validates :sub_type, presence: true, inclusion: { in: %w(static entry), allow_blank: true }
 
   scope :and_public, -> {
     where(state: 'public')
@@ -45,6 +47,20 @@ class Cms::Form
     %w(public closed).map do |v|
       [ I18n.t("ss.options.state.#{v}"), v ]
     end
+  end
+
+  def sub_type_options
+    %w(static entry).map do |v|
+      [ v, v ]
+    end
+  end
+
+  def sub_type_static?
+    !sub_type_entry?
+  end
+
+  def sub_type_entry?
+    sub_type == "entry"
   end
 
   def build_column_values(hash)
