@@ -38,30 +38,20 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
   end
 
   def to_html
-    return '' if file.blank?
-
-    options = html_additional_attr_to_h
-    case html_tag
-    when 'a+img'
-      outer_options = options.dup
-      outer_options['class'] = [ options['class'] ].flatten.compact
-      outer_options['class'] << file_icon
-      ApplicationController.helpers.link_to(file.url, outer_options) do
-        options['alt'] ||= file.name
-        options['title'] ||= ::File.basename(file.filename)
-        ApplicationController.helpers.image_tag(file.thumb_url, options)
-      end
-    when 'a'
-      options['class'] = [ options['class'] ].flatten.compact
-      options['class'] << file_icon
-      ApplicationController.helpers.link_to(file.humanized_name, file.url, options)
-    when 'img'
-      options['alt'] ||= file.name
-      options['title'] ||= ::File.basename(file.filename)
-      ApplicationController.helpers.image_tag(file.url, options)
-    else
-      ApplicationController.helpers.sanitize(file.humanized_name)
+    if column.blank?
+      return to_default_html
     end
+
+    layout = column.layout
+    if layout.blank?
+      return to_default_html
+    end
+
+    render_opts = {}
+    render_opts["value"] = file if file.present?
+
+    template = Liquid::Template.parse(layout)
+    template.render(render_opts).html_safe
   end
 
   def generate_public_files
@@ -122,5 +112,32 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
 
     self.file.destroy
     self.file_id = nil
+  end
+
+  def to_default_html
+    return '' if file.blank?
+
+    options = html_additional_attr_to_h
+    case html_tag
+    when 'a+img'
+      outer_options = options.dup
+      outer_options['class'] = [ options['class'] ].flatten.compact
+      outer_options['class'] << file_icon
+      ApplicationController.helpers.link_to(file.url, outer_options) do
+        options['alt'] ||= file.name
+        options['title'] ||= ::File.basename(file.filename)
+        ApplicationController.helpers.image_tag(file.thumb_url, options)
+      end
+    when 'a'
+      options['class'] = [ options['class'] ].flatten.compact
+      options['class'] << file_icon
+      ApplicationController.helpers.link_to(file.humanized_name, file.url, options)
+    when 'img'
+      options['alt'] ||= file.name
+      options['title'] ||= ::File.basename(file.filename)
+      ApplicationController.helpers.image_tag(file.url, options)
+    else
+      ApplicationController.helpers.sanitize(file.humanized_name)
+    end
   end
 end

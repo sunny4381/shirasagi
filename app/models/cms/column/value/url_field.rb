@@ -37,16 +37,54 @@ class Cms::Column::Value::UrlField < Cms::Column::Value::Base
   end
 
   def to_html
+    if column.blank?
+      return to_default_html
+    end
+
+    layout = column.layout
+    if layout.blank?
+      return to_default_html
+    end
+
+    render_opts = {}
+    if value.present?
+      label, link = parse_value
+      render_opts["value"] = value
+      render_opts["label"] = label
+      render_opts["link"] = link
+    end
+
+    template = Liquid::Template.parse(layout)
+    template.render(render_opts).html_safe
+  end
+
+  private
+
+  def to_default_html
     return '' if value.blank?
 
     options = html_additional_attr_to_h
     case html_tag
     when 'a'
-      n, v = value.split(',')
-      v ||= n
-      ApplicationController.helpers.link_to(n.strip, v.strip, options)
+      label, link = parse_value
+      ApplicationController.helpers.link_to(label || link, link, options)
     else
       value
     end
+  end
+
+  def parse_value
+    return if value.blank?
+
+    label, link = value.split(',')
+    if link.blank?
+      link = label
+      label = nil
+    end
+
+    label.strip! if label
+    link.strip! if link
+
+    [ label, link ]
   end
 end

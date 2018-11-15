@@ -11,7 +11,20 @@ class Cms::Column::Value::Base
   after_initialize :copy_column_settings, if: ->{ new_record? }
 
   def to_html
-    ApplicationController.helpers.sanitize(self.value)
+    if column.blank?
+      return to_default_html
+    end
+
+    layout = column.layout
+    if layout.blank?
+      return to_default_html
+    end
+
+    render_opts = {}
+    render_opts["value"] = value if value.present?
+
+    template = Liquid::Template.parse(layout)
+    template.render(render_opts).html_safe
   end
 
   def validate_value(record, attribute)
@@ -49,5 +62,9 @@ class Cms::Column::Value::Base
 
     self.name ||= column.name
     self.order ||= column.order
+  end
+
+  def to_default_html
+    ApplicationController.helpers.sanitize(self.value)
   end
 end
