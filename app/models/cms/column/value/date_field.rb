@@ -3,6 +3,11 @@ class Cms::Column::Value::DateField < Cms::Column::Value::Base
   field :html_additional_attr, type: String, default: ''
   field :date, type: DateTime
 
+  liquidize do
+    export :value
+    export :date
+  end
+
   def validate_value(record, attribute)
     return if column.blank?
 
@@ -30,29 +35,13 @@ class Cms::Column::Value::DateField < Cms::Column::Value::Base
       compact.to_h
   end
 
-  def to_html
-    if column.blank?
-      return to_default_html
-    end
-
-    layout = column.layout
-    if layout.blank?
-      return to_default_html
-    end
-
-    render_opts = {}
-    render_opts["value"] = date.to_date if date.present?
-
-    template = Liquid::Template.parse(layout)
-    template.render(render_opts).html_safe
-  end
-
   def value
     I18n.l(self.date.to_date) rescue nil
   end
 
   private
 
+  # override Cms::Column::Value::Base#to_default_html
   def to_default_html
     return '' if date.blank?
 

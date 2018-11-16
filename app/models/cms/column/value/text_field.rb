@@ -1,6 +1,10 @@
 class Cms::Column::Value::TextField < Cms::Column::Value::Base
   field :value, type: String
 
+  liquidize do
+    export :value
+  end
+
   def validate_value(record, attribute)
     return if column.blank?
 

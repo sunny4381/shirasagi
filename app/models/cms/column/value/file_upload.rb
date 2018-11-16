@@ -6,6 +6,10 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
   before_save :before_save_file
   after_destroy :delete_file
 
+  liquidize do
+    export :file
+  end
+
   def validate_value(record, attribute)
     return if column.blank?
 
@@ -35,23 +39,6 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
     html_additional_attr.scan(/\S+?=".+?"/m).
       map { |s| s.split(/=/).size == 2 ? s.delete('"').split(/=/) : nil }.
       compact.to_h
-  end
-
-  def to_html
-    if column.blank?
-      return to_default_html
-    end
-
-    layout = column.layout
-    if layout.blank?
-      return to_default_html
-    end
-
-    render_opts = {}
-    render_opts["value"] = file if file.present?
-
-    template = Liquid::Template.parse(layout)
-    template.render(render_opts).html_safe
   end
 
   def generate_public_files
@@ -114,6 +101,7 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
     self.file_id = nil
   end
 
+  # override Cms::Column::Value::Base#to_default_html
   def to_default_html
     return '' if file.blank?
 

@@ -1,6 +1,11 @@
 class Cms::Column::Value::CheckBox < Cms::Column::Value::Base
   field :values, type: SS::Extensions::Words
 
+  liquidize do
+    export :value
+    export :values
+  end
+
   def validate_value(record, attribute)
     return if column.blank?
 

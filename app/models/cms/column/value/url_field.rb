@@ -3,6 +3,12 @@ class Cms::Column::Value::UrlField < Cms::Column::Value::Base
   field :html_additional_attr, type: String, default: ''
   field :value, type: String
 
+  liquidize do
+    export :value
+    export :link
+    export :label
+  end
+
   def validate_value(record, attribute)
     return if column.blank?
 
@@ -36,26 +42,12 @@ class Cms::Column::Value::UrlField < Cms::Column::Value::Base
       compact.to_h
   end
 
-  def to_html
-    if column.blank?
-      return to_default_html
-    end
+  def label
+    parse_value.first
+  end
 
-    layout = column.layout
-    if layout.blank?
-      return to_default_html
-    end
-
-    render_opts = {}
-    if value.present?
-      label, link = parse_value
-      render_opts["value"] = value
-      render_opts["label"] = label
-      render_opts["link"] = link
-    end
-
-    template = Liquid::Template.parse(layout)
-    template.render(render_opts).html_safe
+  def link
+    parse_value.last
   end
 
   private

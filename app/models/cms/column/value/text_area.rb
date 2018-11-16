@@ -1,21 +1,8 @@
 class Cms::Column::Value::TextArea < Cms::Column::Value::Base
   field :value, type: String
 
-  def to_html
-    if column.blank?
-      return to_default_html
-    end
-
-    layout = column.layout
-    if layout.blank?
-      return to_default_html
-    end
-
-    render_opts = {}
-    render_opts["value"] = value if value.present?
-
-    template = Liquid::Template.parse(layout)
-    template.render(render_opts).html_safe
+  liquidize do
+    export :value
   end
 
   def validate_value(record, attribute)
@@ -36,6 +23,7 @@ class Cms::Column::Value::TextArea < Cms::Column::Value::Base
 
   private
 
+  # override Cms::Column::Value::Base#to_default_html
   def to_default_html
     ApplicationController.helpers.sanitize(ApplicationController.helpers.br(self.value))
   end

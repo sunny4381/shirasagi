@@ -1,6 +1,7 @@
 class Cms::Column::Value::Base
   extend SS::Translation
   include SS::Document
+  include SS::Liquidization
 
   embedded_in :page, inverse_of: :column_values
   belongs_to :column, class_name: 'Cms::Column::Base'
@@ -9,6 +10,14 @@ class Cms::Column::Value::Base
   field :class_name, type: String
 
   after_initialize :copy_column_settings, if: ->{ new_record? }
+
+  liquidize do
+    export :name
+    export :to_html, as: :html
+    export as: :type do
+      self.class.name
+    end
+  end
 
   def to_html
     if column.blank?
@@ -20,8 +29,7 @@ class Cms::Column::Value::Base
       return to_default_html
     end
 
-    render_opts = {}
-    render_opts["value"] = value if value.present?
+    render_opts = { "value" => self }
 
     template = Liquid::Template.parse(layout)
     template.render(render_opts).html_safe
