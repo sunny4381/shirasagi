@@ -18,4 +18,8 @@ SS::Application.routes.draw do
       # get ":form_id/:column_id/show" => "entry#entry_show", as: "show"
     end
   end
+
+  page "entry" do
+    get "page/:filename.:format" => "public#index", cell: "pages/page"
+  end
 end

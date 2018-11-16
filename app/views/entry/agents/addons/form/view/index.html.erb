@@ -1,0 +1,14 @@
+<%
+  return "" if @cur_page.form.blank?
+
+  html = @cur_page.form.html
+  if html.present?
+    render_opts = { "values" => @cur_page.column_values }
+
+    template = Liquid::Template.parse(html)
+    html = template.render(render_opts).html_safe
+  else
+    html = @cur_page.column_values.map(&:to_html).join.html_safe
+  end
+%>
+<%== html %>
