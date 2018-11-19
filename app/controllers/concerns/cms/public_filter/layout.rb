@@ -54,7 +54,7 @@ module Cms::PublicFilter::Layout
     body.gsub!('#{part_name}', ERB::Util.html_escape(part.name))
 
     if body =~ /\#\{part_parent[^}]*?_name\}/
-      part_parent = part.parent ? part.parent : part
+      part_parent = part.parent || part
       body.gsub!('#{part_parent_name}', ERB::Util.html_escape(part_parent.name))
       part_parent = part_parent.parent ? part_parent.parent : part_parent
       body.gsub!('#{part_parent.parent_name}', ERB::Util.html_escape(part_parent.name))
@@ -110,6 +110,16 @@ module Cms::PublicFilter::Layout
     end
 
     html = html.sub(/<meta[^>]*charset=[^>]*>/) { '' }
+
+    previewable = @preview && @cur_layout.allowed?(:read, @cur_user, site: @cur_site)
+    if previewable
+      layout_info = {
+        id: @cur_layout.id, name: @cur_layout.name, filename: @cur_layout.filename,
+        path: cms_layout_path(site: @cur_site, id: @cur_layout)
+      }
+      data_attrs = layout_info.map { |k, v| "data-layout-#{k}=\"#{CGI.escapeHTML(v.to_s)}\"" }
+      html = html.sub(/<body/, %(<body #{data_attrs.join(" ")}"))
+    end
 
     html
   end
@@ -179,20 +189,23 @@ module Cms::PublicFilter::Layout
   end
 
   def render_layout_part(part)
-    classes = ['preview-part', "preview-part-#{part.id}", 'preview-hide'].join(' ')
+    previewable = @preview && part.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
     html = []
-    if @preview && Cms::Part.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
-      html << "<a class='#{classes}' target='_blank' href='#{cms_part_path(site: @cur_site, id: part.id)}'>"
-      html << part.name
-      html << '</a>'
+    if previewable
+      part_info = {
+        id: part.id, name: part.name, filename: part.filename,
+        path: cms_part_path(site: @cur_site, id: part.id)
+      }
+      data_attrs = part_info.map { |k, v| "data-part-#{k}=\"#{CGI.escapeHTML(v.to_s)}\"" }
+      html << "<div class=\"ss-preview-part\" #{data_attrs.join(" ")}>"
     end
     if part.ajax_view == "enabled" && !filters.include?(:mobile) && !@preview
       html << part.ajax_html
     else
       html << render_part(part.becomes_with_route)
     end
-    if @preview && Cms::Part.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
-      html << "<span class='preview-part-#{part.id}'></span>"
+    if previewable
+      html << "</div>"
     end
     html.join
   end

@@ -7,7 +7,17 @@ class Cms::PreviewController < ApplicationController
   before_action :set_form_data, only: %i[form_preview]
   before_action :render_contents
 
+  helper_method :head_for, :foot_for
+
   private
+
+  def head_for(view, &block)
+    @head_html = view.capture(&block)
+  end
+
+  def foot_for(view, &block)
+    @foot_html = view.capture(&block)
+  end
 
   def set_controller
     @controller = Cms::PublicController
@@ -91,68 +101,20 @@ class Cms::PreviewController < ApplicationController
       end
     end
 
-    body.sub!("</body>", preview_template_html(options) + "</body>")
-    body
-  end
-
-  def preview_template_html(options)
-    h = []
-    h << view_context.stylesheet_link_tag("cms/preview")
-    h << view_context.javascript_include_tag("cms/public") if options[:mobile]
-    h << view_context.javascript_include_tag("cms/preview")
-    h << '<link href="/assets/css/colorbox/colorbox.css" rel="stylesheet" />'
-    h << '<script src="/assets/js/jquery.colorbox.js"></script>'
-    h << '<script>'
-    h << '$(function(){'
-    if @cur_site.subdir.present?
-      h << '  SS_Preview.preview_path = "' + "/#{@cur_site.subdir}" + '";'
+    body.sub!(/<body.*?>/im) do
+      ::Regexp.last_match[0] + render_to_string(partial: "tool", locals: options)
     end
-    h << '  SS_Preview.mobile_path = "' + @cur_site.mobile_path + '";'
-    if @preview_page
-      h << 'SS_Preview.request_path = "' + request.path + '";'
-      h << 'SS_Preview.form_item = ' + @preview_item.to_json + ';'
-    end
-    h << '  SS_Preview.render();'
-    h << '});'
-    h << '</script>'
-    h << '<div id="ss-preview">'
-    h << '<div class="d-inline-block">'
-    h << '<input type="text" class="date" value="' + @cur_date.strftime("%Y/%m/%d %H:%M") + '" />'
-    if @cur_site.mobile_enabled?
-      h << '<input type="button" class="preview" value="' + t("ss.links.pc") + '">'
-      h << '<input type="button" class="mobile" value="' + t("ss.links.mobile") + '">'
-    else
-      h << '<input type="button" class="preview" value="' + t("cms.preview_page") + '">'
-    end
-    h << '</div>'
-    h << '<div class="inline-block">'
-    if @parts.present? && Cms::Part.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
-      h << '<input type="button" class="part" value="' + t('cms.show_link_to_part') + '" />'
-      h << '<select id="preview_part" name="preview[part]">'
-      h << "<option value=''>#{t('cms.part')}</option>"
-      @parts.each_value do |part|
-        next if part.blank?
-        h << "<option value='#{cms_part_path(site: @cur_site, id: part.id)}'>#{part.name}</option>"
+    if @head_html
+      body.sub!(/<head.*?>/im) do
+        ::Regexp.last_match[0].to_s + @head_html.to_s
       end
-      h << '</select>'
-      h << '<input type="button" class="preview-part-button preview-hide" value="' + t('cms.part') + '">'
     end
-    if @cur_layout && Cms::Layout.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
-      layout_path = cms_layout_path(site: @cur_site, id: @cur_layout.id)
-      h << "<input type='button' onclick='window.open(\"#{layout_path}\")' value='#{t('cms.layout')}'>"
+    if @foot_html
+      body.sub!(/<\/body>/im) do
+        @foot_html + ::Regexp.last_match[0].html_safe
+      end
     end
-    if @cur_node && Cms::Node.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
-      node_path = cms_node_path(site: @cur_site, id: @cur_node.id)
-      h << "<input type='button' onclick='window.open(\"#{node_path}\")' value='#{t('cms.node')}'>"
-    end
-    if @cur_page && Cms::Page.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node)
-      page_path = cms_page_path(site: @cur_site, id: @cur_page.id)
-      h << "<input type='button' onclick='window.open(\"#{page_path}\")' value='#{Cms::Page.model_name.human}'>"
-    end
-    h << '</div>'
-    h << '</div>'
-
-    h.join("\n")
+    body
   end
 
   def render_preview

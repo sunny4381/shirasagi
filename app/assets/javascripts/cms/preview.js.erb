@@ -1,8 +1,13 @@
-//=require jquery.datetimepicker
-
-this.SS_Preview = (function () {
-  function SS_Preview() {
+SS_Preview = (function () {
+  function SS_Preview(el) {
+    this.el = el;
+    this.directEditMode = false;
+    this.layouts = [];
+    this.parts = [];
   }
+
+  SS_Preview.jquery_css_path = null;
+  SS_Preview.jquery_js_path = null;
 
   SS_Preview.preview_path = "";
 
@@ -12,102 +17,277 @@ this.SS_Preview = (function () {
 
   SS_Preview.form_item = null;
 
+  SS_Preview.overlayPadding = 5;
+  SS_Preview.previewToolHeight = 70;
+
+  SS_Preview.instance = null;
+
   SS_Preview.render = function () {
-    $("#ss-preview .date").datetimepicker({
+    if (SS_Preview.instance) {
+      return;
+    }
+
+    SS_Preview.instance = new SS_Preview("#ss-preview");
+    SS_Preview.loadJQuery(function() {
+      SS_Preview.instance.initialize();
+    });
+  };
+
+  SS_Preview.loadJQuery = function (callback) {
+    if (window.jQuery) {
+      callback();
+      return;
+    }
+
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SS_Preview.jquery_css_path;
+
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = SS_Preview.jquery_js_path;
+
+    if (script.readyState) {
+      // IE
+    } else {
+      script.onload = function () {
+        callback();
+      }
+    }
+
+    document.getElementsByTagName("head")[0].appendChild(link);
+    document.getElementsByTagName("head")[0].appendChild(script);
+  }
+
+  SS_Preview.prototype.initialize = function() {
+    this.$el = $(this.el);
+    this.$datePicker = this.$el.find(".ss-preview-date");
+    this.$datePicker.datetimepicker({
       lang: "ja",
       roundTime: "ceil",
       step: 30,
       closeOnDateSelect: true
     });
-    $("#ss-preview .preview").click(function () {
-      var date, path;
-      date = $("#ss-preview .date").val();
-      if (date === "") {
-        return;
-      }
-      date = date.replace(/[^\d]/g, "");
-      path = SS_Preview.request_path;
-      path || (path = location.pathname);
-      path = path.replace(RegExp("\\/preview\\d*(" + SS_Preview.mobile_path + "|" + SS_Preview.preview_path + ")?"), "/preview" + date + SS_Preview.preview_path) + location.search;
-      if (SS_Preview.request_path) {
-        return SS_Preview.submitFormPreview(path, SS_Preview.form_item);
-      } else {
-        return location.href = path;
-      }
+
+    var self = this;
+
+    this.initializePart();
+    this.initializeLayout();
+    this.initializeOverlay();
+
+    this.$el.on("click", ".ss-preview-btn-toggle-direct-edit-mode", function () {
+      self.toggleDirectEditMode();
     });
-    $("#ss-preview .mobile").click(function () {
-      var date, path;
-      date = $("#ss-preview .date").val();
-      if (date === "") {
-        return;
-      }
-      date = date.replace(/[^\d]/g, "");
-      path = SS_Preview.request_path;
-      path || (path = location.pathname);
-      path = path.replace(RegExp("\\/preview\\d*(" + SS_Preview.mobile_path + "|" + SS_Preview.preview_path + ")?"), "/preview" + date + SS_Preview.mobile_path) + location.search;
-      if (SS_Preview.request_path) {
-        return SS_Preview.submitFormPreview(path, SS_Preview.form_item);
-      } else {
-        return location.href = path;
-      }
+
+    this.$el.on("click", ".ss-preview-btn-pc", function () {
+      self.previewPc();
     });
-    $("#ss-preview .part").click(function () {
-      $('.preview-part').each(function () {
-        if ($(this).hasClass('preview-hide')) {
-          $(this).removeClass('preview-hide');
-          var _this = $(this);
-          var targetClass = _this.attr('class').split(' ').filter(function (item) {
-            return item !== 'preview-part';
-          });
-          _this.nextUntil('.' + targetClass.pop()).each(function () {
-            if ($(this).width() > _this.width()) {
-              _this.width($(this).width());
-            }
-            if ($(this).height() > _this.height()) {
-              _this.height($(this).height());
-            }
-            if ($(this).offset().top > _this.offset().top) {
-              _this.css('top', $(this).offset().top);
-            }
-            if ($(this).offset().left > _this.offset().left) {
-              _this.css('left', $(this).offset().left);
-            }
-          });
-        } else {
-          $(this).attr('style', '');
-          $(this).addClass('preview-hide');
-        }
-      });
+
+    this.$el.on("click", ".ss-preview-btn-mobile", function () {
+      self.previewMobile();
     });
-    $('#ss-preview #preview_part').change(function () {
-      var button = $('#ss-preview .preview-part-button');
-      if ($(this).val() === '') {
-        button.addClass('preview-hide');
-        return false;
-      }
-      button.attr('onclick', 'window.open("' + $(this).val() + '")');
-      button.removeClass('preview-hide');
-    });
+
     if (SS_Preview.request_path) {
-      return $('body a [href="#"]').val("onclick", "return false;");
+      $('body a [href="#"]').val("onclick", "return false;");
     }
   };
 
-  SS_Preview.submitFormPreview = function (path, form_item) {
-    var form, token;
-    token = $('meta[name="csrf-token"]').attr('content');
-    form = $("<form>");
-    $(form).attr("method", "post");
-    $(form).attr("action", path);
+  SS_Preview.prototype.initializeLayout = function() {
+    var $body = $("body");
+    if ($body.data("layout-id")) {
+      this.layouts = [{
+        id: $body.data("layout-id"), name: $body.data("layout-name"),
+        filename: $body.data("layout-filename"), path: $body.data("layout-path")
+      }];
+    }
+
+    var button = this.$el.find(".ss-preview-btn-edit-layout");
+    if (! this.layouts || this.layouts.length === 0) {
+      button.closest(".ss-preview-btn-group").addClass("ss-preview-hide");
+      return;
+    }
+
+    button.closest(".ss-preview-btn-group").removeClass("ss-preview-hide");
+
+    var path = this.layouts[0].path;
+    button.on('click', function() {
+      window.open(path, '_blank');
+    });
+  };
+
+  SS_Preview.prototype.initializePart = function() {
+    var self = this;
+    this.parts = [];
+    $(document).find(".ss-preview-part").each(function() {
+      var $this = $(this);
+      if (! $this.data("part-id")) {
+        return;
+      }
+      self.parts.push({
+        el: $this, id: $this.data("part-id"), name: $this.data("part-name"),
+        filename: $this.data("part-filename"), path: $this.data("part-path")
+      });
+    });
+
+
+    if (!this.parts || this.parts.length == 0) {
+      this.$el.find(".ss-preview-part-group").addClass("ss-preview-hide");
+      return;
+    }
+
+    var list = this.$el.find(".ss-preview-part-list")
+    var options = list.html();
+    $.each(this.parts, function(index, item) {
+      options += "<option value=\"" + item.id + "\">" + item.name + "</option>"
+    });
+
+    var self = this;
+    list.html(options).on('change', function() {
+      self.changePart($(this));
+    });
+
+    this.$el.on("click", ".ss-preview-btn-edit-part", function() {
+      self.openPartEdit(list.val());
+    });
+
+    this.$el.find(".ss-preview-part-group").removeClass("ss-preview-hide");
+
+    $(document).on("mouseover", ".ss-preview-part", function() {
+      if (self.directEditMode) {
+        self.showOverlayForPart($(this));
+      }
+    });
+  };
+
+  SS_Preview.prototype.findPartById = function(partId) {
+    if (! partId) {
+      return null;
+    }
+
+    if ($.type(partId) === "string") {
+      partId = parseInt(partId);
+    }
+
+    var founds = $.grep(this.parts, function(part, index) { return part.id === partId });
+    if (! founds || founds.length === 0) {
+      return null;
+    }
+
+    return founds[0];
+  };
+
+  SS_Preview.prototype.initializeOverlay = function() {
+    var overlay = this.$overlay = $("#ss-preview-overlay");
+    var self = this;
+    this.$overlay.on("click", ".ss-preview-btn-edit-part", function() {
+      self.openPartEdit(overlay.data("part-id"));
+    });
+  };
+
+  SS_Preview.prototype.previewPc = function() {
+    var date = this.dateForPreview();
+    if (! date) {
+      return;
+    }
+
+    var path = SS_Preview.request_path || location.pathname;
+    path = path.replace(RegExp("\\/preview\\d*(" + SS_Preview.mobile_path + "|" + SS_Preview.preview_path + ")?"), "/preview" + date + SS_Preview.preview_path) + location.search;
+    if (SS_Preview.request_path) {
+      this.submitFormPreview(path, SS_Preview.form_item);
+    } else {
+      location.href = path;
+    }
+  };
+
+  SS_Preview.prototype.previewMobile = function() {
+    var date = this.dateForPreview();
+    if (! date) {
+      return;
+    }
+
+    var path = SS_Preview.request_path || location.pathname;
+    path = path.replace(RegExp("\\/preview\\d*(" + SS_Preview.mobile_path + "|" + SS_Preview.preview_path + ")?"), "/preview" + date + SS_Preview.mobile_path) + location.search;
+    if (SS_Preview.request_path) {
+      this.submitFormPreview(path, SS_Preview.form_item);
+    } else {
+      location.href = path;
+    }
+  };
+
+  SS_Preview.prototype.dateForPreview = function() {
+    var date = this.$datePicker.val();
+    if (!date) {
+      return;
+    }
+    return date.replace(/[^\d]/g, "");
+  }
+
+  SS_Preview.prototype.submitFormPreview = function (path, form_item) {
+    var token = $('meta[name="csrf-token"]').attr('content');
+    var form = $("<form>").attr("method", "post").attr("action", path);
+
     SS_Preview.appendParams(form, "preview_item", form_item);
-    form.append($("<input/>", {
-      name: "authenticity_token",
-      value: token,
-      type: "hidden"
-    }));
+    form.append($("<input/>", { name: "authenticity_token", value: token, type: "hidden"}));
     form.appendTo("body");
     form.submit();
-    return false;
+  };
+
+  SS_Preview.prototype.toggleDirectEditMode = function() {
+    var button = this.$el.find(".ss-preview-btn-toggle-direct-edit-mode");
+
+    this.directEditMode = !this.directEditMode;
+    if (this.directEditMode) {
+      button.addClass("ss-preview-active");
+    } else {
+      button.removeClass("ss-preview-active");
+      this.hideOverlay();
+    }
+  };
+
+  SS_Preview.prototype.changePart = function($el) {
+    var part = this.findPartById($el.val());
+    if (! part) {
+      this.hideOverlay();
+      return;
+    }
+
+    this.showOverlayForPart(part.el);
+    this.scrollToPart(part.el);
+  };
+
+  SS_Preview.prototype.hideOverlay = function() {
+    this.$overlay.addClass("ss-preview-hide");
+  };
+
+  SS_Preview.prototype.showOverlayForPart = function($part) {
+    var offset = $part.offset();
+    offset.left = Math.floor(offset.left) - SS_Preview.overlayPadding;
+    offset.top = Math.floor(offset.top) - SS_Preview.overlayPadding;
+
+    this.$overlay.offset(offset);
+    this.$overlay.innerWidth($part.innerWidth() + SS_Preview.overlayPadding * 2);
+    this.$overlay.innerHeight($part.innerHeight() + SS_Preview.overlayPadding * 2);
+    this.$overlay.removeClass("ss-preview-hide");
+    this.$overlay.data("part-id", $part.data("part-id"));
+  };
+
+  SS_Preview.prototype.scrollToPart = function($part) {
+    var offset = this.$overlay.offset();
+    var scrollTop = offset.top - SS_Preview.previewToolHeight;
+    if (scrollTop < 0) {
+      scrollTop = 0;
+    }
+
+    window.scrollTo({ top: scrollTop, behavior: "smooth" });
+  };
+
+  SS_Preview.prototype.openPartEdit = function(partId) {
+    var part = this.findPartById(partId);
+    if (! part) {
+      return;
+    }
+
+    window.open(part.path, "_blank");
   };
 
   SS_Preview.appendParams = function (form, name, params) {

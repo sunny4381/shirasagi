@@ -3,45 +3,63 @@
  */
 
 @import "compass-mixins/lib/compass";
+@import "ss/init";
 
 // -------------------------------------------------------------------------------------------------
 // preview
 
+#ss-preview-cover {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 70px;
+}
 #ss-preview {
-  position: fixed;
-  top: 0px;
-  left: 0px;
-  padding: 5px;
+  background-color: rgb(242, 242, 242);
   @include box-shadow(0px 1px 5px #666);
-  background-color: rgba(255, 255, 255, 0.9);
-  text-align: center;
+  padding: 5px;
+  position: fixed;
+  width: 100%;
   z-index: 5001;
-  input.date {
-    width: 120px;
-    margin: 0px;
-    padding: 2px 0px;
-    border: none;
-    background-color: rgba(200, 200, 200, 0.5);
-    font-size: 12px;
-    font-family: Meiryo, sans-serif;
-    text-align: center;
+
+  .ss-preview-btn-group {
+    display: inline-block;
   }
-  input[type=button], #preview_part {
-    margin: 0px 0px 0px 2px;
-    padding: 0px;
-    font-size: 12px;
-    font-family: Meiryo, sans-serif;
+
+  .ss-preview-btn-group ~ .ss-preview-btn-group {
+    margin-left: 8px;
+  }
+
+  .ss-preview-hide {
+    display: none;
+  }
+
+  .ss-preview-active {
+    border: 1px solid green;
   }
 }
-.preview-part {
-  position: absolute;
-  @include box-sizing(border-box);
-  display: inline-block;
-  background: rgba(0,0,0,0.5);
-  text-decoration: none;
-  text-shadow: 1px 1px 0px #fff, -1px 1px 0px #fff, 1px -1px 0px #fff, -1px -1px 0px #fff;
-  z-index: 5000;
-}
-.preview-hide {
+//.preview-part {
+//  position: absolute;
+//  @include box-sizing(border-box);
+//  display: inline-block;
+//  background: rgba(0,0,0,0.5);
+//  text-decoration: none;
+//  text-shadow: 1px 1px 0px #fff, -1px 1px 0px #fff, 1px -1px 0px #fff, -1px -1px 0px #fff;
+//  z-index: 5000;
+//}
+.ss-preview-hide {
   display: none;
+}
+
+#ss-preview-overlay {
+  position: absolute;
+  border: 3px solid $gray5;
+  @include border-radius(2px);
+
+  .ss-preview-btn-edit-part {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
 }

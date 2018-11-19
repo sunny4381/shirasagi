@@ -1,0 +1,90 @@
+<% head_for(self) do %>
+  <%= stylesheet_link_tag("cms/preview") %>
+  <%= javascript_include_tag("cms/preview") %>
+  <% if false %>
+  <link href="/assets/css/colorbox/colorbox.css" rel="stylesheet" />
+  <script src="/assets/js/jquery.colorbox.js"></script>
+  <% end %>
+  <script>
+    SS_Preview.jquery_css_path = <%== stylesheet_path("ss/jquery").to_json %>;
+    SS_Preview.jquery_js_path = <%== javascript_path("ss/jquery").to_json %>;
+    <% if @cur_site.subdir.present? %>
+      SS_Preview.preview_path = <%== @cur_site.subdir.to_json %>;
+    <% end %>
+    SS_Preview.mobile_path = <%== @cur_site.mobile_path.to_json %>;
+    <% if @preview_page %>
+      SS_Preview.request_path = <%== request.path.to_json %>;
+      SS_Preview.form_item = <%== @preview_item.to_json %>;
+    <% end %>
+  </script>
+<% end %>
+<% foot_for(self) do %>
+  <div id="ss-preview-overlay" class="ss-preview-hide">
+    <button type="button" class="ss-preview-btn-edit-part">編集する</button>
+  </div>
+  <script>
+    SS_Preview.render();
+  </script>
+<% end %>
+<div id="ss-preview-cover">
+  <div id="ss-preview">
+    <div>
+      <div class="ss-preview-btn-group">
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline-primary ss-preview-btn-toggle-direct-edit-mode">ダイレクト編集モード</button>
+      </div>
+      <div class="ss-preview-btn-group">
+        <select class="ss-preview-node-list">
+          <option value="">記事</option>
+        </select>
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline">新規作成</button>
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline">下書きページ</button>
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline">管理画面へ</button>
+      </div>
+      <div class="ss-preview-btn-group ss-preview-part-group ss-preview-hide">
+        <select class="ss-preview-part-list">
+          <option value="">パーツ</option>
+        </select>
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-edit-part">編集</button>
+      </div>
+      <div class="ss-preview-btn-group ss-preview-hide">
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-edit-layout">レイアウト</button>
+      </div>
+    </div>
+    <div>
+      <input type="text" class="ss-preview-date" value="<%= I18n.l(@cur_date, format: :picker)  %>" />
+      <% if @cur_site.mobile_enabled? %>
+        <input type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("ss.links.pc") %>">
+        <input type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-mobile" value="<%= t("ss.links.mobile") %>">
+      <% else %>
+        <input type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("cms.preview_page") %>">
+      <% end %>
+    </div>
+    <% if false %>
+    <div>
+      <% if @parts.present? && Cms::Part.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
+        <input type="button" class="ss-preview-btn-show-part" value="<%= t('cms.show_link_to_part') %>" />
+        <select id="ss-preview-part-select">
+          <option value=''><%= t('cms.part') %></option>
+          <% @parts.each_value do |part| %>
+            <% next if part.blank? %>
+            <option value="<%= cms_part_path(site: @cur_site, id: part.id)  %>"><%= part.name %></option>
+          <% end %>
+        </select>
+        <input type="button" class="ss-preview-btn-part ss-preview-hide" value="<%= t('cms.part') %>">
+      <% end %>
+      <% if @cur_layout && Cms::Layout.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
+        <% layout_path = cms_layout_path(site: @cur_site, id: @cur_layout.id) %>
+        <input type="button" onclick="window.open('<%= layout_path %>')" value="<%= t('cms.layout') %>">
+      <% end %>
+      <% if @cur_node && Cms::Node.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
+        <% node_path = cms_node_path(site: @cur_site, id: @cur_node.id) %>
+        <input type="button" onclick="window.open('<%= node_path %>')" value="<%= t('cms.node') %>">
+      <% end %>
+      <% if @cur_page && Cms::Page.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
+        <% page_path = cms_page_path(site: @cur_site, id: @cur_page.id) %>
+        <input type="button" onclick="window.open('<%= page_path %>')" value="<%= Cms::Page.model_name.human %>">
+      <% end %>
+    </div>
+    <% end %>
+  </div>
+</div>
