@@ -1,30 +1,30 @@
 class Cms::PreviewController < ApplicationController
   include Cms::BaseFilter
-  include Cms::PublicFilter
-  include Mobile::PublicFilter
-  include Kana::PublicFilter
-  include Fs::FileFilter
 
-  before_action :set_group
-  before_action :check_api_user
-  before_action :set_path_with_preview, prepend: true
-  after_action :render_form_preview, only: :form_preview
-  after_action :render_preview
-  after_action :render_mobile, if: ->{ mobile_path? }
+  before_action :set_controller
+  before_action :set_preview_date
+  before_action :set_cur_path, only: %i[index]
+  before_action :set_form_data, only: %i[form_preview]
+  before_action :render_contents
 
-  rescue_from StandardError, with: :rescue_action
+  private
 
-  if SS.config.cms.remote_preview
-    skip_before_action :logged_in?
-    skip_before_action :set_group
-    skip_before_action :check_api_user
+  def set_controller
+    @controller = Cms::PublicController
   end
 
-  skip_before_action :set_site
-  skip_before_action :set_ss_assets
-  skip_before_action :set_cms_assets
+  def set_preview_date
+    @cur_date = params[:preview_date].present? ? params[:preview_date].in_time_zone : Time.zone.now
+  end
 
-  def form_preview
+  def set_cur_path
+    @cur_path ||= request_path
+    @cur_path.sub!(/^#{cms_preview_path}(\d+)?/, "")
+    @cur_path = "index.html" if @cur_path.blank?
+    @cur_path = URI.decode(@cur_path)
+  end
+
+  def set_form_data
     path = params[:path]
     preview_item = params.require(:preview_item).permit!
     id = preview_item[:id]
@@ -49,81 +49,37 @@ class Cms::PreviewController < ApplicationController
     @cur_page = page
     @preview_page = page
     @preview_item = preview_item
-
-    resp = render_page(page, method: "GET")
-    return page_not_found unless resp
-    self.response = resp
-
-    if page.layout
-      render html: render_layout(page.layout).html_safe, layout: "cms/page"
-    else
-      @_response_body = response.body
-    end
-  rescue
-    render_error 400, status: 400
   end
 
-  private
+  def render_contents
+    opts = { user: @cur_user, date: @cur_date }
+    opts[:node] = @cur_node if @cur_node
+    opts[:page] = @cur_page if @cur_page
 
-  def set_site
-    @cur_site = request.env["ss.site"] = SS::Site.find(params[:site])
-    @preview  = true
-  end
-
-  def set_path_with_preview
-    set_site
-    @cur_path ||= request_path
-    @cur_path.sub!(/^#{cms_preview_path}(\d+)?/, "")
-    @cur_path = "index.html" if @cur_path.blank?
-    @cur_path = URI.decode(@cur_path)
-    set_main_path
-    @cur_date = params[:preview_date].present? ? params[:preview_date].in_time_zone : Time.zone.now
-    filters << :preview
-  end
-
-  def x_sendfile(file = @file)
-    return if file =~ /\.(ht|x)ml$/
-    return if file =~ /\.part\.json$/
-    super
-    return if response.body.present?
-    return fs_sendfile if @cur_path =~ /^\/fs\//
-    return
-  end
-
-  def fs_sendfile
-    fs_path = SS::Application.routes.recognize_path(@cur_path)
-    id_path = fs_path[:id_path] || fs_path[:id]
-
-    width  = params[:width]
-    height = params[:height]
-
-    @item = SS::File.find_by(id: id_path.delete("/"), filename: fs_path[:filename]) rescue nil
-    raise "404" unless @item
-
-    if width.present? && height.present?
-      send_thumb @item.read, type: @item.content_type, filename: @item.filename,
-        disposition: :inline, width: width, height: height
-    else
-      if fs_path[:action] == "thumb"
-        thumb = @item.thumb
-        thumb = @item.thumb(fs_path[:size]) if fs_path[:size]
-        @item = thumb if thumb
-      end
-
-      if @thumb_width && @thumb_height
-        send_thumb @item.read, type: @item.content_type, filename: @item.filename,
-          disposition: :inline, width: width, height: height
-      else
-        send_file @item.path, type: @item.content_type, filename: @item.filename,
-          disposition: :inline, x_sendfile: true
+    @contents_env = {}
+    request.env.keys.each do |key|
+      if !key.include?(".") || key.start_with?("rack.") || key.start_with?("ss.")
+        @contents_env[key] = request.env[key]
       end
     end
+    @contents_env["HTTP_X_FORWARDED_HOST"] = @cur_site.domain
+    @contents_env["REQUEST_URI"] = "#{@cur_site.full_url}#{@cur_path[1..-1]}"
+    @contents_env["PATH_INFO"] = @cur_path
+    @contents_env["REQUEST_PATH"] = @cur_path
+    @contents_env["QUERY_STRING"]
+    @contents_env["ORIGINAL_FULLPATH"]
+    @contents_env["ss.filters"] ||= []
+    @contents_env["ss.filters"] << { preview: opts }
+
+    req = ActionDispatch::Request.new @contents_env
+    res = @controller.make_response! req
+
+    @contents_status, @contents_headers, @contents_body = @controller.dispatch("index", req, res)
   end
 
-  def render_preview
+  def convert_html_to_preview(body, options)
     preview_url = cms_preview_path preview_date: params[:preview_date]
 
-    body = response.body.force_encoding("utf-8")
     body.gsub!(/(href|src)=".*?"/) do |m|
       url = m.match(/.*?="(.*?)"/)[1]
       if url =~ /^\/(assets|assets-dev)\//
@@ -135,15 +91,14 @@ class Cms::PreviewController < ApplicationController
       end
     end
 
-    body.sub!("</body>", preview_template_html + "</body>")
-
-    response.body = body
+    body.sub!("</body>", preview_template_html(options) + "</body>")
+    body
   end
 
-  def preview_template_html
+  def preview_template_html(options)
     h = []
     h << view_context.stylesheet_link_tag("cms/preview")
-    h << view_context.javascript_include_tag("cms/public") if mobile_path?
+    h << view_context.javascript_include_tag("cms/public") if options[:mobile]
     h << view_context.javascript_include_tag("cms/preview")
     h << '<link href="/assets/css/colorbox/colorbox.css" rel="stylesheet" />'
     h << '<script src="/assets/js/jquery.colorbox.js"></script>'
@@ -200,40 +155,37 @@ class Cms::PreviewController < ApplicationController
     h.join("\n")
   end
 
-  def render_form_preview
-    require "uri"
-
-    body = response.body
-    body.gsub!(/(href|src)=".*?"/) do |m|
-      url = m.match(/.*?="(.*?)"/)[1]
-      scheme = ::URI.parse(url).scheme rescue true
-
-      if scheme
-        m
-      elsif url =~ /^\/\/|^#/
-        m
-      else
-        full_url = [ request.protocol, request.host_with_port ]
-        full_url << "/#{@cur_node.filename}" if @cur_node
-        full_url = full_url.join
-        m.sub(url, ::URI.join(full_url, url).to_s)
-      end
+  def render_preview
+    self.status = @contents_status
+    self.content_type = @contents_headers["Content-Type"]
+    @contents_headers.each do |k, v|
+      self.headers[k] = v
     end
 
-    response.body = body
-  end
+    if !@contents_headers["Content-Type"].include?("text/html")
+      self.response_body = @contents_body
+      return
+    end
 
-  def rescue_action(e = nil)
-    if e.to_s =~ /^\d+$/
-      status = e.to_s.to_i
+    mobile = @contents_env.any? { |f| f == :mobile || f.is_a?(Hash) && f.key?(:mobile) }
+    html = convert_html_to_preview(@contents_body.body, mobile: mobile)
+    render html: html.html_safe, layout: false
+  rescue => exception
+    if exception.to_s.numeric?
+      status = exception.to_s.to_i
       file = error_html_file(status)
       return ss_send_file(file, status: status, type: Fs.content_type(file), disposition: :inline)
     end
-    raise e
+    raise
   end
 
-  def error_html_file(status)
-    file = "#{Rails.public_path}/#{status}.html"
-    Fs.exists?(file) ? file : "#{Rails.public_path}/500.html"
+  public
+
+  def index
+    render_preview
+  end
+
+  def form_preview
+    render_preview
   end
 end

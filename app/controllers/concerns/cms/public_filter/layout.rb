@@ -18,6 +18,17 @@ module Cms::PublicFilter::Layout
     end
   end
 
+  def filter_include?(key)
+    filters.any? { |f| f == key || f.is_a?(Hash) && f.key?(key) }
+  end
+
+  def filter_options(key)
+    found = filters.find { |f| f == key || f.is_a?(Hash) && f.key?(key) }
+    return if found.nil?
+    return found[key] if found.is_a?(Hash)
+    true
+  end
+
   def find_part(path)
     part = Cms::Part.site(@cur_site).filename(path).first
     return unless part
