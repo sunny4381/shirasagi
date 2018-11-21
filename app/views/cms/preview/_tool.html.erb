@@ -6,15 +6,13 @@
   delete_path ||= nil
 %>
 <% head_for(self) do %>
-  <%= stylesheet_link_tag("cms/preview") %>
-  <%= javascript_include_tag("cms/preview") %>
-  <% if false %>
-  <link href="/assets/css/colorbox/colorbox.css" rel="stylesheet" />
-  <script src="/assets/js/jquery.colorbox.js"></script>
-  <% end %>
+  <%= stylesheet_link_tag("cms/preview/main") %>
+  <%= javascript_include_tag("cms/preview/main") %>
   <script>
-    SS_Preview.jquery_css_path = <%== stylesheet_path("ss/jquery").to_json %>;
-    SS_Preview.jquery_js_path = <%== javascript_path("ss/jquery").to_json %>;
+    SS_Preview.libs.jquery = <%== { js: javascript_path("cms/preview/jquery"), css: stylesheet_path("cms/preview/jquery") }.to_json %>;
+    SS_Preview.libs.datetimePicker = <%== { js: javascript_path("cms/preview/datetimepicker"), css: stylesheet_path("cms/preview/datetimepicker") }.to_json %>;
+    SS_Preview.libs.colorbox = <%== { js: javascript_path("/assets/js/jquery.colorbox-min.js"), css: "/assets/css/colorbox/colorbox.css" }.to_json %>;
+
     <% if @cur_site.subdir.present? %>
       SS_Preview.preview_path = <%== @cur_site.subdir.to_json %>;
     <% end %>
@@ -88,32 +86,5 @@
         <input type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("cms.preview_page") %>">
       <% end %>
     </div>
-    <% if false %>
-    <div>
-      <% if @parts.present? && Cms::Part.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
-        <input type="button" class="ss-preview-btn-show-part" value="<%= t('cms.show_link_to_part') %>" />
-        <select id="ss-preview-part-select">
-          <option value=''><%= t('cms.part') %></option>
-          <% @parts.each_value do |part| %>
-            <% next if part.blank? %>
-            <option value="<%= cms_part_path(site: @cur_site, id: part.id)  %>"><%= part.name %></option>
-          <% end %>
-        </select>
-        <input type="button" class="ss-preview-btn-part ss-preview-hide" value="<%= t('cms.part') %>">
-      <% end %>
-      <% if @cur_layout && Cms::Layout.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
-        <% layout_path = cms_layout_path(site: @cur_site, id: @cur_layout.id) %>
-        <input type="button" onclick="window.open('<%= layout_path %>')" value="<%= t('cms.layout') %>">
-      <% end %>
-      <% if @cur_node && Cms::Node.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
-        <% node_path = cms_node_path(site: @cur_site, id: @cur_node.id) %>
-        <input type="button" onclick="window.open('<%= node_path %>')" value="<%= t('cms.node') %>">
-      <% end %>
-      <% if @cur_page && Cms::Page.allowed?(:read, @cur_user, site: @cur_site, node: @cur_node) %>
-        <% page_path = cms_page_path(site: @cur_site, id: @cur_page.id) %>
-        <input type="button" onclick="window.open('<%= page_path %>')" value="<%= Cms::Page.model_name.human %>">
-      <% end %>
-    </div>
-    <% end %>
   </div>
 </div>

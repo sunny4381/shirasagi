@@ -6,8 +6,9 @@ SS_Preview = (function () {
     this.parts = [];
   }
 
-  SS_Preview.jquery_css_path = null;
-  SS_Preview.jquery_js_path = null;
+  SS_Preview.libs = {};
+  // SS_Preview.jquery_css_path = null;
+  // SS_Preview.jquery_js_path = null;
 
   SS_Preview.preview_path = "";
 
@@ -28,8 +29,18 @@ SS_Preview = (function () {
     }
 
     SS_Preview.instance = new SS_Preview("#ss-preview");
+
     SS_Preview.loadJQuery(function() {
-      SS_Preview.instance.initialize();
+      var countDownLatch = 2;
+      var lazyInitialize = function() {
+        countDownLatch -= 1;
+        if (countDownLatch == 0) {
+          SS_Preview.instance.initialize();
+        }
+      };
+
+      SS_Preview.loadDatetimePicker(lazyInitialize);
+      SS_Preview.loadColorbox(lazyInitialize);
     });
   };
 
@@ -41,11 +52,11 @@ SS_Preview = (function () {
 
     var link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = SS_Preview.jquery_css_path;
+    link.href = SS_Preview.libs.jquery.css;
 
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = SS_Preview.jquery_js_path;
+    script.src = SS_Preview.libs.jquery.js;
 
     if (script.readyState) {
       // IE
@@ -57,7 +68,67 @@ SS_Preview = (function () {
 
     document.getElementsByTagName("head")[0].appendChild(link);
     document.getElementsByTagName("head")[0].appendChild(script);
-  }
+  };
+
+  SS_Preview.loadDatetimePicker = function (callback) {
+    if ($.datetimepicker) {
+      if (callback) {
+        callback();
+      }
+      return;
+    }
+
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SS_Preview.libs.datetimePicker.css;
+
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = SS_Preview.libs.datetimePicker.js;
+
+    if (script.readyState) {
+      // IE
+    } else {
+      if (callback) {
+        script.onload = function () {
+          callback();
+        }
+      }
+    }
+
+    document.getElementsByTagName("head")[0].appendChild(link);
+    document.getElementsByTagName("head")[0].appendChild(script);
+  };
+
+  SS_Preview.loadColorbox = function (callback) {
+    if ($.colorbox) {
+      if (callback) {
+        callback();
+      }
+      return;
+    }
+
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SS_Preview.libs.colorbox.css;
+
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = SS_Preview.libs.colorbox.js;
+
+    if (script.readyState) {
+      // IE
+    } else {
+      if (callback) {
+        script.onload = function () {
+          callback();
+        }
+      }
+    }
+
+    document.getElementsByTagName("head")[0].appendChild(link);
+    document.getElementsByTagName("head")[0].appendChild(script);
+  };
 
   SS_Preview.prototype.initialize = function() {
     this.$el = $(this.el);
