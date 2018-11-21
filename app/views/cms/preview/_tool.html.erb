@@ -27,7 +27,10 @@
 <% end %>
 <% foot_for(self) do %>
   <div id="ss-preview-overlay" class="ss-preview-hide">
-    <button type="button" class="ss-preview-btn-edit-part">編集する</button>
+    <div class="ss-preview-overlay-tool">
+      <span class="ss-preview-part-name">編集する</span>
+      <button type="button" class="ss-preview-btn-edit-part">編集する</button>
+    </div>
   </div>
   <script type="text/html" id="ss-preview-content-tool">
     <% if edit_path %>

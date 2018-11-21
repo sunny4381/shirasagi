@@ -57,10 +57,19 @@
   border: 3px solid $gray5;
   @include border-radius(2px);
 
-  .ss-preview-btn-edit-part {
+  .ss-preview-overlay-tool {
     position: absolute;
+    margin: 0;
+    padding: 0;
     top: 0;
     right: 0;
+    background-color: rgb(242, 242, 242);
+  }
+  * {
+    display: inline-block;
+  }
+  .ss-preview-part-name {
+    font-size: 0.8em;
   }
 }
 

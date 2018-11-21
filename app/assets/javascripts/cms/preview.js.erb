@@ -280,6 +280,11 @@ SS_Preview = (function () {
   };
 
   SS_Preview.prototype.showOverlayForPart = function($part) {
+    var part = this.findPartById($part.data("part-id"));
+    if (! part) {
+      return;
+    }
+
     var offset = $part.offset();
     offset.left = Math.floor(offset.left) - SS_Preview.overlayPadding;
     offset.top = Math.floor(offset.top) - SS_Preview.overlayPadding;
@@ -287,8 +292,9 @@ SS_Preview = (function () {
     this.$overlay.offset(offset);
     this.$overlay.innerWidth($part.innerWidth() + SS_Preview.overlayPadding * 2);
     this.$overlay.innerHeight($part.innerHeight() + SS_Preview.overlayPadding * 2);
+    this.$overlay.data("part-id", part.id);
+    this.$overlay.find(".ss-preview-part-name").text(part.name);
     this.$overlay.removeClass("ss-preview-hide");
-    this.$overlay.data("part-id", $part.data("part-id"));
   };
 
   SS_Preview.prototype.scrollToPart = function($part) {
