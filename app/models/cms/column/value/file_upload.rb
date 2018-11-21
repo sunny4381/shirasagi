@@ -68,7 +68,7 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
 
     if @new_clone
       attributes = Hash[file.attributes]
-      attributes.select!{ |k| file.fields.keys.include?(k) }
+      attributes.select!{ |k| file.fields.key?(k) }
 
       clone_file = SS::File.new(attributes)
       clone_file.id = nil

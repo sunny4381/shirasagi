@@ -4,7 +4,8 @@ module Entry::Addon::Form
 
   included do
     belongs_to :form, class_name: 'Cms::Form'
-    embeds_many :column_values, class_name: 'Cms::Column::Value::Base', cascade_callbacks: true, after_add: :update_column_values_updated, after_remove: :update_column_values_updated
+    embeds_many :column_values, class_name: 'Cms::Column::Value::Base', cascade_callbacks: true,
+                after_add: :update_column_values_updated, after_remove: :update_column_values_updated
     field :column_values_updated, type: DateTime
 
     permit_params :form_id, column_values: [ :_type, :column_id, :value, :values ]

@@ -213,18 +213,18 @@ module Cms::PublicFilter
     raise "404"
   end
 
-  def rescue_action(e = nil)
-    return render_error(e, status: e.to_s.to_i) if e.to_s.numeric?
-    return render_error(e, status: 404) if e.is_a? Mongoid::Errors::DocumentNotFound
-    return render_error(e, status: 404) if e.is_a? ActionController::RoutingError
-    raise e
+  def rescue_action(exception = nil)
+    return render_error(exception, status: exception.to_s.to_i) if exception.to_s.numeric?
+    return render_error(exception, status: 404) if exception.is_a? Mongoid::Errors::DocumentNotFound
+    return render_error(exception, status: 404) if exception.is_a? ActionController::RoutingError
+    raise exception
   end
 
-  def render_error(e, opts = {})
+  def render_error(exception, opts = {})
     # for development
     if Rails.application.config.consider_all_requests_local
       logger.error "404 #{@cur_path}"
-      raise e
+      raise exception
     end
 
     self.response = ActionDispatch::Response.new

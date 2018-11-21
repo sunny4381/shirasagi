@@ -56,7 +56,7 @@ module Cms::PublicFilter::Layout
     if body =~ /\#\{part_parent[^}]*?_name\}/
       part_parent = part.parent || part
       body.gsub!('#{part_parent_name}', ERB::Util.html_escape(part_parent.name))
-      part_parent = part_parent.parent ? part_parent.parent : part_parent
+      part_parent = part_parent.parent || part_parent
       body.gsub!('#{part_parent.parent_name}', ERB::Util.html_escape(part_parent.name))
     end
 
