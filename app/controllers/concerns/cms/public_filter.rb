@@ -168,6 +168,7 @@ module Cms::PublicFilter
     return false if !resp
 
     send_part(resp)
+    request.env["ss.rendered"] = { type: :part, part: part }
     true
   end
 
@@ -177,6 +178,7 @@ module Cms::PublicFilter
 
     self.response = resp
     send_page(page)
+    request.env["ss.rendered"] = { type: :page, page: page, layout: @cur_layout }
     true
   end
 
@@ -191,6 +193,7 @@ module Cms::PublicFilter
 
     self.response = resp
     send_page(node)
+    request.env["ss.rendered"] = { type: :node, node: node, layout: @cur_layout }
     true
   end
 

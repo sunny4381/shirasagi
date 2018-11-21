@@ -1,3 +1,10 @@
+<%
+  show_path ||= nil
+  edit_path ||= nil
+  copy_path ||= nil
+  move_path ||= nil
+  delete_path ||= nil
+%>
 <% head_for(self) do %>
   <%= stylesheet_link_tag("cms/preview") %>
   <%= javascript_include_tag("cms/preview") %>
@@ -22,6 +29,23 @@
   <div id="ss-preview-overlay" class="ss-preview-hide">
     <button type="button" class="ss-preview-btn-edit-part">編集する</button>
   </div>
+  <script type="text/html" id="ss-preview-content-tool">
+    <% if edit_path %>
+      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= edit_path %>">編集する</button>
+    <% end %>
+    <% if copy_path %>
+      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= copy_path %>">複製する</button>
+    <% end %>
+    <% if move_path %>
+      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= move_path %>">移動する</button>
+    <% end %>
+    <% if delete_path %>
+      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= delete_path %>">削除する</button>
+    <% end %>
+    <% if show_path %>
+      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= show_path %>">管理画面へ</button>
+    <% end %>
+  </script>
   <script>
     SS_Preview.render();
   </script>
@@ -38,7 +62,9 @@
         </select>
         <button type="button" class="ss-preview-btn ss-preview-btn-outline">新規作成</button>
         <button type="button" class="ss-preview-btn ss-preview-btn-outline">下書きページ</button>
-        <button type="button" class="ss-preview-btn ss-preview-btn-outline">管理画面へ</button>
+        <% if show_path %>
+          <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= show_path %>">管理画面へ</button>
+        <% end %>
       </div>
       <div class="ss-preview-btn-group ss-preview-part-group ss-preview-hide">
         <select class="ss-preview-part-list">

@@ -101,6 +101,15 @@ class Cms::PreviewController < ApplicationController
       end
     end
 
+    if rendered = options[:rendered]
+      case rendered[:type]
+      when :page
+        merge_page_paths(options)
+      when :node
+        merge_node_paths(options)
+      end
+    end
+
     body.sub!(/<body.*?>/im) do
       ::Regexp.last_match[0] + render_to_string(partial: "tool", locals: options)
     end
@@ -117,6 +126,31 @@ class Cms::PreviewController < ApplicationController
     body
   end
 
+  def merge_page_paths(options)
+    rendered = options[:rendered]
+    page = rendered[:page]
+    return if page.blank?
+
+    options[:show_path] = show_path = page.private_show_path
+    options[:edit_path] = "#{show_path}/edit"
+    options[:move_path] = "#{show_path}/move"
+    options[:copy_path] = "#{show_path}/copy"
+    options[:delete_path] = "#{show_path}/delete"
+  end
+
+  def merge_node_paths(options)
+    rendered = options[:rendered]
+    node = rendered[:node]
+    return if node.blank?
+
+    options[:show_path] = show_path = node.private_show_path
+    options[:edit_path] = "#{show_path}/edit"
+    # currently, move and copy is not routed to node
+    # options[:move_path] = "#{show_path}/move"
+    # options[:copy_path] = "#{show_path}/copy_nodes"
+    options[:delete_path] = "#{show_path}/delete"
+  end
+
   def render_preview
     self.status = @contents_status
     self.content_type = @contents_headers["Content-Type"]
@@ -129,8 +163,7 @@ class Cms::PreviewController < ApplicationController
       return
     end
 
-    mobile = @contents_env.any? { |f| f == :mobile || f.is_a?(Hash) && f.key?(:mobile) }
-    html = convert_html_to_preview(@contents_body.body, mobile: mobile)
+    html = convert_html_to_preview(@contents_body.body, rendered: @contents_env["ss.rendered"])
     render html: html.html_safe, layout: false
   rescue => exception
     if exception.to_s.numeric?

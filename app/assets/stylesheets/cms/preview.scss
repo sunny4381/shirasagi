@@ -63,3 +63,15 @@
     right: 0;
   }
 }
+
+#ss-preview-content-begin {
+  display: block;
+  margin: 0;
+  padding: 8px;
+  background-color: rgb(242, 242, 242);
+  @include box-shadow(0px 1px 5px #666);
+
+  &.ss-preview-hide {
+    display: none;
+  }
+}

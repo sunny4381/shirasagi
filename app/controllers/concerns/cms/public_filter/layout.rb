@@ -102,7 +102,16 @@ module Cms::PublicFilter::Layout
     end
 
     html = render_template_variables(html)
-    html.sub!(/(\{\{ yield \}\}|<\/ yield \/>)/) { response.body }
+    html.sub!(/(\{\{ yield \}\}|<\/ yield \/>)/) do
+      body = []
+      if @preview && !html.include?("ss-preview-content-begin")
+        body << "<div id=\"ss-preview-content-begin\" class=\"ss-preview-hide\"></div>"
+      end
+
+      body << response.body
+
+      body.join
+    end
 
     html = html.sub(/<title>(.*?)<\/title>(\r|\n)*/) do
       @window_name = ::Regexp.last_match(1)

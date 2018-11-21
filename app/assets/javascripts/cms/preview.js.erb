@@ -74,9 +74,17 @@ SS_Preview = (function () {
     this.initializePart();
     this.initializeLayout();
     this.initializeOverlay();
+    this.initializeContentEdit();
 
     this.$el.on("click", ".ss-preview-btn-toggle-direct-edit-mode", function () {
       self.toggleDirectEditMode();
+    });
+
+    $(document).on("click", ".ss-preview-btn-open-path", function () {
+      var path = $(this).data("path");
+      if (path) {
+        window.open(path, "_blank")
+      }
     });
 
     this.$el.on("click", ".ss-preview-btn-pc", function () {
@@ -184,6 +192,16 @@ SS_Preview = (function () {
     });
   };
 
+  SS_Preview.prototype.initializeContentEdit = function() {
+    var contentBegin = $("#ss-preview-content-begin");
+    if (! contentBegin[0]) {
+      return;
+    }
+
+    var template = $("script#ss-preview-content-tool").html();
+    contentBegin.html(template);
+  };
+
   SS_Preview.prototype.previewPc = function() {
     var date = this.dateForPreview();
     if (! date) {
@@ -238,9 +256,11 @@ SS_Preview = (function () {
     this.directEditMode = !this.directEditMode;
     if (this.directEditMode) {
       button.addClass("ss-preview-active");
+      $("#ss-preview-content-begin").removeClass("ss-preview-hide");
     } else {
       button.removeClass("ss-preview-active");
       this.hideOverlay();
+      $("#ss-preview-content-begin").addClass("ss-preview-hide");
     }
   };
 
