@@ -1,7 +1,7 @@
 SS_Preview = (function () {
   function SS_Preview(el) {
     this.el = el;
-    this.directEditMode = false;
+    this.inplaceMode = false;
     this.layouts = [];
     this.parts = [];
   }
@@ -20,6 +20,8 @@ SS_Preview = (function () {
 
   SS_Preview.overlayPadding = 5;
   SS_Preview.previewToolHeight = 70;
+
+  SS_Preview.inplace_form_path = null;
 
   SS_Preview.instance = null;
 
@@ -145,10 +147,9 @@ SS_Preview = (function () {
     this.initializePart();
     this.initializeLayout();
     this.initializeOverlay();
-    this.initializeContentEdit();
 
-    this.$el.on("click", ".ss-preview-btn-toggle-direct-edit-mode", function () {
-      self.toggleDirectEditMode();
+    this.$el.one("click", ".ss-preview-btn-toggle-inplace", function () {
+      self.initializeInplaceMode();
     });
 
     $(document).on("click", ".ss-preview-btn-open-path", function () {
@@ -232,7 +233,7 @@ SS_Preview = (function () {
     this.$el.find(".ss-preview-part-group").removeClass("ss-preview-hide");
 
     $(document).on("mouseover", ".ss-preview-part", function() {
-      if (self.directEditMode) {
+      if (self.inplaceMode) {
         self.showOverlayForPart($(this));
       }
     });
@@ -261,16 +262,12 @@ SS_Preview = (function () {
     this.$overlay.on("click", ".ss-preview-btn-edit-part", function() {
       self.openPartEdit(overlay.data("part-id"));
     });
-  };
 
-  SS_Preview.prototype.initializeContentEdit = function() {
-    var contentBegin = $("#ss-preview-content-begin");
-    if (! contentBegin[0]) {
-      return;
-    }
-
-    var template = $("script#ss-preview-content-tool").html();
-    contentBegin.html(template);
+    $(document).on('click', function(e) {
+      if (! $(e.target).closest('#ss-preview-overlay').length) {
+        self.hideOverlay();
+      }
+    });
   };
 
   SS_Preview.prototype.previewPc = function() {
@@ -321,20 +318,6 @@ SS_Preview = (function () {
     form.submit();
   };
 
-  SS_Preview.prototype.toggleDirectEditMode = function() {
-    var button = this.$el.find(".ss-preview-btn-toggle-direct-edit-mode");
-
-    this.directEditMode = !this.directEditMode;
-    if (this.directEditMode) {
-      button.addClass("ss-preview-active");
-      $("#ss-preview-content-begin").removeClass("ss-preview-hide");
-    } else {
-      button.removeClass("ss-preview-active");
-      this.hideOverlay();
-      $("#ss-preview-content-begin").addClass("ss-preview-hide");
-    }
-  };
-
   SS_Preview.prototype.changePart = function($el) {
     var part = this.findPartById($el.val());
     if (! part) {
@@ -356,13 +339,24 @@ SS_Preview = (function () {
       return;
     }
 
-    var offset = $part.offset();
-    offset.left = Math.floor(offset.left) - SS_Preview.overlayPadding;
-    offset.top = Math.floor(offset.top) - SS_Preview.overlayPadding;
+    var rect = $part[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
 
-    this.$overlay.offset(offset);
-    this.$overlay.innerWidth($part.innerWidth() + SS_Preview.overlayPadding * 2);
-    this.$overlay.innerHeight($part.innerHeight() + SS_Preview.overlayPadding * 2);
+    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
+    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
+    var width = rect.width + SS_Preview.overlayPadding * 2;
+    var height = rect.height + SS_Preview.overlayPadding * 2;
+
+    this.$overlay[0].style.top = top + "px";
+    this.$overlay[0].style.left = left + "px";
+    this.$overlay[0].style.width = width + "px";
+    this.$overlay[0].style.height = height + "px";
+
     this.$overlay.data("part-id", part.id);
     this.$overlay.find(".ss-preview-part-name").text(part.name);
     this.$overlay.removeClass("ss-preview-hide");
@@ -377,7 +371,6 @@ SS_Preview = (function () {
 
     window.scrollTo({ top: scrollTop, behavior: "smooth" });
   };
-
   SS_Preview.prototype.openPartEdit = function(partId) {
     var part = this.findPartById(partId);
     if (! part) {
@@ -385,6 +378,169 @@ SS_Preview = (function () {
     }
 
     window.open(part.path, "_blank");
+  };
+
+  //
+  // Inplace Edit
+  //
+
+  SS_Preview.prototype.initializeInplaceMode = function() {
+    var button = this.$el.find(".ss-preview-btn-toggle-inplace");
+    var self = this;
+
+    $.ajax({
+      url: SS_Preview.inplace_form_path,
+      success: function(html) {
+        // show custom inplace edit form
+        if (! self.initializeInplaceForm(html)) {
+          // show default inplace edit toolbar if inplace form is missing
+          self.initializeContentEdit();
+          self.showContentEdit();
+        }
+      },
+      error: function(xhr, status, error) {
+        // show default inplace edit toolbar
+        self.initializeContentEdit();
+        self.showContentEdit();
+      },
+      complete: function() {
+        self.$el.on("click", ".ss-preview-btn-toggle-inplace", function () {
+          self.toggleInplaceMode();
+        });
+        button.addClass("ss-preview-active");
+        self.inplaceMode = true;
+
+        $("#ss-preview-notice").addClass("ss-preview-hide");
+      }
+    });
+  };
+
+  SS_Preview.prototype.toggleInplaceMode = function() {
+    var button = this.$el.find(".ss-preview-btn-toggle-inplace");
+
+    this.inplaceMode = !this.inplaceMode;
+    if (this.inplaceMode) {
+      button.addClass("ss-preview-active");
+      this.showInplaceForm() || this.showContentEdit();
+    } else {
+      button.removeClass("ss-preview-active");
+      this.hideOverlay();
+      this.hideInplaceForm();
+      this.hideContentEdit();
+    }
+  };
+
+  //
+  // Content Edit
+  //
+
+  SS_Preview.prototype.initializeContentEdit = function() {
+    var contentBegin = $("#ss-preview-content-begin");
+    if (! contentBegin[0]) {
+      return;
+    }
+
+    var template = $("script#ss-preview-content-tool").html();
+    contentBegin.html(template);
+  };
+
+  SS_Preview.prototype.showContentEdit = function() {
+    $("#ss-preview-content-begin").removeClass("ss-preview-hide");
+  };
+
+  SS_Preview.prototype.hideContentEdit = function() {
+    $("#ss-preview-content-begin").addClass("ss-preview-hide");
+  };
+
+  //
+  // Inplace Form
+  //
+
+  SS_Preview.prototype.initializeInplaceForm = function(html) {
+    if (! html) {
+      return false;
+    }
+
+    $('#ss-preview-content-end').after(html);
+
+    var form = $("#ss-preview-inplace-item-form");
+    if (! form[0]) {
+      return false;
+    }
+
+    var self = this;
+    form.on("click", ".ss-preview-btn-default", function() {
+      self.toggleInplaceMode();
+    });
+
+    form.on("submit", function(e) {
+      self.clearError();
+
+      form.ajaxSubmit({
+        dataType: "json",
+        success: function(htmlOrJson) {
+          self.previewPc();
+        },
+        error: function(xhr, status, error) {
+          self.showError(xhr.responseJSON || [ error ]);
+        }
+      });
+
+      e.preventDefault();
+      return false;
+    });
+
+    return this.showInplaceForm();
+  };
+
+  SS_Preview.prototype.showInplaceForm = function() {
+    var form = $("#ss-preview-inplace-item-form");
+    if (! form[0]) {
+      return false;
+    }
+
+    $('#ss-preview-content-begin').nextUntil('#ss-preview-content-end').each(function() {
+      $(this).addClass("ss-preview-hide");
+    });
+
+    form.removeClass("ss-preview-hide");
+    return true;
+  };
+
+  SS_Preview.prototype.hideInplaceForm = function(html) {
+    var form = $("#ss-preview-inplace-item-form");
+    if (! form[0]) {
+      return false;
+    }
+
+    $('#ss-preview-content-begin').nextUntil('#ss-preview-content-end').each(function() {
+      $(this).removeClass("ss-preview-hide");
+    });
+
+    form.addClass("ss-preview-hide");
+
+    return true;
+  };
+
+  //
+  //
+  //
+
+  SS_Preview.prototype.showError = function(errorJson) {
+    var messages = [];
+    $.each(errorJson, function() {
+      messages.push("<li>" + this + "</li>");
+    });
+
+    $("#ss-preview-error-explanation ul").html(messages.join());
+    $("#ss-preview-error-explanation").removeClass("ss-preview-hide");
+    $("#ss-preview-messages").removeClass("ss-preview-hide");
+  };
+
+  SS_Preview.prototype.clearError = function() {
+    $("#ss-preview-error-explanation ul").html("");
+    $("#ss-preview-error-explanation").addClass("ss-preview-hide");
+    $("#ss-preview-messages").addClass("ss-preview-hide");
   };
 
   SS_Preview.appendParams = function (form, name, params) {

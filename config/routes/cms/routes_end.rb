@@ -182,6 +182,10 @@ SS::Application.routes.draw do
       namespace "opendata_ref" do
         get "datasets:cid" => "datasets#index", as: 'datasets'
       end
+      namespace "preview" do
+        get ":type/:id/edit" => "inplace_edit#edit", as: 'edit_inplace_edit'
+        match ":type/:id/" => "inplace_edit#update", via: [:put, :patch], as: 'inplace_edit'
+      end
     end
   end
 

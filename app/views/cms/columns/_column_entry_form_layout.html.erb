@@ -2,7 +2,7 @@
   <div class="entry-unit-header">
     <h3>
       <% if !disabled %>
-      <i class="material-icons">open_with</i>
+      <i class="material-icons md-14">open_with</i>
       <% end %>
       <%= column.name %>
     </h3>
@@ -10,14 +10,14 @@
     <div class="entry-unit-controller">
       <%# here are reorder controller %>
       <%= select_tag("order", options_for_select([]), class: "entry-unit-controller-move-position no-form-control") %>
-      <button type="button" class="entry-unit-controller-move-up"><i class="material-icons">keyboard_arrow_up</i></button>
-      <button type="button" class="entry-unit-controller-move-down"><i class="material-icons">keyboard_arrow_down</i></button>
+      <button type="button" class="entry-unit-controller-move-up"><i class="material-icons md-14">keyboard_arrow_up</i></button>
+      <button type="button" class="entry-unit-controller-move-down"><i class="material-icons md-14">keyboard_arrow_down</i></button>
     </div>
     <div class="entry-unit-controller">
       <%# here are help and close controller %>
-      <button type="button" class="entry-unit-controller-help"><i class="material-icons">help</i></button>
-      <button type="button" class="entry-unit-controller-add"><i class="material-icons">add_circle_outline</i></button>
-      <button type="button" class="entry-unit-controller-remove"><i class="material-icons">remove_circle_outline</i></button>
+      <button type="button" class="entry-unit-controller-help"><i class="material-icons md-14">help</i></button>
+      <button type="button" class="entry-unit-controller-add"><i class="material-icons md-14">add_circle_outline</i></button>
+      <button type="button" class="entry-unit-controller-remove"><i class="material-icons md-14">remove_circle_outline</i></button>
     </div>
     <% end %>
   </div>

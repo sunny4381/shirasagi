@@ -110,6 +110,10 @@ module Cms::PublicFilter::Layout
 
       body << response.body
 
+      if @preview && !html.include?("ss-preview-content-begin")
+        body << "<div id=\"ss-preview-content-end\" class=\"ss-preview-hide\"></div>"
+      end
+
       body.join
     end
 

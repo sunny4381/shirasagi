@@ -21,6 +21,9 @@
       SS_Preview.request_path = <%== request.path.to_json %>;
       SS_Preview.form_item = <%== @preview_item.to_json %>;
     <% end %>
+    <% if %i[page node].include?(rendered[:type]) %>
+      SS_Preview.inplace_form_path = <%== cms_apis_preview_edit_inplace_edit_path(site: @cur_site, type: rendered[:type], id: rendered[:page] || rendered[:node]).to_json %>;
+    <% end %>
   </script>
 <% end %>
 <% foot_for(self) do %>
@@ -55,7 +58,7 @@
   <div id="ss-preview">
     <div>
       <div class="ss-preview-btn-group">
-        <button type="button" class="ss-preview-btn ss-preview-btn-outline-primary ss-preview-btn-toggle-direct-edit-mode">ダイレクト編集モード</button>
+        <button type="button" class="ss-preview-btn ss-preview-btn-outline-primary ss-preview-btn-toggle-inplace">ダイレクト編集モード</button>
       </div>
       <div class="ss-preview-btn-group">
         <select class="ss-preview-node-list">
@@ -85,6 +88,22 @@
       <% else %>
         <input type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("cms.preview_page") %>">
       <% end %>
+    </div>
+    <div id="ss-preview-messages" <% if @intercepted_notice.blank? %>class="ss-preview-hide"<% end %>>
+      <% if @intercepted_notice %>
+      <div id="ss-preview-notice"><%= @intercepted_notice %></div>
+      <% end %>
+      <div id="ss-preview-error-explanation" class="ss-preview-hide">
+        <h2><%= t("errors.template.header.other") %></h2>
+        <p><%= t("errors.template.body") %></p>
+        <ul>
+          <% if false %>
+          <li>ファイル名を入力してください。</li>
+          <li>他のユーザーによって更新されています。編集をやり直してください。</li>
+          <li>タイトルを入力してください。</li>
+          <% end %>
+        </ul>
+      </div>
     </div>
   </div>
 </div>

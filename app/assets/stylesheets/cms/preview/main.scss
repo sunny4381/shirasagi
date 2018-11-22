@@ -1,5 +1,5 @@
 /**
- *= require jquery.datetimepicker
+ *= require mdi/material-icons
  */
 
 @import "compass-mixins/lib/compass";
@@ -39,15 +39,6 @@
     border: 1px solid green;
   }
 }
-//.preview-part {
-//  position: absolute;
-//  @include box-sizing(border-box);
-//  display: inline-block;
-//  background: rgba(0,0,0,0.5);
-//  text-decoration: none;
-//  text-shadow: 1px 1px 0px #fff, -1px 1px 0px #fff, 1px -1px 0px #fff, -1px -1px 0px #fff;
-//  z-index: 5000;
-//}
 .ss-preview-hide {
   display: none;
 }
@@ -83,4 +74,22 @@
   &.ss-preview-hide {
     display: none;
   }
+}
+
+#ss-preview-inplace-item-form {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 8px;
+
+  .btn {
+    -webkit-appearance: button;
+  }
+
+  .tooltip {
+    display: none;
+  }
+
+  .hide { display: none; }
+
+  @import "entry/ss";
 }
