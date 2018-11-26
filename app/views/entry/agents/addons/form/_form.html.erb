@@ -25,6 +25,83 @@
 <%= jquery do %>
   var $el = $("#addon-entry-agents-addons-form");
 
+  var resetOrder = function() {
+    var count = $el.find(".column-value").length;
+
+    var optionTemplate = "<option value=\":value\">:display</option>";
+    var options = [];
+    for (var i = 0; i < count; i++) {
+      options.push(optionTemplate.replace(":value", i.toString()).replace(":display", (i + 1).toString()));
+    };
+    options.push(optionTemplate.replace(":value", count.toString()).replace(":display", "末尾"));
+
+    $el.find(".column-value").each(function(index) {
+      var $select = $(this).find(".column-value-controller-move-position");
+      $select.html(options.join(""));
+      $select.val(index);
+    });
+  };
+
+  resetOrder();
+
+  $el.on("change", ".column-value-controller-move-position", function(ev) {
+    var $this = $(this);
+    var val = $this.val();
+    if (! val) {
+      return;
+    }
+
+    var $columnValue = $this.closest(".column-value");
+
+    var $columnValues = $el.find(".column-value");
+    val = parseInt(val);
+    if (val >= $columnValues.length) {
+      var $moveTo = $($columnValues[$columnValues.length - 1]);
+      $moveTo.after($columnValue);
+    } else {
+      var $moveTo = $($columnValues[val]);
+      $moveTo.before($columnValue);
+    }
+
+    resetOrder();
+  });
+
+  $el.on("click", ".column-value-controller-move-up", function(ev) {
+    ev.preventDefault();
+
+    var $this = $(this);
+    var $columnValue = $this.closest(".column-value");
+    if (! $columnValue[0]) {
+      return;
+    }
+
+    var $prev = $columnValue.prev(".column-value");
+    if (! $prev[0]) {
+      return;
+    }
+
+    $prev.before($columnValue);
+    resetOrder();
+  });
+
+  $el.on("click", ".column-value-controller-move-down", function(ev) {
+    ev.preventDefault();
+
+    var $this = $(this);
+    var $columnValue = $this.closest(".column-value");
+    if (! $columnValue[0]) {
+      return;
+    }
+
+    var $next = $columnValue.next(".column-value");
+    if (! $next[0]) {
+      return;
+    }
+
+    $next.after($columnValue);
+    resetOrder();
+  });
+
   $el.on("click", ".column-value-controller-delete", function(ev) {
     ev.preventDefault();
 
@@ -38,7 +115,10 @@
       return;
     }
 
-    $columnValue.addClass("column-value-deleting").fadeOut().queue(function() { $columnValue.remove(); });
+    $columnValue.addClass("column-value-deleting").fadeOut().queue(function() {
+      $columnValue.remove();
+      resetOrder();
+    });
   });
 
   $el.on("click", ".column-value-palette [data-form-id]", function() {
@@ -53,6 +133,7 @@
       success: function(data, status, xhr) {
         $self.closest(".column-value-palette").before(data);
         SS.render();
+        resetOrder();
       },
       error: function(xhr, status, error) {
         $self.closest(".column-value-palette").find(".column-value-palette-error").html(error).removeClass("hide");
