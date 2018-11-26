@@ -8,36 +8,54 @@
   <% @item.column_values.order_by(order: 1, name: 1).each do |column_value| %>
     <% column = column_value.column %>
     <% next if column.blank? %>
-    <%= render file: column.entry_form_path, locals: { f: g, column: column, value: column_value, disabled: false } %>
+    <%= render file: column.column_form_path, locals: { f: g, column: column, value: column_value, controller: true } %>
   <% end %>
 
-  <div class="entry-controller">
-    <h3>追加</h3>
+  <div class="column-value-palette">
+    <h3><%= t("ss.buttons.add") %></h3>
     <fieldset>
       <% @item.form.columns.order_by(order: 1).each do |column| %>
         <butotn type="button" class="btn btn-outline-primary" data-form-id="<%= @item.form.id %>" data-column-id="<%= column.id %>"><%= column.name %></butotn>
       <% end %>
     </fieldset>
-    <div class="entry-controller-error hide"></div>
+    <div class="column-value-palette-error hide"></div>
   </div>
 <% end %>
 
 <%= jquery do %>
-  $(".entry-controller [data-form-id]").on("click", function() {
+  var $el = $("#addon-entry-agents-addons-form");
+
+  $el.on("click", ".column-value-controller-delete", function(ev) {
+    ev.preventDefault();
+
+    var $this = $(this);
+    var $columnValue = $this.closest(".column-value");
+    if (! $columnValue[0]) {
+      return;
+    }
+
+    if (! confirm(<%== t("ss.confirm.delete").to_json %>)) {
+      return;
+    }
+
+    $columnValue.addClass("column-value-deleting").fadeOut().queue(function() { $columnValue.remove(); });
+  });
+
+  $el.on("click", ".column-value-palette [data-form-id]", function() {
     var $self = $(this);
     var formId = $self.data("form-id");
     var columnId = $self.data("column-id");
 
     $self.closest("fieldset").attr("disabled", true);
-    $self.closest(".entry-controller").find(".entry-controller-error").addClass("hide").html("");
+    $self.closest(".column-value-palette").find(".column-value-palette-error").addClass("hide").html("");
     $.ajax({
-      url: <%== entry_apis_form_path(form_id: ":formId", column_id: ":columnId").to_json %>.replace(/:formId/, formId).replace(/:columnId/, columnId),
+      url: <%== cms_apis_form_column_new_path(id: ":formId", column_id: ":columnId").to_json %>.replace(/:formId/, formId).replace(/:columnId/, columnId),
       success: function(data, status, xhr) {
-        $self.closest(".entry-controller").before(data);
+        $self.closest(".column-value-palette").before(data);
         SS.render();
       },
       error: function(xhr, status, error) {
-        $self.closest(".entry-controller").find(".entry-controller-error").html(error).removeClass("hide");
+        $self.closest(".column-value-palette").find(".column-value-palette-error").html(error).removeClass("hide");
       },
       complete: function(xhr, status) {
         $self.closest("fieldset").attr("disabled", false);
@@ -45,7 +63,7 @@
     });
   });
 
-  $('a.btn-file-upload').data('on-select', function($item) {
+  $el.find('a.btn-file-upload').data('on-select', function($item) {
     $.colorbox.close();
 
     var fileId = $item.data('id');
@@ -60,7 +78,7 @@
     $element.siblings('.btn-file-delete').show();
   });
 
-  $('a.btn-file-delete').on('click', function(e) {
+  $el.on('click', 'a.btn-file-delete', function(e) {
     var $this = $(this);
     $this.siblings('input.file-id').val('');
     $this.siblings('span.humanized-name').text('');

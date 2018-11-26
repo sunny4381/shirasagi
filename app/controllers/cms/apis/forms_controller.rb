@@ -15,10 +15,14 @@ class Cms::Apis::FormsController < ApplicationController
   end
 
   def form
-    raise '404' if params[:item_type] != 'page'
-
     @item = @model.site(@cur_site).find(params[:id])
     @target = Cms::Page.site(@cur_site).find(params[:item_id]).becomes_with_route if params[:item_id].present?
+    render layout: false
+  end
+
+  def new_column
+    @item = Cms::Form.site(@cur_site).find(params[:id])
+    @cur_column = @item.columns.find(params[:column_id])
     render layout: false
   end
 end

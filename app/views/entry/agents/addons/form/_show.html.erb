@@ -1,12 +1,19 @@
-<dl class="see mod-cms-form-page">
+<% return if @item.form.blank? %>
+
+<div class="see mod-cms-form-page column-values">
   <% @item.column_values.order_by(order: 1, name: 1).each do |column_value| %>
-    <% column = column_value.column %>
+    <% column = @item.form.columns.find(column_value.column_id) rescue nil %>
     <% next if column.blank? %>
     <% if column.column_show_path %>
       <%= render file: column.column_show_path, locals: { column: column, value: column_value } %>
     <% else %>
-      <dt><%= column_value.name %></dt>
-      <dd><%= br [ column_value.value.presence ].compact.flatten.join(', ') %></dd>
+      <%= render 'cms/agents/columns/main/base', show: true, column: column, value: column_value do %>
+        <%= br [ column_value.value.presence ].compact.flatten.join(', ') %>
+      <% end %>
     <% end %>
   <% end %>
-</dl>
+</div>
+
+<%= jquery do %>
+  $('#addon-entry-agents-addons-form .addon-head h2').text(<%== @item.form.name.to_json %>);
+<% end %>

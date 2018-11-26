@@ -23,6 +23,7 @@
 @import "sys/ss";
 @import "sns/ss";
 @import "cms/ss";
+@import "cms/column";
 
 // modules
 @import "ads/ss";
@@ -31,7 +32,6 @@
 @import "ldap/ss";
 @import "workflow/ss";
 @import "webmail/ss";
-@import "entry/ss";
 
 // opendata
 @import "opendata/ss";

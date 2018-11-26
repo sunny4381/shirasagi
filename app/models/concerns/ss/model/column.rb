@@ -103,10 +103,6 @@ module SS::Model::Column
     File.exists?(file) ? file : nil
   end
 
-  def entry_form_path
-    "#{Rails.root}/app/views/#{path}/_entry_form.html.erb"
-  end
-
   delegate :value_type, to: :class
 
   def serialize_value(*args)

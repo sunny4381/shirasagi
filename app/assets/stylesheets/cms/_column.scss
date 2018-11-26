@@ -1,0 +1,23 @@
+.column-value ~ .column-value {
+  margin-top: 15px;
+}
+
+.column-value-header {
+  @include display-flex;
+  @include flex-direction(row);
+  padding: 5px 0;
+  label {
+    color: #a0522d;
+    font-weight: bold;
+  }
+  .column-value-header-group:first-child {
+    margin-right: auto;
+  }
+  .column-value-header-group ~ .column-value-header-group {
+    margin-left: 16px;
+  }
+}
+
+.column-value-body {
+  padding-bottom: 5px;
+}

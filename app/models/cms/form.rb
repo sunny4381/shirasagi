@@ -63,13 +63,13 @@ class Cms::Form
     sub_type == "entry"
   end
 
-  def build_column_values(hash)
-    hash = hash.to_unsafe_h if hash.respond_to?(:to_unsafe_h)
-    hash.map do |key, value|
-      column = columns.find(key) rescue nil
-      next nil if column.blank?
-
-      column.serialize_value(value)
-    end
-  end
+  # def build_column_values(hash)
+  #   hash = hash.to_unsafe_h if hash.respond_to?(:to_unsafe_h)
+  #   hash.map do |key, value|
+  #     column = columns.find(key) rescue nil
+  #     next nil if column.blank?
+  #
+  #     column.serialize_value(value)
+  #   end
+  # end
 end

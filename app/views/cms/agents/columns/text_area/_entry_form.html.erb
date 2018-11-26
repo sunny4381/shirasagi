@@ -1,4 +1,0 @@
-<% disabled ||= false %>
-<%= render "cms/columns/column_entry_form_layout", f: f, column: column, value: value, disabled: disabled do %>
-  <%= text_area_tag "#{f.object_name}[][value]", value.try(:value), column.form_options.merge(id: nil) %>
-<% end %>

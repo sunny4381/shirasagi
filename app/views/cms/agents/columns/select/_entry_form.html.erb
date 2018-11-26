@@ -1,4 +1,0 @@
-<% disabled ||= false %>
-<%= render "cms/columns/column_entry_form_layout", f: f, column: column, value: value, disabled: disabled do %>
-  <%= select_tag("#{f.object_name}[][value]", options_for_select(column.select_options, selected: value.try(:value)), column.form_options.merge(include_blank: column.place_holder.presence || true)) %>
-<% end %>

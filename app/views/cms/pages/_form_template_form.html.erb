@@ -18,7 +18,7 @@
 
     <%= jquery do %>
       Cms_TemplateForm.render({
-        formUrlTemplate: <%== cms_apis_form_path(id: ':id', item_type: 'page', item_id: @item.new_record? ? nil : @item.id).to_json %>
+        formUrlTemplate: <%== cms_apis_form_path(id: ':id', item_id: @item.new_record? ? nil : @item.id).to_json %>
       });
     <% end %>
   </dd>
