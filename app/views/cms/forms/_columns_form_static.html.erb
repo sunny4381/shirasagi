@@ -1,19 +1,20 @@
 <%
-def find_column_value(column)
-  return nil unless @target
-  @target.column_values.where(column_id: column.id).first
-end
+  def find_column_value(column_values, column)
+    column_values.where(column_id: column.id).first
+  end
 %>
 
-<div class="see mod-cms-form-page column-values">
-  <% @item.columns.order_by(order: 1, created: 1).each do |column| %>
-    <% value = find_column_value(column) %>
-    <%= render file: column.column_form_path, locals: { f: f, column: column, value: value } %>
+<%= f.fields_for :column_values do |g| %>
+  <% form.columns.order_by(order: 1, name: 1).each do |column| %>
+    <% column_value = find_column_value(column_values, column) %>
+    <%= render file: column.column_form_path, locals: { f: g, column: column, value: column_value, controller: false } %>
   <% end %>
-</div>
+<% end %>
 
 <%= jquery do %>
-  $('a.btn-file-upload').data('on-select', function($item) {
+  var $el = $(<%== "##{addon_id}".to_json %>);
+
+  $el.find('a.btn-file-upload').data('on-select', function($item) {
     $.colorbox.close();
 
     var fileId = $item.data('id');
@@ -28,7 +29,7 @@ end
     $element.siblings('.btn-file-delete').show();
   });
 
-  $('a.btn-file-delete').on('click', function(e) {
+  $el.on('click', 'a.btn-file-delete', function(e) {
     var $this = $(this);
     $this.siblings('input.file-id').val('');
     $this.siblings('span.humanized-name').text('');

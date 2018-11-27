@@ -156,6 +156,7 @@ ja:
       request_entity_too_large: データのサイズが大きすぎます。
       contact_system_administrator: システム管理者にお問い合わせください。
       try_again_later: 時間を置いてもう一度お試しください。
+      malformed_liquid_template: "の形式が正しくありません。%{error}"
     template:
       body: 次の項目を確認してください。
       header:

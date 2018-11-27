@@ -23,6 +23,7 @@ class Cms::Form
   validates :order, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 999_999, allow_blank: true }
   validates :state, presence: true, inclusion: { in: %w(public closed), allow_blank: true }
   validates :sub_type, presence: true, inclusion: { in: %w(static entry), allow_blank: true }
+  validate :validate_html
 
   scope :and_public, -> {
     where(state: 'public')
@@ -51,7 +52,7 @@ class Cms::Form
 
   def sub_type_options
     %w(static entry).map do |v|
-      [ v, v ]
+      [ I18n.t("cms.options.form_sub_type.#{v}"), v ]
     end
   end
 
@@ -72,4 +73,14 @@ class Cms::Form
   #     column.serialize_value(value)
   #   end
   # end
+
+  private
+
+  def validate_html
+    return if html.blank?
+
+    Liquid::Template.parse(html, error_mode: :strict)
+  rescue Liquid::Error => e
+    self.errors.add :html, :malformed_liquid_template, error: e.to_s
+  end
 end

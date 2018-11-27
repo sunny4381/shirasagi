@@ -1,30 +1,27 @@
-<%
-  @item.form = Cms::Form.site(@cur_site).where(sub_type: "entry").first
-%>
-
-<%= f.hidden_field :form_id, value: @item.form.id %>
-
 <%= f.fields_for :column_values do |g| %>
-  <% @item.column_values.order_by(order: 1, name: 1).each do |column_value| %>
+  <% column_values.order_by(order: 1, name: 1).each do |column_value| %>
     <% column = column_value.column %>
     <% next if column.blank? %>
     <%= render file: column.column_form_path, locals: { f: g, column: column, value: column_value, controller: true } %>
   <% end %>
 
-  <div class="column-value-palette">
-    <h3><%= t("ss.buttons.add") %></h3>
-    <fieldset>
-      <% @item.form.columns.order_by(order: 1).each do |column| %>
-        <butotn type="button" class="btn btn-outline-primary" data-form-id="<%= @item.form.id %>" data-column-id="<%= column.id %>"><%= column.name %></butotn>
-      <% end %>
-    </fieldset>
-    <div class="column-value-palette-error hide"></div>
-  </div>
+  <% if true %>
+    <div class="column-value-palette">
+      <h3><%= t("ss.buttons.add") %></h3>
+      <fieldset>
+        <% form.columns.order_by(order: 1).each do |column| %>
+          <button type="button" class="btn btn-outline-primary" data-form-id="<%= form.id %>" data-column-id="<%= column.id %>"><%= column.name %></button>
+        <% end %>
+      </fieldset>
+      <div class="column-value-palette-error hide"></div>
+    </div>
+  <% end %>
 <% end %>
 
 <%= jquery do %>
-  var $el = $("#addon-entry-agents-addons-form");
+  var $el = $(<%== "##{addon_id}".to_json %>);
 
+  <% if true %>
   var resetOrder = function() {
     var count = $el.find(".column-value").length;
 
@@ -143,6 +140,7 @@
       }
     });
   });
+  <% end %>
 
   $el.find('a.btn-file-upload').data('on-select', function($item) {
     $.colorbox.close();

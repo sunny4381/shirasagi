@@ -1,0 +1,5 @@
+<% if form.sub_type_static? %>
+  <%= render 'cms/forms/columns_form_static', local_assigns %>
+<% else %>
+  <%= render 'cms/forms/columns_form_entry', local_assigns %>
+<% end %>

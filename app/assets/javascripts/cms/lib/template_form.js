@@ -21,7 +21,7 @@ Cms_TemplateForm.render = function(options) {
 
 Cms_TemplateForm.prototype = {
   render: function() {
-    this.changeForm();
+    // this.changeForm();
 
     var pThis = this;
     this.$formChangeBtn.on('click', function() {
@@ -69,14 +69,14 @@ Cms_TemplateForm.prototype = {
     this.$formPageBody.html('<p>' + msg + '</p>');
   },
   activateForm: function() {
-    this.$formPage.show();
-    $('#addon-cms-agents-addons-body').hide();
-    $('#addon-cms-agents-addons-file').hide();
+    this.$formPage.removeClass('hide');
+    $('#addon-cms-agents-addons-body').addClass('hide');
+    $('#addon-cms-agents-addons-file').addClass('hide');
   },
   deactivateForm: function() {
     this.$formPageBody.html('');
-    this.$formPage.hide();
-    $('#addon-cms-agents-addons-body').show();
-    $('#addon-cms-agents-addons-file').show();
+    this.$formPage.addClass('hide');
+    $('#addon-cms-agents-addons-body').removeClass('hide');
+    $('#addon-cms-agents-addons-file').removeClass('hide');
   }
 };
