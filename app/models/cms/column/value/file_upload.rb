@@ -53,6 +53,15 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
 
   private
 
+  def copy_column_settings
+    super
+
+    return if column.blank?
+
+    self.html_tag = column.html_tag
+    self.html_additional_attr = column.html_additional_attr
+  end
+
   def file_icon
     return '' if file.blank?
     "icon-#{::File.extname(file.filename).sub(/^\./, '')}"
@@ -113,7 +122,7 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
       outer_options['class'] << file_icon
       ApplicationController.helpers.link_to(file.url, outer_options) do
         options['alt'] ||= file.name
-        options['title'] ||= ::File.basename(file.filename)
+        options['title'] ||= file.basename
         ApplicationController.helpers.image_tag(file.thumb_url, options)
       end
     when 'a'
@@ -122,7 +131,7 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
       ApplicationController.helpers.link_to(file.humanized_name, file.url, options)
     when 'img'
       options['alt'] ||= file.name
-      options['title'] ||= ::File.basename(file.filename)
+      options['title'] ||= file.basename
       ApplicationController.helpers.image_tag(file.url, options)
     else
       ApplicationController.helpers.sanitize(file.humanized_name)

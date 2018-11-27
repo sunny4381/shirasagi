@@ -52,6 +52,15 @@ class Cms::Column::Value::UrlField < Cms::Column::Value::Base
 
   private
 
+  def copy_column_settings
+    super
+
+    return if column.blank?
+
+    self.html_tag = column.html_tag
+    self.html_additional_attr = column.html_additional_attr
+  end
+
   def to_default_html
     return '' if value.blank?
 

@@ -14,6 +14,7 @@ class Cms::Column::Value::Base
   liquidize do
     export :name
     export :to_html, as: :html
+    export :to_html, as: :to_s
     export as: :type do
       self.class.name
     end

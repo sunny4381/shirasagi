@@ -1,8 +1,6 @@
-<% return if @item.form.blank? %>
-
-<div class="see mod-cms-form-page column-values">
-  <% @item.column_values.order_by(order: 1, name: 1).each do |column_value| %>
-    <% column = @item.form.columns.find(column_value.column_id) rescue nil %>
+<div class="see column-values">
+  <% column_values.order_by(order: 1, name: 1).each do |column_value| %>
+    <% column = form.columns.find(column_value.column_id) rescue nil %>
     <% next if column.blank? %>
     <% if column.column_show_path %>
       <%= render file: column.column_show_path, locals: { column: column, value: column_value } %>
@@ -13,7 +11,3 @@
     <% end %>
   <% end %>
 </div>
-
-<%= jquery do %>
-  $('#addon-entry-agents-addons-form .addon-head h2').text(<%== @item.form.name.to_json %>);
-<% end %>

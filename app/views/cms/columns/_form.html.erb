@@ -14,9 +14,4 @@
 
   <dt><%= @model.t :tooltips %><%= @model.tt :tooltips %></dt>
   <dd><%= f.text_area :tooltips %></dd>
-
-  <% if @cur_form.sub_type_entry? %>
-    <dt><%= @model.t :layout %><%= @model.tt :layout %></dt>
-    <dd><%= f.text_area :layout %></dd>
-  <% end %>
 </dl>
