@@ -92,15 +92,13 @@ class Cms::PreviewController < ApplicationController
     @contents_env["ss.filters"] ||= []
     @contents_env["ss.filters"] << { preview: opts }
 
-    req = ActionDispatch::Request.new @contents_env
-    res = @controller.make_response! req
-
-    @contents_status, @contents_headers, @contents_body = @controller.dispatch("index", req, res)
+    @contents_status, @contents_headers, @contents_body = Rails.application.call(@contents_env)
   end
 
   def convert_html_to_preview(body, options)
     preview_url = cms_preview_path preview_date: params[:preview_date]
 
+    body = String.new(body)
     body.gsub!(/(href|src)=".*?"/) do |m|
       url = m.match(/.*?="(.*?)"/)[1]
       if url =~ /^\/(assets|assets-dev)\//
@@ -126,12 +124,12 @@ class Cms::PreviewController < ApplicationController
     end
     if @head_html
       body.sub!(/<head.*?>/im) do
-        ::Regexp.last_match[0].to_s + @head_html.to_s
+        ::Regexp.last_match[0] + @head_html
       end
     end
     if @foot_html
       body.sub!(/<\/body>/im) do
-        @foot_html + ::Regexp.last_match[0].html_safe
+        @foot_html + ::Regexp.last_match[0]
       end
     end
     body
@@ -174,8 +172,11 @@ class Cms::PreviewController < ApplicationController
       return
     end
 
-    html = convert_html_to_preview(@contents_body.body, rendered: @contents_env["ss.rendered"])
-    render html: html.html_safe, layout: false
+    chunks = []
+    @contents_body.each do |body|
+      chunks << convert_html_to_preview(body, rendered: @contents_env["ss.rendered"])
+    end
+    render html: chunks.join.html_safe, layout: false
   rescue => exception
     if exception.to_s.numeric?
       status = exception.to_s.to_i
