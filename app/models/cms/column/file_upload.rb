@@ -11,11 +11,4 @@ class Cms::Column::FileUpload < Cms::Column::Base
       [ I18n.t("cms.options.html_tag.#{v}", default: v), v ]
     end
   end
-
-  def serialize_value(value)
-    value_type.new(
-      column_id: self.id, name: self.name, order: self.order, html_tag: self.html_tag,
-      html_additional_attr: self.html_additional_attr, file_id: value
-    )
-  end
 end

@@ -66,6 +66,7 @@ ja:
     word_dictionary: 単語置換辞書
     form_not_selected: 定型フォームが選択されていません
     default_form: 既定のフォーム
+    column_value_error_template: "%{name}の%{error}"
 
     adobe_reader:
       remark:
@@ -269,6 +270,7 @@ ja:
       cms/text_field: 一行入力
       cms/date_field: 日付入力
       cms/url_field: URL入力
+      cms/url_field2: URL入力
       cms/text_area: 複数行入力
       cms/select: ドロップダウン
       cms/radio_button: ラジオボタン
@@ -446,6 +448,7 @@ ja:
       cms/column/text_field: 一行入力
       cms/column/date_field: 日付入力
       cms/column/url_field: URL入力
+      cms/column/url_field2: URL入力
       cms/column/text_area: 複数行入力
       cms/column/select: ドロップダウン
       cms/column/radio_button: ラジオボタン
@@ -738,6 +741,9 @@ ja:
       cms/column/url_field:
         html_tag: HTMLタグ
         html_additional_attr: HTML追加属性
+      cms/column/url_field2:
+        html_tag: HTMLタグ
+        html_additional_attr: HTML追加属性
       cms/column/select:
         place_holder: プレースホルダー
       cms/addon/column/text_like:
@@ -751,6 +757,33 @@ ja:
       cms/column/file_upload:
         html_tag: HTMLタグ
         html_additional_attr: HTML追加属性
+      cms/column/value/check_box:
+        values: 選択肢
+      cms/column/value/date_field:
+        html_tag: HTMLタグ
+        html_additional_attr: HTML追加属性
+        date: 日付
+      cms/column/value/file_upload:
+        html_tag: HTMLタグ
+        html_additional_attr: HTML追加属性
+        file_id: ファイル
+      cms/column/value/radio_button:
+        value: 選択肢
+      cms/column/value/select:
+        value: 選択肢
+      cms/column/value/text_area:
+        value: 文
+      cms/column/value/text_field:
+        value: 文字列
+      cms/column/value/url_field:
+        html_tag: HTMLタグ
+        html_additional_attr: HTML追加属性
+        value: URL
+      cms/column/value/url_field2:
+        html_tag: HTMLタグ
+        html_additional_attr: HTML追加属性
+        label: リンクテキスト
+        value: リンクURL
 
   errors:
     messages:
@@ -1671,9 +1704,27 @@ ja:
         使用例：
           {% if value.link %}
             {% if value.label %}
-              &lt;a href="{{value.link}}">{{ value.label }}&lt;/a>
+              &lt;a href="{{ value.link }}">{{ value.label }}&lt;/a>
             {% else %}
-              &lt;a href="{{value.link}}">{{ value.link }}&lt;/a>
+              &lt;a href="{{ value.link }}">{{ value.link }}&lt;/a>
+            {% endif %}
+          {% endif %}
+
+    cms/column/url_field2:
+      html_tag:
+        - 公開側のHTMLタグを選択します。
+      html_additional_attr:
+        - 公開側のHTMLタグの追加属性を指定します。
+      layout: |-
+        入力項目のHTMLを設定します。
+        未設定の場合、既定の HTML を表示します。
+
+        使用例：
+          {% if value.link %}
+            {% if value.label %}
+              &lt;a href="{{ value.link }}">{{ value.label }}&lt;/a>
+            {% else %}
+              &lt;a href="{{ value.link }}">{{ value.link }}&lt;/a>
             {% endif %}
           {% endif %}
 

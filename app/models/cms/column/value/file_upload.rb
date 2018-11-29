@@ -3,6 +3,8 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
   field :html_additional_attr, type: String, default: ''
   belongs_to :file, class_name: 'SS::File'
 
+  permit_values :file_id
+
   before_save :before_save_file
   after_destroy :delete_file
 
@@ -10,28 +12,12 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
     export :file
   end
 
-  def validate_value(record, attribute)
-    return if column.blank?
-
-    if column.required? && file.blank?
-      record.errors.add(:base, name + I18n.t('errors.messages.blank'))
-    end
-
-    return if file.blank?
-  end
-
-  def update_value(new_value)
-    self.name = new_value.name
-    self.order = new_value.order
-    self.html_tag = new_value.html_tag
-    self.html_additional_attr = new_value.html_additional_attr
-    return false if file_id == new_value.file_id
-    self.file_id = new_value.file_id
-    true
-  end
-
   def value
     file.try(:name)
+  end
+
+  def all_file_ids
+    [ file_id ]
   end
 
   def html_additional_attr_to_h
@@ -52,6 +38,16 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
   end
 
   private
+
+  def validate_value
+    return if column.blank?
+
+    if column.required? && file.blank?
+      self.errors.add(:file_id, :blank)
+    end
+
+    return if file.blank?
+  end
 
   def copy_column_settings
     super

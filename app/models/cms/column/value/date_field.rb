@@ -3,29 +3,11 @@ class Cms::Column::Value::DateField < Cms::Column::Value::Base
   field :html_additional_attr, type: String, default: ''
   field :date, type: DateTime
 
+  permit_values :date
+
   liquidize do
     export :value
     export :date
-  end
-
-  def validate_value(record, attribute)
-    return if column.blank?
-
-    if column.required? && date.blank?
-      record.errors.add(:base, name + I18n.t('errors.messages.blank'))
-    end
-
-    return if date.blank?
-  end
-
-  def update_value(new_value)
-    self.name = new_value.name
-    self.order = new_value.order
-    self.html_tag = new_value.html_tag
-    self.html_additional_attr = new_value.html_additional_attr
-    return false if date == new_value.date
-    self.date = new_value.date
-    true
   end
 
   def html_additional_attr_to_h
@@ -40,6 +22,16 @@ class Cms::Column::Value::DateField < Cms::Column::Value::Base
   end
 
   private
+
+  def validate_value
+    return if column.blank?
+
+    if column.required? && date.blank?
+      self.errors.add(:date, :blank)
+    end
+
+    return if date.blank?
+  end
 
   def copy_column_settings
     super

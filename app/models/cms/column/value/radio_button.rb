@@ -1,21 +1,25 @@
 class Cms::Column::Value::RadioButton < Cms::Column::Value::Base
   field :value, type: String
 
+  permit_values :value
+
   liquidize do
     export :value
   end
 
-  def validate_value(record, attribute)
+  private
+
+  def validate_value
     return if column.blank?
 
     if column.required? && value.blank?
-      record.errors.add(:base, name + I18n.t('errors.messages.blank'))
+      self.errors.add(:base, name + I18n.t('errors.messages.blank'))
     end
 
     return if value.blank?
 
     unless column.select_options.include?(value)
-      record.errors.add(:base, name + I18n.t('errors.messages.inclusion', value: value))
+      self.errors.add(:value, :inclusion, value: value)
     end
   end
 end

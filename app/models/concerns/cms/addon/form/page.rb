@@ -4,7 +4,7 @@ module Cms::Addon::Form::Page
 
   included do
     belongs_to :form, class_name: 'Cms::Form'
-    embeds_many :column_values, class_name: 'Cms::Column::Value::Base', cascade_callbacks: true,
+    embeds_many :column_values, class_name: 'Cms::Column::Value::Base', cascade_callbacks: true, validate: false,
                 after_add: :update_column_values_updated, after_remove: :update_column_values_updated do
                   # blow class is extension specific class.
                   # so it is created as anonymous class to protect form class name pollution
@@ -36,13 +36,12 @@ module Cms::Addon::Form::Page
                 end
     field :column_values_updated, type: DateTime
 
-    permit_params :form_id, column_values: [ :_type, :column_id, :order, :value, :date, :file_id, values: [] ]
+    permit_params :form_id, column_values: [ :_type, :column_id, :order, in_wrap: {} ]
     accepts_nested_attributes_for :column_values
 
-    # delegate :build_column_values, to: :form
-
-    # validate :validate_column_values
-    validates_associated :column_values
+    # default validation `validates_associated :column_values` is not suitable for column_values.
+    # So, specific validation should be defined.
+    validate :validate_column_values
 
     before_save :delete_unlinked_files
 
@@ -52,6 +51,23 @@ module Cms::Addon::Form::Page
   end
 
   private
+
+  def validate_column_values
+    column_values.each do |column_value|
+      next if column_value.validated?
+      next if column_value.valid?
+
+      self.errors.messages[:base] += column_value.errors.map do |attribute, error|
+        if %i[value values].include?(attribute.to_sym)
+          column_value.name + error
+        else
+          I18n.t(
+            "cms.column_value_error_template", name: column_value.name,
+            error: column_value.errors.full_message(attribute, error))
+        end
+      end
+    end
+  end
 
   def generate_public_files
     column_values.each do |column_value|
@@ -89,23 +105,17 @@ module Cms::Addon::Form::Page
   def delete_unlinked_files
     file_ids_is = []
     self.column_values.each do |column_value|
-      if column_value.respond_to?(:file_id) && column_value.file_id.present?
-        file_ids_is << column_value.file_id
-      end
-      if column_value.respond_to?(:file_ids) && column_value.file_ids.present?
-        file_ids_is += column_value.file_ids
-      end
+      file_ids_is += column_value.all_file_ids
     end
+    file_ids_is.compact!
+    file_ids_is.uniq!
 
     file_ids_was = []
     column_values_was.each do |column_value|
-      if column_value.respond_to?(:file_id) && column_value.file_id
-        file_ids_was << column_value.file_id
-      end
-      if column_value.respond_to?(:file_ids) && column_value.file_ids.present?
-        file_ids_was += column_value.file_ids
-      end
+      file_ids_was += column_value.all_file_ids
     end
+    file_ids_was.compact!
+    file_ids_was.uniq!
 
     unlinked_file_ids = file_ids_was - file_ids_is
     unlinked_file_ids.each_slice(20) do |file_ids|
