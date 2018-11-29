@@ -744,6 +744,14 @@ ja:
       cms/column/url_field2:
         html_tag: HTMLタグ
         html_additional_attr: HTML追加属性
+        label_max_length: リンクテキスト最大長
+        label_place_holder: リンクテキストプレースホルダー
+        link_max_length: リンクURL最大長
+        link_place_holder: リンクURLプレースホルダー
+        label: リンクテキスト
+        link: リンクURL
+        max_length: 最大長
+        place_holder: プレースホルダー
       cms/column/select:
         place_holder: プレースホルダー
       cms/addon/column/text_like:
@@ -1715,6 +1723,14 @@ ja:
         - 公開側のHTMLタグを選択します。
       html_additional_attr:
         - 公開側のHTMLタグの追加属性を指定します。
+      label_max_length:
+        - リンクテキストの最大長を入力します。
+      label_place_holder:
+        - リンクテキストのプレースホルダーを入力します。
+      link_max_length:
+        - リンクURLの最大長を入力します。
+      link_place_holder:
+        - リンクURLのプレースホルダーを入力します。
       layout: |-
         入力項目のHTMLを設定します。
         未設定の場合、既定の HTML を表示します。
