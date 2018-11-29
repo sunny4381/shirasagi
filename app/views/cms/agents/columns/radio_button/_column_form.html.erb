@@ -3,7 +3,7 @@
 <%= render 'cms/agents/columns/main/base', f: f, column: column, value: value, controller: controller do %>
   <% column.select_options.each do |val| %>
     <label>
-      <%= radio_button_tag("#{f.object_name}[][value]", val, value.try(:value) == val, column.form_options.merge(id: nil)) %>
+      <%= radio_button_tag("#{f.object_name}[][in_wrap][value]", val, value.try(:value) == val, column.form_options.merge(id: nil)) %>
       <%= val %>
     </label>
   <% end %>

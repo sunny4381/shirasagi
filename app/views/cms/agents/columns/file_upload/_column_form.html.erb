@@ -9,7 +9,7 @@
 <%= render 'cms/agents/columns/main/base', f: f, column: column, value: value, controller: controller do %>
   <%= link_to(t('ss.links.upload'), cms_apis_temp_files_path, class: %w(ajax-box btn btn-file-upload), data: { column_id: column.id.to_s }) %>
   <span class="humanized-name column-<%= column.id %>"><%= file.try(:humanized_name) %></span>
-  <%= hidden_field_tag("#{f.object_name}[][file_id]", file.try(:id), form_options) %>
+  <%= hidden_field_tag("#{f.object_name}[][in_wrap][file_id]", file.try(:id), form_options) %>
   <%= link_to('#', class: 'btn-file-delete', style: file ? '' : 'display: none') do %>
     <i class="material-icons" style="font-size: 120%;">&#xE872;</i>
   <% end %>

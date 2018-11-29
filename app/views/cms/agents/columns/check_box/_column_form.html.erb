@@ -3,7 +3,7 @@
 <%= render 'cms/agents/columns/main/base', f: f, column: column, value: value, controller: controller do %>
   <% column.select_options.each do |val| %>
     <label>
-      <%= check_box_tag("#{f.object_name}[][values][]", val, values.include?(val), column.form_options.merge(id: nil)) %>
+      <%= check_box_tag("#{f.object_name}[][in_wrap][values][]", val, values.include?(val), column.form_options.merge(id: nil)) %>
       <%= val %>
     </label>
   <% end %>

@@ -3,36 +3,12 @@ class Cms::Column::Value::UrlField < Cms::Column::Value::Base
   field :html_additional_attr, type: String, default: ''
   field :value, type: String
 
+  permit_values :value
+
   liquidize do
     export :value
     export :link
     export :label
-  end
-
-  def validate_value(record, attribute)
-    return if column.blank?
-
-    if column.required? && value.blank?
-      record.errors.add(:base, name + I18n.t('errors.messages.blank'))
-    end
-
-    return if value.blank?
-
-    if column.max_length.present? && column.max_length > 0
-      if value.length > column.max_length
-        record.errors.add(:base, name + I18n.t('errors.messages.less_than_or_equal_to', count: column.max_length))
-      end
-    end
-  end
-
-  def update_value(new_value)
-    self.name = new_value.name
-    self.order = new_value.order
-    self.html_tag = new_value.html_tag
-    self.html_additional_attr = new_value.html_additional_attr
-    return false if value == new_value.value
-    self.value = new_value.value
-    true
   end
 
   def html_additional_attr_to_h
@@ -51,6 +27,22 @@ class Cms::Column::Value::UrlField < Cms::Column::Value::Base
   end
 
   private
+
+  def validate_value
+    return if column.blank?
+
+    if column.required? && value.blank?
+      self.errors.add(:value, :blank)
+    end
+
+    return if value.blank?
+
+    if column.max_length.present? && column.max_length > 0
+      if value.length > column.max_length
+        self.errors.add(:value, :less_than_or_equal_to, count: column.max_length)
+      end
+    end
+  end
 
   def copy_column_settings
     super

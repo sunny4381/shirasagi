@@ -3,6 +3,11 @@ class Cms::Column::Value::Base
   include SS::Document
   include SS::Liquidization
 
+  class_attribute :_permit_values, instance_accessor: false
+  self._permit_values = []
+
+  attr_reader :in_wrap
+
   embedded_in :page, inverse_of: :column_values
   belongs_to :column, class_name: 'Cms::Column::Base'
   field :name, type: String
@@ -11,6 +16,8 @@ class Cms::Column::Value::Base
 
   after_initialize :copy_column_settings, if: ->{ new_record? }
 
+  validate :validate_value
+
   liquidize do
     export :name
     export :to_html, as: :html
@@ -18,6 +25,10 @@ class Cms::Column::Value::Base
     export as: :type do
       self.class.name
     end
+  end
+
+  def self.permit_values(*fields)
+    self._permit_values += Array.wrap(fields)
   end
 
   def to_html
@@ -36,20 +47,9 @@ class Cms::Column::Value::Base
     template.render(render_opts).html_safe
   end
 
-  def validate_value(record, attribute)
-    return if column.blank?
-
-    if column.required? && value.blank?
-      record.errors.add(:base, name + I18n.t('errors.messages.blank'))
-    end
-  end
-
-  def update_value(new_value)
-    self.name = new_value.name
-    self.order = new_value.order
-    return false if value == new_value.value
-    self.value = new_value.value
-    true
+  def all_file_ids
+    # it should be overrided by subclass to provide all attached file ids.
+    []
   end
 
   def new_clone
@@ -64,13 +64,29 @@ class Cms::Column::Value::Base
   def remove_public_files
   end
 
+  def in_wrap=(value)
+    self.attributes = @in_wrap = ActionController::Parameters.new(Hash(value)).permit(self.class._permit_values)
+  end
+
   private
 
-  def copy_column_settings
+  def validate_value
     return if column.blank?
 
-    self.name ||= column.name
-    self.order ||= column.order
+    if column.required? && value.blank?
+      if self._parent
+        self._parent.errors.add(:base, name + I18n.t('errors.messages.blank'))
+      else
+        self.errors.add(:value, :blank)
+      end
+    end
+  end
+
+  def copy_column_settings
+    if column.present?
+      self.name ||= column.name
+      self.order ||= column.order
+    end
   end
 
   def to_default_html
