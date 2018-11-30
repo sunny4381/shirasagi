@@ -765,6 +765,11 @@ ja:
       cms/column/file_upload:
         html_tag: HTMLタグ
         html_additional_attr: HTML追加属性
+        label_max_length: リンクテキスト最大長
+        label_place_holder: リンクテキストプレースホルダー
+        label: リンクテキスト
+        max_length: 最大長
+        place_holder: プレースホルダー
       cms/column/value/check_box:
         values: 選択肢
       cms/column/value/date_field:
@@ -775,6 +780,7 @@ ja:
         html_tag: HTMLタグ
         html_additional_attr: HTML追加属性
         file_id: ファイル
+        label: リンクテキスト
       cms/column/value/radio_button:
         value: 選択肢
       cms/column/value/select:
@@ -1753,6 +1759,10 @@ ja:
         - 公開側のHTMLタグを選択します。
       html_additional_attr:
         - 公開側のHTMLタグの追加属性を指定します。
+      label_max_length:
+        - リンクテキストの最大長を入力します。
+      label_place_holder:
+        - リンクテキストのプレースホルダーを入力します。
       layout: |-
         入力項目のHTMLを設定します。
         未設定の場合、既定の HTML を表示します。

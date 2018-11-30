@@ -2,14 +2,16 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
   field :html_tag, type: String
   field :html_additional_attr, type: String, default: ''
   belongs_to :file, class_name: 'SS::File'
+  field :label, type: String
 
-  permit_values :file_id
+  permit_values :file_id, :label
 
   before_save :before_save_file
   after_destroy :delete_file
 
   liquidize do
     export :file
+    export :label
   end
 
   def value
@@ -124,7 +126,7 @@ class Cms::Column::Value::FileUpload < Cms::Column::Value::Base
     when 'a'
       options['class'] = [ options['class'] ].flatten.compact
       options['class'] << file_icon
-      ApplicationController.helpers.link_to(file.humanized_name, file.url, options)
+      ApplicationController.helpers.link_to(label.presence || file.humanized_name, file.url, options)
     when 'img'
       options['alt'] ||= file.name
       options['title'] ||= file.basename

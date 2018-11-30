@@ -21,3 +21,14 @@
 .column-value-body {
   padding-bottom: 5px;
 }
+
+.column-value-files {
+  -js-display: flex;
+  @include display-flex;
+  @include flex-wrap(wrap);
+  margin-top: 10px;
+  @include clear;
+  @include mb {
+    margin-top: 10px;
+  }
+}
