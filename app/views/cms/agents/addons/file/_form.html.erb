@@ -43,7 +43,7 @@ options.uploadUrl = function() {
   return "/.s<%= @cur_site.id %>/cms/apis/temp_files.json";
 };
 <% end %>
-var tempFile = new SS_Addon_TempFile($(".upload-drop-area"), <%= @cur_user.id %>, options);
+var tempFile = new SS_Addon_TempFile(".upload-drop-area", <%= @cur_user.id %>, options);
 <% end %>
 
 <dl class="see">
