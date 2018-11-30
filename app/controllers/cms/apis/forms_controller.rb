@@ -25,4 +25,9 @@ class Cms::Apis::FormsController < ApplicationController
     @cur_column = @item.columns.find(params[:column_id])
     render layout: false
   end
+
+  def select_temp_file
+    @item = Cms::TempFile.site(@cur_site).find(params[:id])
+    render layout: false
+  end
 end
