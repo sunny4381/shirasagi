@@ -27,7 +27,8 @@ class Cms::Apis::FormsController < ApplicationController
   end
 
   def select_temp_file
-    @item = Cms::TempFile.site(@cur_site).find(params[:id])
+    @item = SS::File.find(params[:id])
+    @item = @item.copy_if_necessary
     render layout: false
   end
 end
