@@ -266,4 +266,56 @@ describe SS::File, dbscope: :example do
       end
     end
   end
+
+  describe "#copy" do
+    context "when non-image file is given" do
+      let(:src) do
+        file = SS::File.new
+        Fs::UploadedFile.create_from_file("spec/fixtures/cms/all_contents_1.csv") do |upload_file|
+          file.in_file = upload_file
+          file.model = "ss/file"
+          file.save!
+        end
+        file
+      end
+      let(:copy) { src.copy }
+
+      it do
+        expect(src.thumb).to be_blank
+
+        expect(copy.id).not_to eq src.id
+        expect(copy.name).to eq src.name
+        expect(copy.filename).to eq src.filename
+        expect(copy.content_type).to eq src.content_type
+        expect(copy.size).to eq src.size
+        expect(copy.model).to eq "ss/temp_file"
+        expect(copy.thumb).to be_nil
+      end
+    end
+
+    context "when non-image file is given" do
+      let(:src) do
+        file = SS::File.new
+        Fs::UploadedFile.create_from_file("spec/fixtures/ss/logo.png") do |upload_file|
+          file.in_file = upload_file
+          file.model = "ss/file"
+          file.save!
+        end
+        file
+      end
+      let(:copy) { src.copy }
+
+      it do
+        expect(src.thumb).not_to be_blank
+
+        expect(copy.id).not_to eq src.id
+        expect(copy.name).to eq src.name
+        expect(copy.filename).to eq src.filename
+        expect(copy.content_type).to eq src.content_type
+        expect(copy.size).to eq src.size
+        expect(copy.model).to eq "ss/temp_file"
+        expect(copy.thumb.id).not_to eq src.thumb.id
+      end
+    end
+  end
 end

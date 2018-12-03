@@ -125,7 +125,7 @@ module SS::Model::File
   end
 
   def download_filename
-    name =~ /\./ ? name : name.sub(/\..*/, '') + '.' + extname
+    name.include?('.') ? name : "#{name}.#{extname}"
   end
 
   def basename
@@ -148,8 +148,8 @@ module SS::Model::File
     (@resizing && @resizing.size == 2) ? @resizing.map(&:to_i) : nil
   end
 
-  def resizing=(s)
-    @resizing = (s.class == String) ? s.split(",") : s
+  def resizing=(size)
+    @resizing = (size.class == String) ? size.split(",") : size
   end
 
   def read
@@ -171,6 +171,24 @@ module SS::Model::File
 
   def remove_public_file
     Fs.rm_rf(public_path) if public_path
+  end
+
+  def copy(opts = {})
+    copy = SS::TempFile.new
+
+    self.attributes.each do |key, val|
+      next if key =~ /^(id|file_id)$/
+      next if key =~ /^(group_ids|permission_level|category_ids)$/
+      copy.send("#{key}=", val) unless copy.send(key)
+    end
+
+    copy.in_file = self.uploaded_file
+    copy.state = "public"
+    copy.name = self.name
+    copy.unnormalize = true if opts[:unnormalize].present?
+    copy.save
+    copy.in_file.delete
+    copy
   end
 
   private
