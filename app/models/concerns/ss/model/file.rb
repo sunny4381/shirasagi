@@ -191,6 +191,13 @@ module SS::Model::File
     copy
   end
 
+  COPY_REQUIRED_MODELS = %w(cms/file ss/user_file).freeze
+
+  def copy_if_necessary(opts = {})
+    return self if !COPY_REQUIRED_MODELS.include?(self.model)
+    copy(opts)
+  end
+
   private
 
   def set_filename

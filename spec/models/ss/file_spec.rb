@@ -318,4 +318,59 @@ describe SS::File, dbscope: :example do
       end
     end
   end
+
+  describe "#copy_if_necessary" do
+    context "when ss/file is given" do
+      let(:src) do
+        file = SS::File.new
+        Fs::UploadedFile.create_from_file("spec/fixtures/cms/all_contents_1.csv") do |upload_file|
+          file.in_file = upload_file
+          file.model = "ss/file"
+          file.save!
+        end
+        file
+      end
+      let(:copy) { src.copy_if_necessary }
+
+      it do
+        expect(copy).to eq src
+      end
+    end
+
+    context "when ss/user_file is given" do
+      let(:src) do
+        file = SS::UserFile.new
+        Fs::UploadedFile.create_from_file("spec/fixtures/cms/all_contents_1.csv") do |upload_file|
+          file.in_file = upload_file
+          file.model = "ss/user_file"
+          file.save!
+        end
+        file
+      end
+      let(:copy) { src.copy_if_necessary }
+
+      it do
+        expect(copy).not_to eq src
+      end
+    end
+
+    context "when cms/file is given" do
+      let(:site) { create :cms_site }
+      let(:src) do
+        file = Cms::File.new
+        Fs::UploadedFile.create_from_file("spec/fixtures/cms/all_contents_1.csv") do |upload_file|
+          file.cur_site = site
+          file.in_file = upload_file
+          file.model = "cms/file"
+          file.save!
+        end
+        file
+      end
+      let(:copy) { src.copy_if_necessary }
+
+      it do
+        expect(copy).not_to eq src
+      end
+    end
+  end
 end
