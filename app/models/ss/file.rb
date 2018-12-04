@@ -7,6 +7,8 @@ class SS::File
 
   liquidize do
     export :name
+    export :extname
+    export :size
     export :humanized_name
     export :filename
     export :basename

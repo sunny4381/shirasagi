@@ -3,3 +3,15 @@
 <% else %>
   <%= render 'cms/forms/columns_form_entry', local_assigns %>
 <% end %>
+
+<div>
+  <%= button_tag(t("cms.syntax_check"), name: nil, type: "button", class: "btn syntax-check") %>
+  <%= button_tag(t("cms.mobile_size_check"), name: nil, type: "button", class: "btn mobile-size-check") %>
+  <%= button_tag(t("cms.link_check"), name: nil, type: "button", class: "btn link-check") %>
+  <%= button_tag(t("cms.preview"), name: nil, type: "button", class: "btn preview") %>
+</div>
+
+<%= jquery do %>
+  Cms_Form.addonSelector = "#addon-cms-agents-addons-form-page .addon-body";
+  Cms_Form.form_html_path = <%== cms_apis_form_html_path(id: form).to_json %>;
+<% end %>
