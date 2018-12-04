@@ -28,7 +28,6 @@ Cms_TemplateForm.render = function(options) {
 };
 
 Cms_TemplateForm.bind = function(el) {
-  console.log(".bind");
   if (Cms_TemplateForm.instance) {
     Cms_TemplateForm.instance.bind(el)
   } else {
@@ -93,6 +92,7 @@ Cms_TemplateForm.prototype.activateForm = function() {
   this.$formPage.removeClass('hide');
   $('#addon-cms-agents-addons-body').addClass('hide');
   $('#addon-cms-agents-addons-file').addClass('hide');
+  Cms_Form.addonSelector = "#addon-cms-agents-addons-form-page .addon-body";
 };
 
 Cms_TemplateForm.prototype.deactivateForm = function() {
@@ -100,13 +100,11 @@ Cms_TemplateForm.prototype.deactivateForm = function() {
   this.$formPage.addClass('hide');
   $('#addon-cms-agents-addons-body').removeClass('hide');
   $('#addon-cms-agents-addons-file').removeClass('hide');
+  Cms_Form.addonSelector = ".mod-cms-body";
 };
 
 Cms_TemplateForm.prototype.bind = function(el) {
   var bindsOne = (!this.el || this.el !== el);
-
-  console.log("#bind");
-  console.log(bindsOne);
 
   if (bindsOne) {
     this.bindOne(el);
