@@ -36,11 +36,12 @@ class Cms::Apis::Preview::InplaceEditController < ApplicationController
   def edit
     raise "403" if !@item.allowed?(:edit, @cur_user, site: @cur_site)
 
-    if @cur_type == :node || !@item.is_a?(Entry::Page)
+    if @cur_type == :node || !@item.respond_to?(:form) || !@item.form.sub_type_entry?
       head :no_content
       return
     end
 
+    @preview = true
     render action: :edit
   end
 

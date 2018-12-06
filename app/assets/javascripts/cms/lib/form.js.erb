@@ -39,7 +39,7 @@ this.Cms_Form = (function () {
       return;
     }
 
-    var formData = new FormData(document.getElementById("item-form"));
+    var formData = new FormData(document.getElementById(Form_Preview.form_id));
     formData.append("route", Form_Preview.page_route);
 
     $.ajax({
@@ -49,7 +49,7 @@ this.Cms_Form = (function () {
       processData: false,
       contentType: false,
       cache: false,
-      success: function(html) { resolve(html) },
+      success: function(html) { resolve("<div>" + html + "</div>") },
       error: function(xhr, status, error) {
         if (reject) {
           reject(xhr, status, error);
@@ -231,6 +231,8 @@ this.Syntax_Checker = (function () {
       var resolved = function(html) {
         try {
           Syntax_Checker.check(html);
+        } catch (e) {
+          Syntax_Checker.resultBox.showMessage("<p>" + e + "</p>");
         } finally {
           button.disabled = false;
         }
@@ -247,22 +249,24 @@ this.Syntax_Checker = (function () {
 
   Syntax_Checker.check = function (html) {
     Syntax_Checker.reset();
-    Syntax_Checker.checkTable(html);
-    Syntax_Checker.checkMultibyteCharacter(html);
-    Syntax_Checker.checkDependentCharacter(html);
-    Syntax_Checker.checkKanaCharacter(html);
-    Syntax_Checker.checkDateFormat(html);
-    Syntax_Checker.checkAdjacentA(html);
-    Syntax_Checker.checkOrderOfH(html);
-    Syntax_Checker.checkImgAlt(html);
-    Syntax_Checker.checkAppletAlt(html);
-    Syntax_Checker.checkAreaAlt(html);
-    Syntax_Checker.checkImgDataUriScheme(html);
-    Syntax_Checker.checkInterwordSpace(html);
-    Syntax_Checker.checkLinkText(html);
-    Syntax_Checker.checkObjectText(html);
-    Syntax_Checker.checkEmbeddedMedia(html);
-    Syntax_Checker.checkReplaceWords(html);
+    if (html) {
+      Syntax_Checker.checkTable(html);
+      Syntax_Checker.checkMultibyteCharacter(html);
+      Syntax_Checker.checkDependentCharacter(html);
+      Syntax_Checker.checkKanaCharacter(html);
+      Syntax_Checker.checkDateFormat(html);
+      Syntax_Checker.checkAdjacentA(html);
+      Syntax_Checker.checkOrderOfH(html);
+      Syntax_Checker.checkImgAlt(html);
+      Syntax_Checker.checkAppletAlt(html);
+      Syntax_Checker.checkAreaAlt(html);
+      Syntax_Checker.checkImgDataUriScheme(html);
+      Syntax_Checker.checkInterwordSpace(html);
+      Syntax_Checker.checkLinkText(html);
+      Syntax_Checker.checkObjectText(html);
+      Syntax_Checker.checkEmbeddedMedia(html);
+      Syntax_Checker.checkReplaceWords(html);
+    }
     Syntax_Checker.resultBox.showResult();
   };
 
@@ -1328,7 +1332,7 @@ this.Link_Checker = (function () {
       var button = this;
       button.disabled = true;
 
-      ResultBox.prototype.showChecking();
+      Link_Checker.resultBox.showChecking();
 
       var resolved = function(html) {
         Link_Checker.reset();
@@ -1595,13 +1599,15 @@ this.Form_Preview = (function () {
 
   Form_Preview.form_preview_path;
 
+  Form_Preview.form_id = "item-form";
+
   Form_Preview.page_route;
 
   Form_Preview.render = function () {
     return $("button.preview").on("click", function (e) {
       var basename, errors, form, height, i, name, ref, token, v, width;
-      name = $("#item-form input[name='item[name]']").val();
-      basename = $("#item-form input[name='item[basename]']").val();
+      name = $("#" + Form_Preview.form_id + " input[name='item[name]']").val();
+      basename = $("#" + Form_Preview.form_id + " input[name='item[basename]']").val();
       errors = [];
       if (!name) {
         errors.push("<%= I18n.t('errors.messages.set_name') %>");
@@ -1622,7 +1628,7 @@ this.Form_Preview = (function () {
       $(form).attr("method", "post");
       $(form).attr("action", Form_Preview.form_preview_path);
       $(form).attr("target", "FormPreview");
-      ref = $("#item-form").serializeArray();
+      ref = $("#" + Form_Preview.form_id).serializeArray();
       for (i in ref) {
         v = ref[i];
         if (!/^item\[/.test(v["name"])) {
@@ -1687,7 +1693,7 @@ this.Form_Save_Event = (function () {
       if (event.ctrlKey || event.metaKey) {
         if (event.keyCode === 83) {
           event.keyCode = 0;
-          $("#item-form").submit();
+          $("#" + Form_Preview.form_id).submit();
           return false;
         }
       }

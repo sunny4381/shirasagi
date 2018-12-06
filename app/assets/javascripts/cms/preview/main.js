@@ -1,3 +1,7 @@
+//= require ss/lib/addon/temp_file
+//= require cms/lib/form
+//= require cms/lib/template_form
+
 SS_Preview = (function () {
   function SS_Preview(el) {
     this.el = el;
@@ -489,6 +493,11 @@ SS_Preview = (function () {
       e.preventDefault();
       return false;
     });
+
+    Cms_Form.render();
+    Cms_TemplateForm.render();
+    SS.renderAjaxBox();
+    SS.renderDateTimePicker();
 
     return this.showInplaceForm();
   };

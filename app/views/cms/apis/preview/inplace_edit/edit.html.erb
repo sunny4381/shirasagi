@@ -1,5 +1,5 @@
 <% addons = @addons || @item.try(:addons) || [] %>
-<% addons = addons.select { |addon| [ Cms::Addon::Meta, Entry::Addon::Form ].include?(addon.klass) } %>
+<% addons = addons.select { |addon| [ Cms::Addon::Meta, Cms::Addon::Form::Page ].include?(addon.klass) } %>
 
 <%= form_for :item, url: { action: :update }, html: { id: "ss-preview-inplace-item-form", class: "ss-preview-hide", method: :put, multipart: true, autocomplete: :off } do |f| %>
   <%= error_messages_for :item %>

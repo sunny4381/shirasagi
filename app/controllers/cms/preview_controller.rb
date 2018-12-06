@@ -70,6 +70,8 @@ class Cms::PreviewController < ApplicationController
     @cur_page = page
     @preview_page = page
     @preview_item = preview_item
+
+    @cur_path = "/#{path}#{page.basename}"
   end
 
   def render_contents
@@ -83,12 +85,14 @@ class Cms::PreviewController < ApplicationController
         @contents_env[key] = request.env[key]
       end
     end
-    @contents_env["HTTP_X_FORWARDED_HOST"] = @cur_site.domain
     @contents_env["REQUEST_URI"] = "#{@cur_site.full_url}#{@cur_path[1..-1]}"
-    @contents_env["PATH_INFO"] = @cur_path
-    @contents_env["REQUEST_PATH"] = @cur_path
-    @contents_env["QUERY_STRING"]
-    @contents_env["ORIGINAL_FULLPATH"]
+    @contents_env[::Rack::PATH_INFO] = @cur_path
+    @contents_env[::Rack::REQUEST_METHOD] = ::Rack::GET
+    @contents_env[::Rack::REQUEST_PATH] = @cur_path
+    @contents_env[::Rack::Request::HTTP_X_FORWARDED_HOST] = @cur_site.domain
+    # @contents_env[::Rack::SCRIPT_NAME]
+    # @contents_env[::Rack::QUERY_STRING]
+    # @contents_env["ORIGINAL_FULLPATH"]
     @contents_env["ss.filters"] ||= []
     @contents_env["ss.filters"] << { preview: opts }
 
@@ -160,7 +164,7 @@ class Cms::PreviewController < ApplicationController
     options[:delete_path] = "#{show_path}/delete"
   end
 
-  def render_preview
+  def render_preview(mode)
     self.status = @contents_status
     self.content_type = @contents_headers["Content-Type"]
     @contents_headers.each do |k, v|
@@ -172,9 +176,14 @@ class Cms::PreviewController < ApplicationController
       return
     end
 
+    mobile = false
+    if @contents_env["ss.filters"] && @contents_env["ss.filters"].any? { |v| v == :mobile }
+      mobile = true
+    end
+
     chunks = []
     @contents_body.each do |body|
-      chunks << convert_html_to_preview(body, rendered: @contents_env["ss.rendered"])
+      chunks << convert_html_to_preview(body, mode: mode, rendered: @contents_env["ss.rendered"], mobile: mobile)
     end
     render html: chunks.join.html_safe, layout: false
   rescue => exception
@@ -189,10 +198,10 @@ class Cms::PreviewController < ApplicationController
   public
 
   def index
-    render_preview
+    render_preview(:preview)
   end
 
   def form_preview
-    render_preview
+    render_preview(:form_preview)
   end
 end
