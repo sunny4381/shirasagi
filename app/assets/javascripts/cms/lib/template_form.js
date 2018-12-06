@@ -63,7 +63,7 @@ Cms_TemplateForm.prototype.loadAndActivateForm = function(formId) {
 
   this.$formChangeBtn.attr('disabled', true);
   $.ajax({
-    url: this.options.formUrlTemplate.replace(':id', formId),
+    url: Cms_TemplateForm.paths.formUrlTemplate.replace(':id', formId),
     type: 'GET',
     success: function(html) {
       pThis.loadForm(html);
@@ -81,7 +81,9 @@ Cms_TemplateForm.prototype.loadAndActivateForm = function(formId) {
 
 Cms_TemplateForm.prototype.loadForm = function(html) {
   this.$formPage.html($(html).html());
-  SS.render();
+  // SS.render();
+  SS.renderAjaxBox();
+  SS.renderDateTimePicker();
 };
 
 Cms_TemplateForm.prototype.showError = function(msg) {
@@ -160,7 +162,9 @@ Cms_TemplateForm.prototype.bindOne = function(el) {
         var $palette = $this.closest(".column-value-palette");
         $palette.before(data);
         var $inserted = $palette.prev(".column-value");
-        SS.render();
+        // SS.render();
+        SS.renderAjaxBox();
+        SS.renderDateTimePicker();
         $inserted.find(".btn-file-upload").data("on-select", function($item) { self.selectFile($inserted, $item) });
         self.resetOrder();
       },

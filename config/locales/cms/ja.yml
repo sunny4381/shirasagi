@@ -67,6 +67,8 @@ ja:
     form_not_selected: 定型フォームが選択されていません
     default_form: 既定のフォーム
     column_value_error_template: "%{name}の%{error}"
+    draft_page: 下書きページ
+    inplace_edit: ダイレクト編集モード
 
     adobe_reader:
       remark:
