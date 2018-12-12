@@ -18,6 +18,14 @@ production: &production
     # uncomment blow setting if you have been running SHIRASAGI with full https
     # secure: true
 
+  #
+  # add extra protocols to allow.
+  # default protocols are defined in `Loofah::HTML5::WhiteList::ALLOWED_PROTOCOLS` (loofah-2.2.2/lib/loofah/html5/whitelist.rb).
+  #
+  #sanitization:
+  #  allowed_protocols:
+  #    - tel
+
 test:
   <<: *production
   disable: false
