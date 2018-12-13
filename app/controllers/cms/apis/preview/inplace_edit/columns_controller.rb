@@ -1,45 +1,37 @@
-class Cms::Apis::Preview::InplaceEditController < ApplicationController
-  include Cms::BaseFilter
-  include SS::CrudFilter
+class Cms::Apis::Preview::InplaceEdit::ColumnsController < ApplicationController
+  include Cms::ApiFilter
 
-  before_action :set_type
+  model Cms::Column::Value::Base
+
+  layout "ss/ajax_in_iframe"
+
+  before_action :set_inplace_mode
+  before_action :set_page
   before_action :set_item
-
-  layout false
 
   private
 
-  def set_type
-    @cur_type ||= begin
-      type = params[:type].to_s
-      raise "404" if !%w(page node).include?(type)
+  def set_inplace_mode
+    @inplace_mode = true
+  end
 
-      type.to_sym
-    end
+  def set_page
+    @cur_page = Cms::Page.site(@cur_site).find(params[:page_id]).becomes_with_route
+    raise "404" if !@cur_page.respond_to?(:form) || !@cur_page.respond_to?(:column_values)
   end
 
   def set_item
-    if @cur_type == :page
-      @item = Cms::Page.site(@cur_site).find(params[:id])
-    elsif @cur_type == :node
-      @item = Cms::Node.site(@cur_site).find(params[:id])
-    end
-
-    raise "404" if @item.blank?
-
-    @item = @item.becomes_with_route rescue @item
+    @item = @cur_page.column_values.find(params[:id])
     @model = @item.class
+
+    @cur_column = @item.column
+    raise "404" if @cur_column.blank?
   end
 
   public
 
   def edit
-    raise "403" if !@item.allowed?(:edit, @cur_user, site: @cur_site)
-
-    if @cur_type == :node || !@item.respond_to?(:form) || !@item.form.sub_type_entry?
-      head :no_content
-      return
-    end
+    raise "403" if !@cur_page.allowed?(:edit, @cur_user, site: @cur_site)
 
     @preview = true
     render action: :edit

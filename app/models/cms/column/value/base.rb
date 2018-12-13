@@ -20,8 +20,12 @@ class Cms::Column::Value::Base
 
   liquidize do
     export :name
-    export :to_html, as: :html
-    export :to_html, as: :to_s
+    export as: :html do |drop|
+      self.to_html(preview: drop.preview?)
+    end
+    export as: :to_s do |drop|
+      self.to_html(preview: drop.preview?)
+    end
     export as: :type do
       self.class.name
     end
@@ -31,20 +35,18 @@ class Cms::Column::Value::Base
     self._permit_values += Array.wrap(fields)
   end
 
-  def to_html
-    if column.blank?
-      return to_default_html
+  def to_html(options = {})
+    html = _to_html(options)
+    if options[:preview]
+      data_attrs = [ [ "page-id", _parent.id ], [ "column-id", id ], [ "column-name", ::CGI.escapeHTML(name) ] ]
+      wrap = "<div class=\"ss-preview-column\" #{data_attrs.map { |k, v| "data-#{k}=\"#{v}\"" }.join(" ")}>"
+      wrap += html if html
+      wrap += "</div>"
+
+      html = wrap
     end
 
-    layout = column.layout
-    if layout.blank?
-      return to_default_html
-    end
-
-    render_opts = { "value" => self }
-
-    template = Liquid::Template.parse(layout)
-    template.render(render_opts).html_safe
+    html || ""
   end
 
   def all_file_ids
@@ -69,6 +71,22 @@ class Cms::Column::Value::Base
   end
 
   private
+
+  def _to_html(options = {})
+    if column.blank?
+      return to_default_html
+    end
+
+    layout = column.layout
+    if layout.blank?
+      return to_default_html
+    end
+
+    render_opts = { "value" => self }
+
+    template = Liquid::Template.parse(layout)
+    template.render(render_opts).html_safe
+  end
 
   def validate_value
     return if column.blank?

@@ -44,8 +44,9 @@
       SS_Preview.request_path = <%== request.path.to_json %>;
       SS_Preview.form_item = <%== @preview_item.to_json %>;
     <% end %>
-    <% if mode == :preview && rendered && %i[page node].include?(rendered[:type]) %>
-      SS_Preview.inplace_form_path = <%== cms_apis_preview_edit_inplace_edit_path(site: @cur_site, type: rendered[:type], id: rendered[:page] || rendered[:node]).to_json %>;
+    <% if mode == :preview && rendered && %i[page].include?(rendered[:type]) %>
+      SS_Preview.inplace_form_path.page = <%== edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, id: ":id").to_json %>;
+      SS_Preview.inplace_form_path.column = <%== edit_cms_apis_preview_inplace_edit_page_column_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
     <% end %>
   </script>
 <% end %>
@@ -53,26 +54,9 @@
   <div id="ss-preview-overlay" class="ss-preview-hide">
     <div class="ss-preview-overlay-tool">
       <span class="ss-preview-part-name"><%= t("ss.links.edit") %></span>
-      <button type="button" class="ss-preview-btn-edit-part"><%= t("ss.links.edit") %></button>
+      <button type="button" class="ss-preview-btn-edit-inplace"><%= t("ss.links.edit") %></button>
     </div>
   </div>
-  <script type="text/html" id="ss-preview-content-tool">
-    <% if edit_path %>
-      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= edit_path %>"><%= t("ss.links.edit") %></button>
-    <% end %>
-    <% if copy_path %>
-      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= copy_path %>"><%= t("ss.links.copy") %></button>
-    <% end %>
-    <% if move_path %>
-      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= move_path %>"><%= t("ss.links.move") %></button>
-    <% end %>
-    <% if delete_path %>
-      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= delete_path %>"><%= t("ss.links.delete") %></button>
-    <% end %>
-    <% if show_path %>
-      <button type="button" class="ss-preview-btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= show_path %>"><%= t("ss.links.back_to_administration") %></button>
-    <% end %>
-  </script>
   <script>
     SS_Preview.render();
   </script>

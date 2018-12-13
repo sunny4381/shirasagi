@@ -186,8 +186,11 @@ SS::Application.routes.draw do
         get "datasets:cid" => "datasets#index", as: 'datasets'
       end
       namespace "preview" do
-        get ":type/:id/edit" => "inplace_edit#edit", as: 'edit_inplace_edit'
-        match ":type/:id/" => "inplace_edit#update", via: [:put, :patch], as: 'inplace_edit'
+        namespace "inplace_edit" do
+          resources :pages, only: %i[edit update] do
+            resources :columns, only: %i[edit update]
+          end
+        end
       end
     end
   end

@@ -14,13 +14,17 @@ module SS::Liquidization
         if args.first
           @delegatee.send(args.first)
         else
-          @delegatee.instance_exec(&block)
+          @delegatee.instance_exec(self, &block)
         end
       end
     end
 
     def initialize(delegatee)
       @delegatee = delegatee
+    end
+
+    def preview?
+      @context.registers[:preview]
     end
   end
 
