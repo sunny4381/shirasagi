@@ -31,7 +31,7 @@ module Cms::Addon::Form::Page
 
                   # use `define_method` to define `to_liquid` method to use `cls` variable
                   define_method(:to_liquid) do
-                    cls.new(self.to_a)
+                    cls.new(self.order_by(order: 1, id: 1).to_a)
                   end
                 end
     field :column_values_updated, type: DateTime

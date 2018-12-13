@@ -25,9 +25,11 @@ SS_Preview = (function () {
   SS_Preview.overlayPadding = 5;
   SS_Preview.previewToolHeight = 70;
 
-  SS_Preview.inplace_form_path = null;
+  SS_Preview.inplace_form_path = { page: null, column: null };
 
   SS_Preview.instance = null;
+
+  SS_Preview.minFrameSize = { width: 600, height: 240 };
 
   SS_Preview.render = function () {
     if (SS_Preview.instance) {
@@ -150,10 +152,12 @@ SS_Preview = (function () {
 
     this.initializePart();
     this.initializeLayout();
+    this.initializePage();
+    this.initializeColumn();
     this.initializeOverlay();
 
-    this.$el.one("click", ".ss-preview-btn-toggle-inplace", function () {
-      self.initializeInplaceMode();
+    this.$el.on("click", ".ss-preview-btn-toggle-inplace", function () {
+      self.toggleInplaceMode();
     });
 
     $(document).on("click", ".ss-preview-btn-open-path", function () {
@@ -197,6 +201,108 @@ SS_Preview = (function () {
     button.on('click', function() {
       window.open(path, '_blank');
     });
+  };
+
+  SS_Preview.prototype.initializePage = function() {
+    var self = this;
+    $(document).on("mouseover", ".ss-preview-page", function() {
+      if (self.inplaceMode) {
+        self.showOverlayForPage($(this));
+      }
+    });
+  };
+
+  SS_Preview.prototype.showOverlayForPage = function($page) {
+    var rect = $page[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
+    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
+    var width = rect.width + SS_Preview.overlayPadding * 2;
+    var height = rect.height + SS_Preview.overlayPadding * 2;
+
+    this.$overlay[0].style.top = top + "px";
+    this.$overlay[0].style.left = left + "px";
+    this.$overlay[0].style.width = width + "px";
+    this.$overlay[0].style.height = height + "px";
+
+    this.$overlay.data("mode", "page");
+    this.$overlay.data("id", $page.data("page-id"));
+    this.$overlay.find(".ss-preview-part-name").text("").addClass("ss-preview-hide");
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  SS_Preview.prototype.adjustColorBoxSize = function(frame) {
+    var width = frame.contentWindow.document.body.scrollWidth;
+    var height = frame.contentWindow.document.body.scrollHeight;
+
+    if (width < SS_Preview.minFrameSize.width) {
+      width = SS_Preview.minFrameSize.width;
+    }
+    if (height < SS_Preview.minFrameSize.height) {
+      height = SS_Preview.minFrameSize.height;
+    }
+
+    var maxWidth = Math.floor(window.innerWidth * 0.9);
+    var maxHeight = Math.floor(window.innerHeight * 0.9);
+    if (width > maxWidth) {
+      width = maxWidth;
+    }
+    if (height > maxHeight) {
+      height = maxHeight;
+    }
+
+    $.colorbox.resize({ width: width, height: height });
+  };
+
+  SS_Preview.prototype.initializeFrame = function(frame) {
+    if (!frame.contentWindow.document.querySelector("#item-form")) {
+      // iframe is not loaded completely
+      return;
+    }
+
+    this.adjustColorBoxSize(frame);
+
+    var buttons = frame.contentWindow.document.querySelectorAll("button.btn-cancel");
+    $.each(buttons, function() {
+      var button = this;
+      button.onclick = function() { $.colorbox.close(); };
+    });
+  };
+
+  SS_Preview.prototype.openDialogInFrame = function(url) {
+    var self = this;
+
+    // open edit form in iframe
+    $.colorbox({
+      href: url,
+      iframe: true,
+      fixed: true,
+      width: SS_Preview.minFrameSize.width,
+      height: SS_Preview.minFrameSize.height,
+      opacity: 0.15,
+      overlayClose: false,
+      escKey: false,
+      arrowKey: false,
+      closeButton: false,
+      onComplete: function() {
+        var frame = $("#cboxLoadedContent iframe")[0];
+        frame.onload = function() {
+          self.initializeFrame(frame);
+        };
+      }
+    });
+  };
+
+  SS_Preview.prototype.openPageEdit = function(pageId) {
+    // open page(body) edit form in iframe
+    var url = SS_Preview.inplace_form_path.page.replace(":id", pageId);
+    this.openDialogInFrame(url);
   };
 
   SS_Preview.prototype.initializePart = function() {
@@ -260,11 +366,51 @@ SS_Preview = (function () {
     return founds[0];
   };
 
+  SS_Preview.prototype.initializeColumn = function() {
+    var self = this;
+    $(document).on("mouseover", ".ss-preview-column", function() {
+      if (self.inplaceMode) {
+        self.showOverlayForColumn($(this));
+      }
+    });
+  };
+
+  SS_Preview.prototype.showOverlayForColumn = function($column) {
+    var rect = $column[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
+    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
+    var width = rect.width + SS_Preview.overlayPadding * 2;
+    var height = rect.height + SS_Preview.overlayPadding * 2;
+
+    this.$overlay[0].style.top = top + "px";
+    this.$overlay[0].style.left = left + "px";
+    this.$overlay[0].style.width = width + "px";
+    this.$overlay[0].style.height = height + "px";
+
+    this.$overlay.data("mode", "column");
+    this.$overlay.data("id", { pageId: $column.data("page-id"), columnId: $column.data("column-id") });
+    this.$overlay.find(".ss-preview-part-name").text($column.data("column-name")).removeClass("ss-preview-hide");
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  SS_Preview.prototype.openColumnEdit = function(columnId) {
+    // open column edit form in iframe
+    var url = SS_Preview.inplace_form_path.column.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
+    this.openDialogInFrame(url);
+  };
+
   SS_Preview.prototype.initializeOverlay = function() {
     var overlay = this.$overlay = $("#ss-preview-overlay");
     var self = this;
-    this.$overlay.on("click", ".ss-preview-btn-edit-part", function() {
-      self.openPartEdit(overlay.data("part-id"));
+    this.$overlay.on("click", ".ss-preview-btn-edit-inplace", function() {
+      self.editInplace(overlay);
     });
 
     $(document).on('click', function(e) {
@@ -272,6 +418,17 @@ SS_Preview = (function () {
         self.hideOverlay();
       }
     });
+  };
+
+  SS_Preview.prototype.editInplace = function(overlay) {
+    var mode = overlay.data("mode");
+    if (mode === "part") {
+      this.openPartEdit(overlay.data("id"));
+    } else if (mode === "page") {
+      this.openPageEdit(overlay.data("id"));
+    } else if (mode === "column") {
+      this.openColumnEdit(overlay.data("id"));
+    }
   };
 
   SS_Preview.prototype.previewPc = function() {
@@ -310,7 +467,7 @@ SS_Preview = (function () {
       return;
     }
     return date.replace(/[^\d]/g, "");
-  }
+  };
 
   SS_Preview.prototype.submitFormPreview = function (path, form_item) {
     var token = $('meta[name="csrf-token"]').attr('content');
@@ -361,8 +518,9 @@ SS_Preview = (function () {
     this.$overlay[0].style.width = width + "px";
     this.$overlay[0].style.height = height + "px";
 
-    this.$overlay.data("part-id", part.id);
-    this.$overlay.find(".ss-preview-part-name").text(part.name);
+    this.$overlay.data("mode", "part");
+    this.$overlay.data("id", part.id);
+    this.$overlay.find(".ss-preview-part-name").text(part.name).removeClass("ss-preview-hide");
     this.$overlay.removeClass("ss-preview-hide");
   };
 
@@ -375,6 +533,7 @@ SS_Preview = (function () {
 
     window.scrollTo({ top: scrollTop, behavior: "smooth" });
   };
+
   SS_Preview.prototype.openPartEdit = function(partId) {
     var part = this.findPartById(partId);
     if (! part) {
@@ -388,147 +547,17 @@ SS_Preview = (function () {
   // Inplace Edit
   //
 
-  SS_Preview.prototype.initializeInplaceMode = function() {
-    var button = this.$el.find(".ss-preview-btn-toggle-inplace");
-    var self = this;
-
-    $.ajax({
-      url: SS_Preview.inplace_form_path,
-      success: function(html) {
-        // show custom inplace edit form
-        if (! self.initializeInplaceForm(html)) {
-          // show default inplace edit toolbar if inplace form is missing
-          self.initializeContentEdit();
-          self.showContentEdit();
-        }
-      },
-      error: function(xhr, status, error) {
-        // show default inplace edit toolbar
-        self.initializeContentEdit();
-        self.showContentEdit();
-      },
-      complete: function() {
-        self.$el.on("click", ".ss-preview-btn-toggle-inplace", function () {
-          self.toggleInplaceMode();
-        });
-        button.addClass("ss-preview-active");
-        self.inplaceMode = true;
-
-        $("#ss-preview-notice").addClass("ss-preview-hide");
-      }
-    });
-  };
-
   SS_Preview.prototype.toggleInplaceMode = function() {
     var button = this.$el.find(".ss-preview-btn-toggle-inplace");
 
     this.inplaceMode = !this.inplaceMode;
     if (this.inplaceMode) {
       button.addClass("ss-preview-active");
-      this.showInplaceForm() || this.showContentEdit();
+      $("#ss-preview-notice").addClass("ss-preview-hide");
     } else {
       button.removeClass("ss-preview-active");
       this.hideOverlay();
-      this.hideInplaceForm();
-      this.hideContentEdit();
     }
-  };
-
-  //
-  // Content Edit
-  //
-
-  SS_Preview.prototype.initializeContentEdit = function() {
-    var contentBegin = $("#ss-preview-content-begin");
-    if (! contentBegin[0]) {
-      return;
-    }
-
-    var template = $("script#ss-preview-content-tool").html();
-    contentBegin.html(template);
-  };
-
-  SS_Preview.prototype.showContentEdit = function() {
-    $("#ss-preview-content-begin").removeClass("ss-preview-hide");
-  };
-
-  SS_Preview.prototype.hideContentEdit = function() {
-    $("#ss-preview-content-begin").addClass("ss-preview-hide");
-  };
-
-  //
-  // Inplace Form
-  //
-
-  SS_Preview.prototype.initializeInplaceForm = function(html) {
-    if (! html) {
-      return false;
-    }
-
-    $('#ss-preview-content-end').after(html);
-
-    var form = $("#ss-preview-inplace-item-form");
-    if (! form[0]) {
-      return false;
-    }
-
-    var self = this;
-    form.on("click", ".ss-preview-btn-default", function() {
-      self.toggleInplaceMode();
-    });
-
-    form.on("submit", function(e) {
-      self.clearError();
-
-      form.ajaxSubmit({
-        dataType: "json",
-        success: function(htmlOrJson) {
-          self.previewPc();
-        },
-        error: function(xhr, status, error) {
-          self.showError(xhr.responseJSON || [ error ]);
-        }
-      });
-
-      e.preventDefault();
-      return false;
-    });
-
-    Cms_Form.render();
-    Cms_TemplateForm.render();
-    SS.renderAjaxBox();
-    SS.renderDateTimePicker();
-
-    return this.showInplaceForm();
-  };
-
-  SS_Preview.prototype.showInplaceForm = function() {
-    var form = $("#ss-preview-inplace-item-form");
-    if (! form[0]) {
-      return false;
-    }
-
-    $('#ss-preview-content-begin').nextUntil('#ss-preview-content-end').each(function() {
-      $(this).addClass("ss-preview-hide");
-    });
-
-    form.removeClass("ss-preview-hide");
-    return true;
-  };
-
-  SS_Preview.prototype.hideInplaceForm = function(html) {
-    var form = $("#ss-preview-inplace-item-form");
-    if (! form[0]) {
-      return false;
-    }
-
-    $('#ss-preview-content-begin').nextUntil('#ss-preview-content-end').each(function() {
-      $(this).removeClass("ss-preview-hide");
-    });
-
-    form.addClass("ss-preview-hide");
-
-    return true;
   };
 
   //

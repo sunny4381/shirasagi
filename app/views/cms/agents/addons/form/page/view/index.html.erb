@@ -2,13 +2,13 @@
   return "" if @cur_page.form.blank?
 
   html = @cur_page.form.html
-  if html.present?
-    template = Liquid::Template.parse(html)
-
-    render_opts = { "values" => @cur_page.column_values.to_liquid }
-    html = template.render(render_opts).html_safe
-  else
-    html = @cur_page.column_values.map(&:to_html).join.html_safe
+  if html.blank?
+    html = @cur_page.form.build_default_html
   end
+
+  template = Liquid::Template.parse(html)
+
+  render_opts = { "values" => @cur_page.column_values.to_liquid }
+  html = template.render(render_opts, { registers: { preview: @preview } }).html_safe
 %>
 <%== html %>

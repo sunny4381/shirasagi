@@ -6,6 +6,8 @@ class Cms::Form
   include Cms::Addon::GroupPermission
   include History::Addon::Backup
 
+  DEFAULT_TEMPLATE = "{% for value in values %}{{ value }}{% endfor %}".freeze
+
   set_permission_name 'cms_forms'
 
   seqid :id
@@ -64,15 +66,9 @@ class Cms::Form
     sub_type == "entry"
   end
 
-  # def build_column_values(hash)
-  #   hash = hash.to_unsafe_h if hash.respond_to?(:to_unsafe_h)
-  #   hash.map do |key, value|
-  #     column = columns.find(key) rescue nil
-  #     next nil if column.blank?
-  #
-  #     column.serialize_value(value)
-  #   end
-  # end
+  def build_default_html
+    DEFAULT_TEMPLATE
+  end
 
   private
 
