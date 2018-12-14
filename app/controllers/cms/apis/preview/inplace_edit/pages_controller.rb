@@ -12,4 +12,24 @@ class Cms::Apis::Preview::InplaceEdit::PagesController < ApplicationController
   def set_inplace_mode
     @inplace_mode = true
   end
+
+  public
+
+  def edit
+    raise "403" if !@item.allowed?(:edit, @cur_user, site: @cur_site)
+    if @item.state == "public"
+      raise "403" if !@item.allowed?(:approve, @cur_user, site: @cur_site)
+    end
+
+    super
+  end
+
+  def update
+    raise "403" if !@item.allowed?(:edit, @cur_user, site: @cur_site)
+    if @item.state == "public"
+      raise "403" if !@item.allowed?(:approve, @cur_user, site: @cur_site)
+    end
+
+    super
+  end
 end
