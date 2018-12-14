@@ -6,12 +6,12 @@
   <%= hidden_field_tag :_updated, params[:_updated] || @item.updated if @item.respond_to?(:updated) %>
 
   <%= f.fields_for :column_values do |g| %>
-    <%= render file: @cur_column.column_form_path, locals: { f: g, column: @cur_column, value: @item, controller: false } %>
+    <%= render file: @cur_column.column_form_path, locals: { f: g, column: @cur_column, value: @cur_column_value, controller: false } %>
   <% end %>
 
   <footer class="send">
     <%= f.submit t("ss.buttons.save"), name: "save_if_no_alerts", class: 'btn-primary save' %>
     <%= f.submit t("ss.buttons.ignore_alerts_and_save"), name: "ignore_alerts_and_save", class: 'btn-default' %>
-    <%= f.button t("ss.buttons.close"), class: 'btn-default btn-cancel', type: :reset %>
+    <%= f.button t("ss.buttons.close"), name: "cancel", class: 'btn-default btn-cancel', type: :reset %>
   </footer>
 <% end %>

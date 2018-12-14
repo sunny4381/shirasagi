@@ -261,18 +261,73 @@ SS_Preview = (function () {
   };
 
   SS_Preview.prototype.initializeFrame = function(frame) {
-    if (!frame.contentWindow.document.querySelector("#item-form")) {
+    var itemForm = frame.contentWindow.document.querySelector("#item-form");
+    if (! itemForm) {
       // iframe is not loaded completely
       return;
     }
 
     this.adjustColorBoxSize(frame);
 
-    var buttons = frame.contentWindow.document.querySelectorAll("button.btn-cancel");
-    $.each(buttons, function() {
-      var button = this;
-      button.onclick = function() { $.colorbox.close(); };
+    var self = this;
+    self.saveIfNoAlerts = false;
+    self.ignoreAlertsAndSave = false;
+
+    itemForm.addEventListener("click", function(ev) {
+      var el = ev.target;
+
+      if (el.tagName === "BUTTON" && el.classList.contains("btn-cancel")) {
+        $.colorbox.close();
+      }
+
+      if (el.tagName === "INPUT" && el.name === "save_if_no_alerts") {
+        self.saveIfNoAlerts = true;
+      }
+
+      if (el.tagName === "INPUT" && el.name === "ignore_alerts_and_save") {
+        self.ignoreAlertsAndSave = true;
+      }
+
+      return true;
     });
+
+    itemForm.onsubmit = function(ev) {
+      var formData = new FormData(itemForm);
+      if (self.saveIfNoAlerts) {
+        formData.append("save_if_no_alerts", "button");
+      }
+      if (self.ignoreAlertsAndSave) {
+        formData.append("ignore_alerts_and_save", "button");
+      }
+
+      var action = itemForm.getAttribute("action");
+      var method = itemForm.getAttribute("method") || "POST";
+      $.ajax({
+        url: action,
+        type: method,
+        data: formData,
+        processData: false,
+        contentType: false,
+        cache: false,
+        success: function(_html) {
+          $.colorbox.close();
+          location.reload();
+        },
+        error: function(xhr, status, error) {
+          var $html = $(xhr.responseText);
+          var $itemForm = $html.find("#item-form");
+
+          itemForm.innerHTML = $itemForm.html();
+          self.adjustColorBoxSize(frame);
+        }
+      });
+
+      self.saveIfNoAlerts = false;
+      self.ignoreAlertsAndSave = false;
+
+      ev.preventDefault();
+      return false;
+    };
   };
 
   SS_Preview.prototype.openDialogInFrame = function(url) {
