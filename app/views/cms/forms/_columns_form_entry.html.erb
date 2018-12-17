@@ -5,17 +5,7 @@
     <%= render file: column.column_form_path, locals: { f: g, column: column, value: column_value, controller: true } %>
   <% end %>
 
-  <% if true %>
-    <div class="column-value-palette">
-      <h3><%= t("ss.buttons.add") %></h3>
-      <fieldset>
-        <% form.columns.order_by(order: 1).each do |column| %>
-          <button type="button" class="btn btn-outline-primary" data-form-id="<%= form.id %>" data-column-id="<%= column.id %>"><%= column.name %></button>
-        <% end %>
-      </fieldset>
-      <div class="column-value-palette-error hide"></div>
-    </div>
-  <% end %>
+  <%= render "cms/forms/columns_form_palette", form: form %>
 <% end %>
 
 <%= jquery do %>

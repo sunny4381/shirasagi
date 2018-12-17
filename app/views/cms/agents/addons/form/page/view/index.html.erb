@@ -11,4 +11,12 @@
   render_opts = { "values" => @cur_page.column_values.to_liquid }
   html = template.render(render_opts, { registers: { preview: @preview } }).html_safe
 %>
+<% if @preview %>
+  <div id="ss-preview-form-start" class="ss-preview-hide" data-form-id="<%== @cur_page.form.id %>" data-form-sub-type="<%== @cur_page.form.sub_type %>"></div>
+<% end %>
+
 <%== html %>
+
+<% if @preview %>
+  <div id="ss-preview-form-end" class="ss-preview-hide" data-form-id="<%== @cur_page.form.id %>" data-form-sub-type="<%== @cur_page.form.sub_type %>"></div>
+<% end %>

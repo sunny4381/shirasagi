@@ -9,10 +9,6 @@
   <%= stylesheet_link_tag("cms/preview/main") %>
   <%= javascript_include_tag("cms/preview/main") %>
   <script>
-    SS_Preview.libs.jquery = <%== { js: javascript_path("cms/preview/jquery"), css: stylesheet_path("cms/preview/jquery") }.to_json %>;
-    SS_Preview.libs.datetimePicker = <%== { js: javascript_path("cms/preview/datetimepicker"), css: stylesheet_path("cms/preview/datetimepicker") }.to_json %>;
-    SS_Preview.libs.colorbox = <%== { js: javascript_path("/assets/js/jquery.colorbox-min.js"), css: "/assets/css/colorbox/colorbox.css" }.to_json %>;
-
     Link_Checker.url = <%== SS.config.cms.link_check_url.to_json %>;
     Link_Checker.rootUrl = <%== @cur_site.full_root_url.to_json %>;
 
@@ -36,6 +32,25 @@
       Cms_TemplateForm.paths.formUrlTemplate = <%== cms_apis_form_path(id: ':id', item_id: (rendered[:page] || rendered[:node]).new_record? ? nil : (rendered[:page] || rendered[:node]).id).to_json %>;
     <% end %>
 
+    SS_Preview.libs.jquery = <%== { js: javascript_path("cms/preview/jquery"), css: stylesheet_path("cms/preview/jquery") }.to_json %>;
+    SS_Preview.libs.datetimePicker = <%== { js: javascript_path("cms/preview/datetimepicker"), css: stylesheet_path("cms/preview/datetimepicker") }.to_json %>;
+    SS_Preview.libs.colorbox = <%== { js: javascript_path("/assets/js/jquery.colorbox-min.js"), css: "/assets/css/colorbox/colorbox.css" }.to_json %>;
+    <% if rendered %>
+      SS_Preview.item.type = <%== rendered[:type].to_json %>;
+      <% if rendered[:layout] %>
+        SS_Preview.item.layoutId = <%== rendered[:layout].id.to_json %>;
+      <% end %>
+      <% if rendered[:node] %>
+        SS_Preview.item.nodeId = <%== rendered[:node].id.to_json %>;
+      <% end %>
+      <% if rendered[:page] %>
+        SS_Preview.item.pageId = <%== rendered[:page].id.to_json %>;
+        <% if rendered[:page].respond_to?(:form) %>
+          SS_Preview.item.formId = <%== rendered[:page].form.id.to_json %>;
+        <% end %>
+      <% end %>
+    <% end %>
+
     <% if @cur_site.subdir.present? %>
       SS_Preview.preview_path = <%== @cur_site.subdir.to_json %>;
     <% end %>
@@ -44,9 +59,13 @@
       SS_Preview.request_path = <%== request.path.to_json %>;
       SS_Preview.form_item = <%== @preview_item.to_json %>;
     <% end %>
-    <% if mode == :preview && rendered && %i[page].include?(rendered[:type]) %>
-      SS_Preview.inplace_form_path.page = <%== edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, id: ":id").to_json %>;
-      SS_Preview.inplace_form_path.column = <%== edit_cms_apis_preview_inplace_edit_page_column_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+    <% if mode == :preview && rendered %>
+      <% if %i[page].include?(rendered[:type]) %>
+        SS_Preview.inplaceFormPath.page = <%== edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.new = <%== "#{new_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId")}?column_id=:columnId".to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.edit = <%== edit_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.palette = <%== palette_cms_apis_preview_inplace_edit_form_path(site: @cur_site, id: ":id").to_json %>;
+      <% end %>
     <% end %>
   </script>
 <% end %>

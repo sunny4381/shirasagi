@@ -11,8 +11,8 @@ SS_Preview = (function () {
   }
 
   SS_Preview.libs = {};
-  // SS_Preview.jquery_css_path = null;
-  // SS_Preview.jquery_js_path = null;
+
+  SS_Preview.item = {};
 
   SS_Preview.preview_path = "";
 
@@ -25,7 +25,7 @@ SS_Preview = (function () {
   SS_Preview.overlayPadding = 5;
   SS_Preview.previewToolHeight = 70;
 
-  SS_Preview.inplace_form_path = { page: null, column: null };
+  SS_Preview.inplaceFormPath = { page: null, columnValue: {}, palette: null };
 
   SS_Preview.instance = null;
 
@@ -155,6 +155,11 @@ SS_Preview = (function () {
     this.initializePage();
     this.initializeColumn();
     this.initializeOverlay();
+
+    var formEnd = $("#ss-preview-form-end");
+    if (formEnd[0]) {
+      this.formPalette = FormPalette.createBefore(this, formEnd[0]);
+    }
 
     this.$el.on("click", ".ss-preview-btn-toggle-inplace", function () {
       self.toggleInplaceMode();
@@ -356,7 +361,7 @@ SS_Preview = (function () {
 
   SS_Preview.prototype.openPageEdit = function(pageId) {
     // open page(body) edit form in iframe
-    var url = SS_Preview.inplace_form_path.page.replace(":id", pageId);
+    var url = SS_Preview.inplaceFormPath.page.replace(":id", pageId);
     this.openDialogInFrame(url);
   };
 
@@ -457,7 +462,7 @@ SS_Preview = (function () {
 
   SS_Preview.prototype.openColumnEdit = function(columnId) {
     // open column edit form in iframe
-    var url = SS_Preview.inplace_form_path.column.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
+    var url = SS_Preview.inplaceFormPath.columnValue.edit.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
     this.openDialogInFrame(url);
   };
 
@@ -609,9 +614,15 @@ SS_Preview = (function () {
     if (this.inplaceMode) {
       button.addClass("ss-preview-active");
       $("#ss-preview-notice").addClass("ss-preview-hide");
+      if (this.formPalette) {
+        this.formPalette.show();
+      }
     } else {
       button.removeClass("ss-preview-active");
       this.hideOverlay();
+      if (this.formPalette) {
+        this.formPalette.hide();
+      }
     }
   };
 
@@ -662,6 +673,96 @@ SS_Preview = (function () {
       }
     }
     return results;
+  };
+
+  //
+  //
+  //
+  function FormPalette(container, $el) {
+    this.container = container;
+    this.$el = $el;
+
+    var self = this;
+    this.$el.on("load", function() {
+      self.initializeFrame();
+    });
+  }
+
+  FormPalette.margin = { height: 20 }
+
+  FormPalette.createBefore = function(container, elBefore) {
+    var formId = elBefore.dataset.formId;
+    if (! formId) {
+      return null;
+    }
+    var subType = elBefore.dataset.formSubType;
+    if (subType !== "entry") {
+      return null;
+    }
+
+    var $frame = $("<iframe />", {
+      id: "ss-preview-form-palette", class: "ss-preview-hide", frameborder: "0", scrolling: "no",
+      src: SS_Preview.inplaceFormPath.palette.replace(":id", formId)
+    });
+
+    $(elBefore).before($frame);
+
+    return new FormPalette(container, $frame);
+  };
+
+  FormPalette.prototype.initializeFrame = function() {
+    this.adjustHeight();
+
+    var frame = this.$el[0];
+    var self = this;
+    frame.contentWindow.addEventListener("resize", function () {
+      self.delayAdjustHeight();
+    });
+    frame.contentWindow.document.addEventListener("click", function (ev) {
+      var el = ev.target;
+      if (el.tagName === "BUTTON" && el.dataset.formId && el.dataset.columnId) {
+        self.clickPalette(el);
+      }
+    });
+  };
+
+  FormPalette.prototype.delayAdjustHeight = function() {
+    if (this.timer > 0) {
+      clearTimeout(this.timer);
+    }
+
+    var self = this;
+    this.timer = setTimeout(function () { self.adjustHeight(); self.timer = 0; }, 100);
+  };
+
+  FormPalette.prototype.adjustHeight = function() {
+    var frame = this.$el[0];
+    if (! frame) {
+      return;
+    }
+
+    var height = frame.contentWindow.document.body.scrollHeight + FormPalette.margin
+    frame.style.height = height + "px";
+  };
+
+  FormPalette.prototype.show = function() {
+    this.$el.removeClass("ss-preview-hide");
+    this.delayAdjustHeight();
+  };
+
+  FormPalette.prototype.hide = function() {
+    this.$el.addClass("ss-preview-hide");
+  };
+
+  FormPalette.prototype.clickPalette = function(el) {
+    var formId = el.dataset.formId;
+    var columnId = el.dataset.columnId;
+    if (!formId || !columnId) {
+      return;
+    }
+
+    var url = SS_Preview.inplaceFormPath.columnValue.new.replace(":pageId", SS_Preview.item.pageId).replace(":columnId", columnId);
+    this.container.openDialogInFrame(url);
   };
 
   return SS_Preview;
