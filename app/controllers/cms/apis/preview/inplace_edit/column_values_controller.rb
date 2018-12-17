@@ -8,7 +8,7 @@ class Cms::Apis::Preview::InplaceEdit::ColumnValuesController < ApplicationContr
   before_action :set_inplace_mode
   before_action :set_item
   before_action :set_column, only: %i[new]
-  before_action :set_column_and_value, only: %i[edit update]
+  before_action :set_column_and_value, only: %i[edit update destroy]
 
   private
 
@@ -117,10 +117,27 @@ class Cms::Apis::Preview::InplaceEdit::ColumnValuesController < ApplicationContr
     if result
       flash["ss.inplace_edit.notice"] = t("ss.notice.saved")
       if @item.try(:branch?) && @item.state == "public"
-        location = { action: :index }
+        # location = { action: :index }
         @item.delete
       end
     end
     render_update result, location: location, render: { file: :edit, status: :unprocessable_entity }
+  end
+
+  def destroy
+    raise "403" unless @item.allowed?(:delete, @cur_user, site: @cur_site, node: @cur_node)
+
+    result = @cur_column_value.destroy
+    if result
+      respond_to do |format|
+        format.html { head :no_content }
+        format.json { head :no_content }
+      end
+    else
+      respond_to do |format|
+        format.html { render file: :edit, status: :unprocessable_entity }
+        format.json { render json: @item.errors.full_messages, status: :unprocessable_entity }
+      end
+    end
   end
 end

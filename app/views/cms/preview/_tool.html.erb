@@ -1,9 +1,6 @@
 <%
   show_path ||= nil
-  edit_path ||= nil
-  copy_path ||= nil
-  move_path ||= nil
-  delete_path ||= nil
+  cms_form = nil
 %>
 <% head_for(self) do %>
   <%= stylesheet_link_tag("cms/preview/main") %>
@@ -35,6 +32,9 @@
     SS_Preview.libs.jquery = <%== { js: javascript_path("cms/preview/jquery"), css: stylesheet_path("cms/preview/jquery") }.to_json %>;
     SS_Preview.libs.datetimePicker = <%== { js: javascript_path("cms/preview/datetimepicker"), css: stylesheet_path("cms/preview/datetimepicker") }.to_json %>;
     SS_Preview.libs.colorbox = <%== { js: javascript_path("/assets/js/jquery.colorbox-min.js"), css: "/assets/css/colorbox/colorbox.css" }.to_json %>;
+    SS_Preview.confirms.delete = <%== t("ss.confirm.delete").to_json %>;
+    SS_Preview.notices.deleted = <%== t("ss.notice.deleted").to_json %>;
+
     <% if rendered %>
       SS_Preview.item.type = <%== rendered[:type].to_json %>;
       <% if rendered[:layout] %>
@@ -46,7 +46,11 @@
       <% if rendered[:page] %>
         SS_Preview.item.pageId = <%== rendered[:page].id.to_json %>;
         <% if rendered[:page].respond_to?(:form) %>
-          SS_Preview.item.formId = <%== rendered[:page].form.id.to_json %>;
+          <% cms_form = rendered[:page].form %>
+          <% if cms_form %>
+            SS_Preview.item.formId = <%== cms_form.id.to_json %>;
+            SS_Preview.item.formSubType = <%== cms_form.sub_type.to_json %>;
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
@@ -64,6 +68,7 @@
         SS_Preview.inplaceFormPath.page = <%== edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, id: ":id").to_json %>;
         SS_Preview.inplaceFormPath.columnValue.new = <%== "#{new_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId")}?column_id=:columnId".to_json %>;
         SS_Preview.inplaceFormPath.columnValue.edit = <%== edit_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.destroy = <%== cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
         SS_Preview.inplaceFormPath.palette = <%== palette_cms_apis_preview_inplace_edit_form_path(site: @cur_site, id: ":id").to_json %>;
       <% end %>
     <% end %>
@@ -72,8 +77,31 @@
 <% foot_for(self) do %>
   <div id="ss-preview-overlay" class="ss-preview-hide">
     <div class="ss-preview-overlay-tool">
-      <span class="ss-preview-part-name"><%= t("ss.links.edit") %></span>
-      <button type="button" class="ss-preview-btn-edit-inplace"><%= t("ss.links.edit") %></button>
+      <span class="ss-preview-overlay-name"><%= t("ss.links.edit") %></span>
+      <div class="ss-preview-btn-group ss-preview-overlay-btn-group-edit">
+        <button type="button" class="ss-preview-overlay-btn-edit"><%= t("ss.links.edit") %></button>
+      </div>
+
+      <% if cms_form && cms_form.sub_type_entry? %>
+      <div class="ss-preview-btn-group ss-preview-overlay-btn-group-move">
+        <button type="button" class="ss-preview-overlay-btn-move-up"><i class="material-icons md-14">keyboard_arrow_up</i></button>
+        <select name="item[column_values][][order]" id="item_column_values__order" class="ss-preview-overlay-btn-move-position">
+          <option value="0">1</option>
+          <option value="1">2</option>
+          <option value="2">3</option>
+          <option value="3">4</option>
+          <option value="4">5</option>
+          <option value="5">6</option>
+          <option value="6">7</option>
+          <option value="7">末尾</option>
+        </select>
+        <button type="button" class="ss-preview-overlay-btn-move-down"><i class="material-icons md-14">keyboard_arrow_down</i></button>
+      </div>
+
+      <div class="ss-preview-btn-group ss-preview-overlay-btn-group-delete">
+        <button type="button" class="ss-preview-overlay-btn-delete"><%= t("ss.links.delete") %></button>
+      </div>
+      <% end %>
     </div>
   </div>
   <script>

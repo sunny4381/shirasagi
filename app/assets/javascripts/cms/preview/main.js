@@ -12,6 +12,10 @@ SS_Preview = (function () {
 
   SS_Preview.libs = {};
 
+  SS_Preview.confirms = { delete: null };
+
+  SS_Preview.notices = { deleted: null };
+
   SS_Preview.item = {};
 
   SS_Preview.preview_path = "";
@@ -154,7 +158,27 @@ SS_Preview = (function () {
     this.initializeLayout();
     this.initializePage();
     this.initializeColumn();
-    this.initializeOverlay();
+
+    // initialize overlay;
+    this.overlay = new Overlay(this);
+    this.overlay.on("part:edit", function(ev, data) {
+      self.openPartEdit(data.id);
+    });
+    this.overlay.on("page:edit", function(ev, data) {
+      self.openPageEdit(data.id);
+    });
+    this.overlay.on("column:edit", function(ev, data) {
+      self.openColumnEdit(data.id);
+    });
+    this.overlay.on("column:delete", function(ev, data) {
+      self.columnDelete(data.id);
+    });
+    this.overlay.on("column:moveUp", function(ev, data) {
+      self.openColumnMoveUp(data.id);
+    });
+    this.overlay.on("column:moveDown", function(ev, data) {
+      self.openColumnMoveDown(data.id);
+    });
 
     var formEnd = $("#ss-preview-form-end");
     if (formEnd[0]) {
@@ -212,34 +236,9 @@ SS_Preview = (function () {
     var self = this;
     $(document).on("mouseover", ".ss-preview-page", function() {
       if (self.inplaceMode) {
-        self.showOverlayForPage($(this));
+        self.overlay.showForPage($(this));
       }
     });
-  };
-
-  SS_Preview.prototype.showOverlayForPage = function($page) {
-    var rect = $page[0].getBoundingClientRect();
-    if (! rect) {
-      return;
-    }
-
-    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
-    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
-    var width = rect.width + SS_Preview.overlayPadding * 2;
-    var height = rect.height + SS_Preview.overlayPadding * 2;
-
-    this.$overlay[0].style.top = top + "px";
-    this.$overlay[0].style.left = left + "px";
-    this.$overlay[0].style.width = width + "px";
-    this.$overlay[0].style.height = height + "px";
-
-    this.$overlay.data("mode", "page");
-    this.$overlay.data("id", $page.data("page-id"));
-    this.$overlay.find(".ss-preview-part-name").text("").addClass("ss-preview-hide");
-    this.$overlay.removeClass("ss-preview-hide");
   };
 
   SS_Preview.prototype.adjustColorBoxSize = function(frame) {
@@ -404,7 +403,7 @@ SS_Preview = (function () {
 
     $(document).on("mouseover", ".ss-preview-part", function() {
       if (self.inplaceMode) {
-        self.showOverlayForPart($(this));
+        self.overlay.showForPart($(this));
       }
     });
   };
@@ -430,34 +429,9 @@ SS_Preview = (function () {
     var self = this;
     $(document).on("mouseover", ".ss-preview-column", function() {
       if (self.inplaceMode) {
-        self.showOverlayForColumn($(this));
+        self.overlay.showForColumn($(this));
       }
     });
-  };
-
-  SS_Preview.prototype.showOverlayForColumn = function($column) {
-    var rect = $column[0].getBoundingClientRect();
-    if (! rect) {
-      return;
-    }
-
-    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
-    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
-    var width = rect.width + SS_Preview.overlayPadding * 2;
-    var height = rect.height + SS_Preview.overlayPadding * 2;
-
-    this.$overlay[0].style.top = top + "px";
-    this.$overlay[0].style.left = left + "px";
-    this.$overlay[0].style.width = width + "px";
-    this.$overlay[0].style.height = height + "px";
-
-    this.$overlay.data("mode", "column");
-    this.$overlay.data("id", { pageId: $column.data("page-id"), columnId: $column.data("column-id") });
-    this.$overlay.find(".ss-preview-part-name").text($column.data("column-name")).removeClass("ss-preview-hide");
-    this.$overlay.removeClass("ss-preview-hide");
   };
 
   SS_Preview.prototype.openColumnEdit = function(columnId) {
@@ -466,29 +440,32 @@ SS_Preview = (function () {
     this.openDialogInFrame(url);
   };
 
-  SS_Preview.prototype.initializeOverlay = function() {
-    var overlay = this.$overlay = $("#ss-preview-overlay");
-    var self = this;
-    this.$overlay.on("click", ".ss-preview-btn-edit-inplace", function() {
-      self.editInplace(overlay);
-    });
+  SS_Preview.prototype.columnDelete = function(columnId) {
+    if (! confirm(SS_Preview.confirms.delete)) {
+      return;
+    }
 
-    $(document).on('click', function(e) {
-      if (! $(e.target).closest('#ss-preview-overlay').length) {
-        self.hideOverlay();
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.destroy.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { _method: "DELETE", authenticity_token: token },
+      success: function() {
+        self.overlay.hide();
+
+        var $column = $(document).find(".ss-preview-column[data-page-id='" + columnId.pageId + "'][data-column-id='" + columnId.columnId + "']");
+        $column.fadeOut("fast", function() {
+          $column.remove();
+          // self.showInfo("削除しました。");
+        });
+      },
+      error: function(xhr, status, error) {
+        alert(error);
       }
     });
-  };
-
-  SS_Preview.prototype.editInplace = function(overlay) {
-    var mode = overlay.data("mode");
-    if (mode === "part") {
-      this.openPartEdit(overlay.data("id"));
-    } else if (mode === "page") {
-      this.openPageEdit(overlay.data("id"));
-    } else if (mode === "column") {
-      this.openColumnEdit(overlay.data("id"));
-    }
   };
 
   SS_Preview.prototype.previewPc = function() {
@@ -542,50 +519,17 @@ SS_Preview = (function () {
   SS_Preview.prototype.changePart = function($el) {
     var part = this.findPartById($el.val());
     if (! part) {
-      this.hideOverlay();
+      this.overlay.hide();
       return;
     }
 
-    this.showOverlayForPart(part.el);
+    // this.showOverlayForPart(part.el);
+    this.overlay.showForPart(part.el);
     this.scrollToPart(part.el);
   };
 
-  SS_Preview.prototype.hideOverlay = function() {
-    this.$overlay.addClass("ss-preview-hide");
-  };
-
-  SS_Preview.prototype.showOverlayForPart = function($part) {
-    var part = this.findPartById($part.data("part-id"));
-    if (! part) {
-      return;
-    }
-
-    var rect = $part[0].getBoundingClientRect();
-    if (! rect) {
-      return;
-    }
-
-    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
-    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
-    var width = rect.width + SS_Preview.overlayPadding * 2;
-    var height = rect.height + SS_Preview.overlayPadding * 2;
-
-    this.$overlay[0].style.top = top + "px";
-    this.$overlay[0].style.left = left + "px";
-    this.$overlay[0].style.width = width + "px";
-    this.$overlay[0].style.height = height + "px";
-
-    this.$overlay.data("mode", "part");
-    this.$overlay.data("id", part.id);
-    this.$overlay.find(".ss-preview-part-name").text(part.name).removeClass("ss-preview-hide");
-    this.$overlay.removeClass("ss-preview-hide");
-  };
-
   SS_Preview.prototype.scrollToPart = function($part) {
-    var offset = this.$overlay.offset();
+    var offset = $part.offset();
     var scrollTop = offset.top - SS_Preview.previewToolHeight;
     if (scrollTop < 0) {
       scrollTop = 0;
@@ -619,7 +563,7 @@ SS_Preview = (function () {
       }
     } else {
       button.removeClass("ss-preview-active");
-      this.hideOverlay();
+      this.overlay.hide();
       if (this.formPalette) {
         this.formPalette.hide();
       }
@@ -676,8 +620,135 @@ SS_Preview = (function () {
   };
 
   //
+  // Overlay
   //
+
+  function Overlay(container) {
+    this.container = container;
+    this.$overlay = $("#ss-preview-overlay");
+
+    var self = this;
+    this.$overlay.on("click", ".ss-preview-overlay-btn-edit", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":edit";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("click", ".ss-preview-overlay-btn-delete", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":delete";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("click", ".ss-preview-overlay-btn-move-up", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":moveUp";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("click", ".ss-preview-overlay-btn-move-down", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":moveDown";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+
+    $(document).on('click', function(e) {
+      if (! $(e.target).closest('#ss-preview-overlay').length) {
+        self.hide();
+      }
+    });
+
+    // delegates
+    this.on = this.$overlay.on.bind(this.$overlay);
+    this.off = this.$overlay.off.bind(this.$overlay);
+  }
+
+  Overlay.prototype.hide = function() {
+    this.$overlay.addClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.showForPage = function($page) {
+    var rect = $page[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    this.moveTo(rect);
+    this.setInfo({ mode: "page", id: $page.data("page-id"), name: null });
+
+    this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
+    this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
+
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.showForColumn = function($column) {
+    var rect = $column[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    this.moveTo(rect);
+    this.setInfo({ mode: "column", id: { pageId: $column.data("page-id"), columnId: $column.data("column-id") }, name: $column.data("column-name") });
+
+    if (SS_Preview.item.formSubType === "entry") {
+      this.$overlay.find(".ss-preview-overlay-btn-group-move").removeClass("ss-preview-hide");
+      this.$overlay.find(".ss-preview-overlay-btn-group-delete").removeClass("ss-preview-hide");
+    } else {
+      this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
+      this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
+    }
+
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.showForPart = function($part) {
+    var part = this.container.findPartById($part.data("part-id"));
+    if (! part) {
+      return;
+    }
+
+    var rect = $part[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    this.moveTo(rect);
+    this.setInfo({ mode: "part", id: part.id, name: part.name });
+
+    this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
+    this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
+
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.moveTo = function(rect) {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
+    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
+    var width = rect.width + SS_Preview.overlayPadding * 2;
+    var height = rect.height + SS_Preview.overlayPadding * 2;
+
+    this.$overlay[0].style.top = top + "px";
+    this.$overlay[0].style.left = left + "px";
+    this.$overlay[0].style.width = width + "px";
+    this.$overlay[0].style.height = height + "px";
+  };
+
+  Overlay.prototype.setInfo = function(info) {
+    this.$overlay.data("mode", info.mode);
+    this.$overlay.data("id", info.id);
+    this.$overlay.data("id", info.id);
+
+    if (info.name) {
+      this.$overlay.find(".ss-preview-overlay-name").text(info.name).removeClass("ss-preview-hide");
+    } else {
+      this.$overlay.find(".ss-preview-overlay-name").text("").addClass("ss-preview-hide");
+    }
+  };
+
   //
+  // FormPalette
+  //
+
   function FormPalette(container, $el) {
     this.container = container;
     this.$el = $el;
