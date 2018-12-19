@@ -46,7 +46,7 @@ SS_Preview = (function () {
       var countDownLatch = 2;
       var lazyInitialize = function() {
         countDownLatch -= 1;
-        if (countDownLatch == 0) {
+        if (countDownLatch === 0) {
           SS_Preview.instance.initialize();
         }
       };
@@ -171,13 +171,16 @@ SS_Preview = (function () {
       self.openColumnEdit(data.id);
     });
     this.overlay.on("column:delete", function(ev, data) {
-      self.columnDelete(data.id);
+      self.postColumnDelete(data.id);
     });
     this.overlay.on("column:moveUp", function(ev, data) {
-      self.openColumnMoveUp(data.id);
+      self.postColumnMoveUp(data.id);
     });
     this.overlay.on("column:moveDown", function(ev, data) {
-      self.openColumnMoveDown(data.id);
+      self.postColumnMoveDown(data.id);
+    });
+    this.overlay.on("column:movePosition", function(ev, data, order) {
+      self.postColumnMovePosition(data.id, order);
     });
 
     var formEnd = $("#ss-preview-form-end");
@@ -379,18 +382,17 @@ SS_Preview = (function () {
     });
 
 
-    if (!this.parts || this.parts.length == 0) {
+    if (!this.parts || this.parts.length === 0) {
       this.$el.find(".ss-preview-part-group").addClass("ss-preview-hide");
       return;
     }
 
-    var list = this.$el.find(".ss-preview-part-list")
+    var list = this.$el.find(".ss-preview-part-list");
     var options = list.html();
     $.each(this.parts, function(index, item) {
       options += "<option value=\"" + item.id + "\">" + item.name + "</option>"
     });
 
-    var self = this;
     list.html(options).on('change', function() {
       self.changePart($(this));
     });
@@ -434,19 +436,19 @@ SS_Preview = (function () {
     });
   };
 
-  SS_Preview.prototype.openColumnEdit = function(columnId) {
+  SS_Preview.prototype.openColumnEdit = function(ids) {
     // open column edit form in iframe
-    var url = SS_Preview.inplaceFormPath.columnValue.edit.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
+    var url = SS_Preview.inplaceFormPath.columnValue.edit.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
     this.openDialogInFrame(url);
   };
 
-  SS_Preview.prototype.columnDelete = function(columnId) {
+  SS_Preview.prototype.postColumnDelete = function(ids) {
     if (! confirm(SS_Preview.confirms.delete)) {
       return;
     }
 
     var self = this;
-    var url = SS_Preview.inplaceFormPath.columnValue.destroy.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
+    var url = SS_Preview.inplaceFormPath.columnValue.destroy.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
     var token = $('meta[name="csrf-token"]').attr('content');
 
     $.ajax({
@@ -456,7 +458,7 @@ SS_Preview = (function () {
       success: function() {
         self.overlay.hide();
 
-        var $column = $(document).find(".ss-preview-column[data-page-id='" + columnId.pageId + "'][data-column-id='" + columnId.columnId + "']");
+        var $column = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
         $column.fadeOut("fast", function() {
           $column.remove();
           // self.showInfo("削除しました。");
@@ -466,6 +468,127 @@ SS_Preview = (function () {
         alert(error);
       }
     });
+  };
+
+  SS_Preview.prototype.postColumnMoveUp = function(ids) {
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.moveUp.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { authenticity_token: token },
+      success: function(data) {
+        self.finishColumnMoveUp(ids, data);
+      },
+      error: function(xhr, status, error) {
+        alert(error);
+      }
+    });
+  };
+
+  SS_Preview.prototype.finishColumnMoveUp = function(ids, data) {
+    this.overlay.hide();
+
+    var $target = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+    if (!$target[0]) {
+      return;
+    }
+    var $prev = $target.prev(".ss-preview-column[data-page-id='" + ids.pageId + "']");
+    if (!$prev[0]) {
+      return;
+    }
+
+    $prev.data("column-order", data[$prev.data("column-id")]);
+    $target.data("column-order", data[$target.data("column-id")]);
+
+    $target.after($prev);
+  };
+
+  SS_Preview.prototype.postColumnMoveDown = function(ids) {
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.moveDown.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { authenticity_token: token },
+      success: function(data) {
+        self.finishColumnMoveDown(ids, data);
+      },
+      error: function(xhr, status, error) {
+        alert(error);
+      }
+    });
+  };
+
+  SS_Preview.prototype.finishColumnMoveDown = function(ids, data) {
+    this.overlay.hide();
+
+    var $target = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+    if (!$target[0]) {
+      return;
+    }
+
+    var $next = $target.next(".ss-preview-column[data-page-id='" + ids.pageId + "']");
+    if (!$next[0]) {
+      return;
+    }
+
+    $next.data("column-order", data[$next.data("column-id")]);
+    $target.data("column-order", data[$target.data("column-id")]);
+
+    $target.before($next);
+  };
+
+  SS_Preview.prototype.postColumnMovePosition = function(ids, order) {
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.moveAt.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { authenticity_token: token, order: order },
+      success: function(data) {
+        self.finishColumnMovePosition(ids, order, data);
+      },
+      error: function(xhr, status, error) {
+        alert(error);
+      }
+    });
+  };
+
+  SS_Preview.prototype.finishColumnMovePosition = function(ids, order, data) {
+    this.overlay.hide();
+
+    var $target = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+    if (!$target[0]) {
+      return;
+    }
+
+    var move_p;
+    if (order === -1) {
+      var all = $(document).find("#ss-preview-form-end").prevAll(".ss-preview-column[data-page-id='" + ids.pageId + "']");
+      if (all[0]) {
+        move_p = function() { $(all[0]).after($target); };
+      }
+    } else {
+      var $prev = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-order='" + order + "']");
+      move_p = function() { $prev.before($target); };
+    }
+    if (!move_p) {
+      return;
+    }
+
+    $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "']").each(function() {
+      var $this = $(this);
+      $this.data("column-order", data[$this.data("column-id")]);
+    });
+
+    move_p();
   };
 
   SS_Preview.prototype.previewPc = function() {
@@ -627,6 +750,18 @@ SS_Preview = (function () {
     this.container = container;
     this.$overlay = $("#ss-preview-overlay");
 
+    var select = this.$overlay.find(".ss-preview-overlay-btn-move-position");
+    if (select[0]) {
+      var html = [];
+      $(document).find(".ss-preview-column[data-column-order]").each(function () {
+        var order = parseInt(this.dataset.columnOrder, 10);
+        html.push("<option value=\"" + order + "\">" + (order + 1) + "</option>");
+      });
+      html.push("<option value=\"-1\">末尾</option>");
+
+      select.html(html.join(""));
+    }
+
     var self = this;
     this.$overlay.on("click", ".ss-preview-overlay-btn-edit", function() {
       var mode = self.$overlay.data("mode");
@@ -647,6 +782,12 @@ SS_Preview = (function () {
       var mode = self.$overlay.data("mode");
       var eventType = mode + ":moveDown";
       self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("change", ".ss-preview-overlay-btn-move-position", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":movePosition";
+      var order = parseInt($(this).val(), 10);
+      self.$overlay.trigger(eventType, [ self.$overlay.data(), order ]);
     });
 
     $(document).on('click', function(e) {
@@ -691,6 +832,9 @@ SS_Preview = (function () {
     if (SS_Preview.item.formSubType === "entry") {
       this.$overlay.find(".ss-preview-overlay-btn-group-move").removeClass("ss-preview-hide");
       this.$overlay.find(".ss-preview-overlay-btn-group-delete").removeClass("ss-preview-hide");
+
+      var select = this.$overlay.find(".ss-preview-overlay-btn-move-position");
+      select.val($column.data("column-order"));
     } else {
       this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
       this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
@@ -759,7 +903,7 @@ SS_Preview = (function () {
     });
   }
 
-  FormPalette.margin = { height: 20 }
+  FormPalette.margin = { height: 20 };
 
   FormPalette.createBefore = function(container, elBefore) {
     var formId = elBefore.dataset.formId;
@@ -812,7 +956,7 @@ SS_Preview = (function () {
       return;
     }
 
-    var height = frame.contentWindow.document.body.scrollHeight + FormPalette.margin
+    var height = frame.contentWindow.document.body.scrollHeight + FormPalette.margin;
     frame.style.height = height + "px";
   };
 

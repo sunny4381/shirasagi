@@ -69,6 +69,9 @@
         SS_Preview.inplaceFormPath.columnValue.new = <%== "#{new_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId")}?column_id=:columnId".to_json %>;
         SS_Preview.inplaceFormPath.columnValue.edit = <%== edit_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
         SS_Preview.inplaceFormPath.columnValue.destroy = <%== cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.moveUp = <%== move_up_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.moveDown = <%== move_down_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.moveAt = <%== move_at_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
         SS_Preview.inplaceFormPath.palette = <%== palette_cms_apis_preview_inplace_edit_form_path(site: @cur_site, id: ":id").to_json %>;
       <% end %>
     <% end %>
@@ -85,16 +88,7 @@
       <% if cms_form && cms_form.sub_type_entry? %>
       <div class="ss-preview-btn-group ss-preview-overlay-btn-group-move">
         <button type="button" class="ss-preview-overlay-btn-move-up"><i class="material-icons md-14">keyboard_arrow_up</i></button>
-        <select name="item[column_values][][order]" id="item_column_values__order" class="ss-preview-overlay-btn-move-position">
-          <option value="0">1</option>
-          <option value="1">2</option>
-          <option value="2">3</option>
-          <option value="3">4</option>
-          <option value="4">5</option>
-          <option value="5">6</option>
-          <option value="6">7</option>
-          <option value="7">末尾</option>
-        </select>
+        <select class="ss-preview-overlay-btn-move-position"></select>
         <button type="button" class="ss-preview-overlay-btn-move-down"><i class="material-icons md-14">keyboard_arrow_down</i></button>
       </div>
 

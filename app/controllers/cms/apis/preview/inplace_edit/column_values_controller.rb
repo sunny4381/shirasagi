@@ -8,7 +8,7 @@ class Cms::Apis::Preview::InplaceEdit::ColumnValuesController < ApplicationContr
   before_action :set_inplace_mode
   before_action :set_item
   before_action :set_column, only: %i[new]
-  before_action :set_column_and_value, only: %i[edit update destroy]
+  before_action :set_column_and_value, only: %i[edit update destroy move_up move_down move_at]
 
   private
 
@@ -133,6 +133,80 @@ class Cms::Apis::Preview::InplaceEdit::ColumnValuesController < ApplicationContr
         format.html { head :no_content }
         format.json { head :no_content }
       end
+    else
+      respond_to do |format|
+        format.html { render file: :edit, status: :unprocessable_entity }
+        format.json { render json: @item.errors.full_messages, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def move_up
+    copy = Array(@item.column_values.order_by(order: 1, name: 1).to_a)
+    index = copy.index { |value| value.id == @cur_column_value.id }
+    if index && index > 0
+      copy[index - 1], copy[index] = copy[index], copy[index - 1]
+    end
+    copy.each_with_index { |value, index| value.order = index }
+
+    @item.column_values = copy
+    result = @item.save
+
+    if result
+      render json: Hash[copy.map { |value| [ value.id, value.order ] }], status: :ok, content_type: json_content_type
+    else
+      respond_to do |format|
+        format.html { render file: :edit, status: :unprocessable_entity }
+        format.json { render json: @item.errors.full_messages, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def move_down
+    copy = Array(@item.column_values.order_by(order: 1, name: 1).to_a)
+    index = copy.index { |value| value.id == @cur_column_value.id }
+    if index && index < copy.length - 1
+      copy[index], copy[index + 1] = copy[index + 1], copy[index]
+    end
+    copy.each_with_index { |value, index| value.order = index }
+
+    @item.column_values = copy
+    result = @item.save
+
+    if result
+      render json: Hash[copy.map { |value| [ value.id, value.order ] }], status: :ok, content_type: json_content_type
+    else
+      respond_to do |format|
+        format.html { render file: :edit, status: :unprocessable_entity }
+        format.json { render json: @item.errors.full_messages, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def move_at
+    order = Integer(params[:order])
+
+    copy = Array(@item.column_values.order_by(order: 1, name: 1).to_a)
+    index = copy.index { |value| value.id == @cur_column_value.id }
+
+    if index && index != order
+      delete_index = index
+
+      insert_index = order
+      insert_index = -1 if insert_index < 0
+      insert_index = -1 if insert_index >= copy.length
+      insert_index -= 1 if delete_index < insert_index
+
+      copy.insert(insert_index, copy.delete_at(delete_index))
+    end
+
+    copy.each_with_index { |value, index| value.order = index }
+
+    @item.column_values = copy
+    result = @item.save
+
+    if result
+      render json: Hash[copy.map { |value| [ value.id, value.order ] }], status: :ok, content_type: json_content_type
     else
       respond_to do |format|
         format.html { render file: :edit, status: :unprocessable_entity }
