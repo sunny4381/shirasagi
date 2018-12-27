@@ -49,7 +49,7 @@ this.Cms_Form = (function () {
       processData: false,
       contentType: false,
       cache: false,
-      success: function(html) { resolve(html) },
+      success: function(html) { resolve("<div>" + html + "</div>") },
       error: function(xhr, status, error) {
         if (reject) {
           reject(xhr, status, error);

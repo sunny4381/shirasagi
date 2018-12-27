@@ -29,14 +29,14 @@ this.SS_AddonTabs = (function () {
     var $addonView = SS_AddonTabs.findAddonView(view);
     $addonView.find('.toggle-body').show();
     $addonView.removeClass('body-closed');
-    $addonView.trigger('addonShown');
+    $addonView.trigger('ss:addonShown');
   };
 
   SS_AddonTabs.hide = function (view) {
     var $addonView = SS_AddonTabs.findAddonView(view);
     $addonView.find('.toggle-body').hide();
     $addonView.addClass('body-closed');
-    $addonView.trigger('addonHided');
+    $addonView.trigger('ss:addonHided');
   };
 
   SS_AddonTabs.toggleWithAnimation = function (view) {
@@ -44,9 +44,9 @@ this.SS_AddonTabs = (function () {
     $addonView.find('.toggle-body').animate({ height: 'toggle' }, 'fast', function() {
       $addonView.toggleClass('body-closed');
       if ($addonView.hasClass('body-closed')) {
-        $addonView.trigger('addonHided');
+        $addonView.trigger('ss:addonHided');
       } else {
-        $addonView.trigger('addonShown');
+        $addonView.trigger('ss:addonShown');
       }
     });
   };
@@ -60,4 +60,3 @@ this.SS_AddonTabs = (function () {
   return SS_AddonTabs;
 
 })();
-

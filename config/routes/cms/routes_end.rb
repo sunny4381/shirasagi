@@ -188,7 +188,14 @@ SS::Application.routes.draw do
       namespace "preview" do
         namespace "inplace_edit" do
           resources :pages, only: %i[edit update] do
-            resources :columns, only: %i[edit update]
+            resources :column_values, only: %i[new create edit update destroy] do
+              post :move_up, on: :member
+              post :move_down, on: :member
+              post :move_at, on: :member
+            end
+          end
+          resources :forms, only: %i[] do
+            get :palette, on: :member
           end
         end
       end

@@ -67,7 +67,7 @@ module Map::MapHelper
 
       # 初回アドオン表示後に地図を描画しないと、クリックした際にマーカーがずれてしまう
       s = []
-      s << 'SS_AddonTabs.findAddonView(".mod-map").one("addonShown", function() {'
+      s << 'SS_AddonTabs.findAddonView(".mod-map").one("ss:addonShown", function() {'
       s << '  var canvas = $("' + selector + '")[0];'
       s << "  var opts = #{map_options.to_json};"
       s << '  var map = new Openlayers_Map_Form(canvas, opts);'
@@ -82,7 +82,7 @@ module Map::MapHelper
       s << "Googlemaps_Map.load(#{selector.to_json}, #{map_options.to_json});"
       s << 'Googlemaps_Map.renderMarkers();'
       s << 'Googlemaps_Map.renderEvents();'
-      s << 'SS_AddonTabs.findAddonView(".mod-map").on("addonShown", function() {'
+      s << 'SS_AddonTabs.findAddonView(".mod-map").on("ss:addonShown", function() {'
       s << '  Googlemaps_Map.resize();'
       s << '});'
     end

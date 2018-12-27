@@ -11,8 +11,12 @@ SS_Preview = (function () {
   }
 
   SS_Preview.libs = {};
-  // SS_Preview.jquery_css_path = null;
-  // SS_Preview.jquery_js_path = null;
+
+  SS_Preview.confirms = { delete: null };
+
+  SS_Preview.notices = { deleted: null };
+
+  SS_Preview.item = {};
 
   SS_Preview.preview_path = "";
 
@@ -25,7 +29,7 @@ SS_Preview = (function () {
   SS_Preview.overlayPadding = 5;
   SS_Preview.previewToolHeight = 70;
 
-  SS_Preview.inplace_form_path = { page: null, column: null };
+  SS_Preview.inplaceFormPath = { page: null, columnValue: {}, palette: null };
 
   SS_Preview.instance = null;
 
@@ -42,7 +46,7 @@ SS_Preview = (function () {
       var countDownLatch = 2;
       var lazyInitialize = function() {
         countDownLatch -= 1;
-        if (countDownLatch == 0) {
+        if (countDownLatch === 0) {
           SS_Preview.instance.initialize();
         }
       };
@@ -154,7 +158,35 @@ SS_Preview = (function () {
     this.initializeLayout();
     this.initializePage();
     this.initializeColumn();
-    this.initializeOverlay();
+
+    // initialize overlay;
+    this.overlay = new Overlay(this);
+    this.overlay.on("part:edit", function(ev, data) {
+      self.openPartEdit(data.id);
+    });
+    this.overlay.on("page:edit", function(ev, data) {
+      self.openPageEdit(data.id);
+    });
+    this.overlay.on("column:edit", function(ev, data) {
+      self.openColumnEdit(data.id);
+    });
+    this.overlay.on("column:delete", function(ev, data) {
+      self.postColumnDelete(data.id);
+    });
+    this.overlay.on("column:moveUp", function(ev, data) {
+      self.postColumnMoveUp(data.id);
+    });
+    this.overlay.on("column:moveDown", function(ev, data) {
+      self.postColumnMoveDown(data.id);
+    });
+    this.overlay.on("column:movePosition", function(ev, data, order) {
+      self.postColumnMovePosition(data.id, order);
+    });
+
+    var formEnd = $("#ss-preview-form-end");
+    if (formEnd[0]) {
+      this.formPalette = FormPalette.createBefore(this, formEnd[0]);
+    }
 
     this.$el.on("click", ".ss-preview-btn-toggle-inplace", function () {
       self.toggleInplaceMode();
@@ -207,34 +239,9 @@ SS_Preview = (function () {
     var self = this;
     $(document).on("mouseover", ".ss-preview-page", function() {
       if (self.inplaceMode) {
-        self.showOverlayForPage($(this));
+        self.overlay.showForPage($(this));
       }
     });
-  };
-
-  SS_Preview.prototype.showOverlayForPage = function($page) {
-    var rect = $page[0].getBoundingClientRect();
-    if (! rect) {
-      return;
-    }
-
-    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
-    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
-    var width = rect.width + SS_Preview.overlayPadding * 2;
-    var height = rect.height + SS_Preview.overlayPadding * 2;
-
-    this.$overlay[0].style.top = top + "px";
-    this.$overlay[0].style.left = left + "px";
-    this.$overlay[0].style.width = width + "px";
-    this.$overlay[0].style.height = height + "px";
-
-    this.$overlay.data("mode", "page");
-    this.$overlay.data("id", $page.data("page-id"));
-    this.$overlay.find(".ss-preview-part-name").text("").addClass("ss-preview-hide");
-    this.$overlay.removeClass("ss-preview-hide");
   };
 
   SS_Preview.prototype.adjustColorBoxSize = function(frame) {
@@ -356,7 +363,7 @@ SS_Preview = (function () {
 
   SS_Preview.prototype.openPageEdit = function(pageId) {
     // open page(body) edit form in iframe
-    var url = SS_Preview.inplace_form_path.page.replace(":id", pageId);
+    var url = SS_Preview.inplaceFormPath.page.replace(":id", pageId);
     this.openDialogInFrame(url);
   };
 
@@ -375,18 +382,17 @@ SS_Preview = (function () {
     });
 
 
-    if (!this.parts || this.parts.length == 0) {
+    if (!this.parts || this.parts.length === 0) {
       this.$el.find(".ss-preview-part-group").addClass("ss-preview-hide");
       return;
     }
 
-    var list = this.$el.find(".ss-preview-part-list")
+    var list = this.$el.find(".ss-preview-part-list");
     var options = list.html();
     $.each(this.parts, function(index, item) {
       options += "<option value=\"" + item.id + "\">" + item.name + "</option>"
     });
 
-    var self = this;
     list.html(options).on('change', function() {
       self.changePart($(this));
     });
@@ -399,7 +405,7 @@ SS_Preview = (function () {
 
     $(document).on("mouseover", ".ss-preview-part", function() {
       if (self.inplaceMode) {
-        self.showOverlayForPart($(this));
+        self.overlay.showForPart($(this));
       }
     });
   };
@@ -425,65 +431,164 @@ SS_Preview = (function () {
     var self = this;
     $(document).on("mouseover", ".ss-preview-column", function() {
       if (self.inplaceMode) {
-        self.showOverlayForColumn($(this));
+        self.overlay.showForColumn($(this));
       }
     });
   };
 
-  SS_Preview.prototype.showOverlayForColumn = function($column) {
-    var rect = $column[0].getBoundingClientRect();
-    if (! rect) {
-      return;
-    }
-
-    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
-    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
-    var width = rect.width + SS_Preview.overlayPadding * 2;
-    var height = rect.height + SS_Preview.overlayPadding * 2;
-
-    this.$overlay[0].style.top = top + "px";
-    this.$overlay[0].style.left = left + "px";
-    this.$overlay[0].style.width = width + "px";
-    this.$overlay[0].style.height = height + "px";
-
-    this.$overlay.data("mode", "column");
-    this.$overlay.data("id", { pageId: $column.data("page-id"), columnId: $column.data("column-id") });
-    this.$overlay.find(".ss-preview-part-name").text($column.data("column-name")).removeClass("ss-preview-hide");
-    this.$overlay.removeClass("ss-preview-hide");
-  };
-
-  SS_Preview.prototype.openColumnEdit = function(columnId) {
+  SS_Preview.prototype.openColumnEdit = function(ids) {
     // open column edit form in iframe
-    var url = SS_Preview.inplace_form_path.column.replace(":pageId", columnId.pageId).replace(":id", columnId.columnId);
+    var url = SS_Preview.inplaceFormPath.columnValue.edit.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
     this.openDialogInFrame(url);
   };
 
-  SS_Preview.prototype.initializeOverlay = function() {
-    var overlay = this.$overlay = $("#ss-preview-overlay");
-    var self = this;
-    this.$overlay.on("click", ".ss-preview-btn-edit-inplace", function() {
-      self.editInplace(overlay);
-    });
+  SS_Preview.prototype.postColumnDelete = function(ids) {
+    if (! confirm(SS_Preview.confirms.delete)) {
+      return;
+    }
 
-    $(document).on('click', function(e) {
-      if (! $(e.target).closest('#ss-preview-overlay').length) {
-        self.hideOverlay();
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.destroy.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { _method: "DELETE", authenticity_token: token },
+      success: function() {
+        self.overlay.hide();
+
+        var $column = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+        $column.fadeOut("fast", function() {
+          $column.remove();
+          // self.showInfo("削除しました。");
+        });
+      },
+      error: function(xhr, status, error) {
+        alert(error);
       }
     });
   };
 
-  SS_Preview.prototype.editInplace = function(overlay) {
-    var mode = overlay.data("mode");
-    if (mode === "part") {
-      this.openPartEdit(overlay.data("id"));
-    } else if (mode === "page") {
-      this.openPageEdit(overlay.data("id"));
-    } else if (mode === "column") {
-      this.openColumnEdit(overlay.data("id"));
+  SS_Preview.prototype.postColumnMoveUp = function(ids) {
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.moveUp.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { authenticity_token: token },
+      success: function(data) {
+        self.finishColumnMoveUp(ids, data);
+      },
+      error: function(xhr, status, error) {
+        alert(error);
+      }
+    });
+  };
+
+  SS_Preview.prototype.finishColumnMoveUp = function(ids, data) {
+    this.overlay.hide();
+
+    var $target = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+    if (!$target[0]) {
+      return;
     }
+    var $prev = $target.prev(".ss-preview-column[data-page-id='" + ids.pageId + "']");
+    if (!$prev[0]) {
+      return;
+    }
+
+    $prev.data("column-order", data[$prev.data("column-id")]);
+    $target.data("column-order", data[$target.data("column-id")]);
+
+    $target.after($prev);
+  };
+
+  SS_Preview.prototype.postColumnMoveDown = function(ids) {
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.moveDown.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { authenticity_token: token },
+      success: function(data) {
+        self.finishColumnMoveDown(ids, data);
+      },
+      error: function(xhr, status, error) {
+        alert(error);
+      }
+    });
+  };
+
+  SS_Preview.prototype.finishColumnMoveDown = function(ids, data) {
+    this.overlay.hide();
+
+    var $target = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+    if (!$target[0]) {
+      return;
+    }
+
+    var $next = $target.next(".ss-preview-column[data-page-id='" + ids.pageId + "']");
+    if (!$next[0]) {
+      return;
+    }
+
+    $next.data("column-order", data[$next.data("column-id")]);
+    $target.data("column-order", data[$target.data("column-id")]);
+
+    $target.before($next);
+  };
+
+  SS_Preview.prototype.postColumnMovePosition = function(ids, order) {
+    var self = this;
+    var url = SS_Preview.inplaceFormPath.columnValue.moveAt.replace(":pageId", ids.pageId).replace(":id", ids.columnId);
+    var token = $('meta[name="csrf-token"]').attr('content');
+
+    $.ajax({
+      url: url,
+      type: "POST",
+      data: { authenticity_token: token, order: order },
+      success: function(data) {
+        self.finishColumnMovePosition(ids, order, data);
+      },
+      error: function(xhr, status, error) {
+        alert(error);
+      }
+    });
+  };
+
+  SS_Preview.prototype.finishColumnMovePosition = function(ids, order, data) {
+    this.overlay.hide();
+
+    var $target = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-id='" + ids.columnId + "']");
+    if (!$target[0]) {
+      return;
+    }
+
+    var move_p;
+    if (order === -1) {
+      var all = $(document).find("#ss-preview-form-end").prevAll(".ss-preview-column[data-page-id='" + ids.pageId + "']");
+      if (all[0]) {
+        move_p = function() { $(all[0]).after($target); };
+      }
+    } else {
+      var $prev = $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "'][data-column-order='" + order + "']");
+      move_p = function() { $prev.before($target); };
+    }
+    if (!move_p) {
+      return;
+    }
+
+    $(document).find(".ss-preview-column[data-page-id='" + ids.pageId + "']").each(function() {
+      var $this = $(this);
+      $this.data("column-order", data[$this.data("column-id")]);
+    });
+
+    move_p();
   };
 
   SS_Preview.prototype.previewPc = function() {
@@ -537,50 +642,17 @@ SS_Preview = (function () {
   SS_Preview.prototype.changePart = function($el) {
     var part = this.findPartById($el.val());
     if (! part) {
-      this.hideOverlay();
+      this.overlay.hide();
       return;
     }
 
-    this.showOverlayForPart(part.el);
+    // this.showOverlayForPart(part.el);
+    this.overlay.showForPart(part.el);
     this.scrollToPart(part.el);
   };
 
-  SS_Preview.prototype.hideOverlay = function() {
-    this.$overlay.addClass("ss-preview-hide");
-  };
-
-  SS_Preview.prototype.showOverlayForPart = function($part) {
-    var part = this.findPartById($part.data("part-id"));
-    if (! part) {
-      return;
-    }
-
-    var rect = $part[0].getBoundingClientRect();
-    if (! rect) {
-      return;
-    }
-
-    // use native DOM Element instead of using jquery because I think jquery used by SHIRASAGI has some bugs.
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
-    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
-    var width = rect.width + SS_Preview.overlayPadding * 2;
-    var height = rect.height + SS_Preview.overlayPadding * 2;
-
-    this.$overlay[0].style.top = top + "px";
-    this.$overlay[0].style.left = left + "px";
-    this.$overlay[0].style.width = width + "px";
-    this.$overlay[0].style.height = height + "px";
-
-    this.$overlay.data("mode", "part");
-    this.$overlay.data("id", part.id);
-    this.$overlay.find(".ss-preview-part-name").text(part.name).removeClass("ss-preview-hide");
-    this.$overlay.removeClass("ss-preview-hide");
-  };
-
   SS_Preview.prototype.scrollToPart = function($part) {
-    var offset = this.$overlay.offset();
+    var offset = $part.offset();
     var scrollTop = offset.top - SS_Preview.previewToolHeight;
     if (scrollTop < 0) {
       scrollTop = 0;
@@ -609,9 +681,15 @@ SS_Preview = (function () {
     if (this.inplaceMode) {
       button.addClass("ss-preview-active");
       $("#ss-preview-notice").addClass("ss-preview-hide");
+      if (this.formPalette) {
+        this.formPalette.show();
+      }
     } else {
       button.removeClass("ss-preview-active");
-      this.hideOverlay();
+      this.overlay.hide();
+      if (this.formPalette) {
+        this.formPalette.hide();
+      }
     }
   };
 
@@ -664,7 +742,244 @@ SS_Preview = (function () {
     return results;
   };
 
+  //
+  // Overlay
+  //
+
+  function Overlay(container) {
+    this.container = container;
+    this.$overlay = $("#ss-preview-overlay");
+
+    var select = this.$overlay.find(".ss-preview-overlay-btn-move-position");
+    if (select[0]) {
+      var html = [];
+      $(document).find(".ss-preview-column[data-column-order]").each(function () {
+        var order = parseInt(this.dataset.columnOrder, 10);
+        html.push("<option value=\"" + order + "\">" + (order + 1) + "</option>");
+      });
+      html.push("<option value=\"-1\">末尾</option>");
+
+      select.html(html.join(""));
+    }
+
+    var self = this;
+    this.$overlay.on("click", ".ss-preview-overlay-btn-edit", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":edit";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("click", ".ss-preview-overlay-btn-delete", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":delete";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("click", ".ss-preview-overlay-btn-move-up", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":moveUp";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("click", ".ss-preview-overlay-btn-move-down", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":moveDown";
+      self.$overlay.trigger(eventType, self.$overlay.data());
+    });
+    this.$overlay.on("change", ".ss-preview-overlay-btn-move-position", function() {
+      var mode = self.$overlay.data("mode");
+      var eventType = mode + ":movePosition";
+      var order = parseInt($(this).val(), 10);
+      self.$overlay.trigger(eventType, [ self.$overlay.data(), order ]);
+    });
+
+    $(document).on('click', function(e) {
+      if (! $(e.target).closest('#ss-preview-overlay').length) {
+        self.hide();
+      }
+    });
+
+    // delegates
+    this.on = this.$overlay.on.bind(this.$overlay);
+    this.off = this.$overlay.off.bind(this.$overlay);
+  }
+
+  Overlay.prototype.hide = function() {
+    this.$overlay.addClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.showForPage = function($page) {
+    var rect = $page[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    this.moveTo(rect);
+    this.setInfo({ mode: "page", id: $page.data("page-id"), name: null });
+
+    this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
+    this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
+
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.showForColumn = function($column) {
+    var rect = $column[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    this.moveTo(rect);
+    this.setInfo({ mode: "column", id: { pageId: $column.data("page-id"), columnId: $column.data("column-id") }, name: $column.data("column-name") });
+
+    if (SS_Preview.item.formSubType === "entry") {
+      this.$overlay.find(".ss-preview-overlay-btn-group-move").removeClass("ss-preview-hide");
+      this.$overlay.find(".ss-preview-overlay-btn-group-delete").removeClass("ss-preview-hide");
+
+      var select = this.$overlay.find(".ss-preview-overlay-btn-move-position");
+      select.val($column.data("column-order"));
+    } else {
+      this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
+      this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
+    }
+
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.showForPart = function($part) {
+    var part = this.container.findPartById($part.data("part-id"));
+    if (! part) {
+      return;
+    }
+
+    var rect = $part[0].getBoundingClientRect();
+    if (! rect) {
+      return;
+    }
+
+    this.moveTo(rect);
+    this.setInfo({ mode: "part", id: part.id, name: part.name });
+
+    this.$overlay.find(".ss-preview-overlay-btn-group-move").addClass("ss-preview-hide");
+    this.$overlay.find(".ss-preview-overlay-btn-group-delete").addClass("ss-preview-hide");
+
+    this.$overlay.removeClass("ss-preview-hide");
+  };
+
+  Overlay.prototype.moveTo = function(rect) {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    var top = Math.floor(rect.top + scrollTop) - SS_Preview.overlayPadding;
+    var left = Math.floor(rect.left + scrollLeft) - SS_Preview.overlayPadding;
+    var width = rect.width + SS_Preview.overlayPadding * 2;
+    var height = rect.height + SS_Preview.overlayPadding * 2;
+
+    this.$overlay[0].style.top = top + "px";
+    this.$overlay[0].style.left = left + "px";
+    this.$overlay[0].style.width = width + "px";
+    this.$overlay[0].style.height = height + "px";
+  };
+
+  Overlay.prototype.setInfo = function(info) {
+    this.$overlay.data("mode", info.mode);
+    this.$overlay.data("id", info.id);
+    this.$overlay.data("id", info.id);
+
+    if (info.name) {
+      this.$overlay.find(".ss-preview-overlay-name").text(info.name).removeClass("ss-preview-hide");
+    } else {
+      this.$overlay.find(".ss-preview-overlay-name").text("").addClass("ss-preview-hide");
+    }
+  };
+
+  //
+  // FormPalette
+  //
+
+  function FormPalette(container, $el) {
+    this.container = container;
+    this.$el = $el;
+
+    var self = this;
+    this.$el.on("load", function() {
+      self.initializeFrame();
+    });
+  }
+
+  FormPalette.margin = { height: 20 };
+
+  FormPalette.createBefore = function(container, elBefore) {
+    var formId = elBefore.dataset.formId;
+    if (! formId) {
+      return null;
+    }
+    var subType = elBefore.dataset.formSubType;
+    if (subType !== "entry") {
+      return null;
+    }
+
+    var $frame = $("<iframe />", {
+      id: "ss-preview-form-palette", class: "ss-preview-hide", frameborder: "0", scrolling: "no",
+      src: SS_Preview.inplaceFormPath.palette.replace(":id", formId)
+    });
+
+    $(elBefore).before($frame);
+
+    return new FormPalette(container, $frame);
+  };
+
+  FormPalette.prototype.initializeFrame = function() {
+    this.adjustHeight();
+
+    var frame = this.$el[0];
+    var self = this;
+    frame.contentWindow.addEventListener("resize", function () {
+      self.delayAdjustHeight();
+    });
+    frame.contentWindow.document.addEventListener("click", function (ev) {
+      var el = ev.target;
+      if (el.tagName === "BUTTON" && el.dataset.formId && el.dataset.columnId) {
+        self.clickPalette(el);
+      }
+    });
+  };
+
+  FormPalette.prototype.delayAdjustHeight = function() {
+    if (this.timer > 0) {
+      clearTimeout(this.timer);
+    }
+
+    var self = this;
+    this.timer = setTimeout(function () { self.adjustHeight(); self.timer = 0; }, 100);
+  };
+
+  FormPalette.prototype.adjustHeight = function() {
+    var frame = this.$el[0];
+    if (! frame) {
+      return;
+    }
+
+    var height = frame.contentWindow.document.body.scrollHeight + FormPalette.margin;
+    frame.style.height = height + "px";
+  };
+
+  FormPalette.prototype.show = function() {
+    this.$el.removeClass("ss-preview-hide");
+    this.delayAdjustHeight();
+  };
+
+  FormPalette.prototype.hide = function() {
+    this.$el.addClass("ss-preview-hide");
+  };
+
+  FormPalette.prototype.clickPalette = function(el) {
+    var formId = el.dataset.formId;
+    var columnId = el.dataset.columnId;
+    if (!formId || !columnId) {
+      return;
+    }
+
+    var url = SS_Preview.inplaceFormPath.columnValue.new.replace(":pageId", SS_Preview.item.pageId).replace(":columnId", columnId);
+    this.container.openDialogInFrame(url);
+  };
+
   return SS_Preview;
 
 })();
-

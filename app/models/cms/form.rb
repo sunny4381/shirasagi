@@ -6,6 +6,8 @@ class Cms::Form
   include Cms::Addon::GroupPermission
   include History::Addon::Backup
 
+  DEFAULT_TEMPLATE = "{% for value in values %}{{ value }}{% endfor %}".freeze
+
   set_permission_name 'cms_forms'
 
   seqid :id
@@ -65,10 +67,7 @@ class Cms::Form
   end
 
   def build_default_html
-    templates = self.columns.order_by(order: 1, name: 1).map do |column|
-      "{{ values[\"#{column.name}\"] }}"
-    end
-    templates.join("\n")
+    DEFAULT_TEMPLATE
   end
 
   private

@@ -38,7 +38,10 @@ class Cms::Column::Value::Base
   def to_html(options = {})
     html = _to_html(options)
     if options[:preview]
-      data_attrs = [ [ "page-id", _parent.id ], [ "column-id", id ], [ "column-name", ::CGI.escapeHTML(name) ] ]
+      data_attrs = [
+        [ "page-id", _parent.id ], [ "column-id", id ], [ "column-name", ::CGI.escapeHTML(name) ],
+        [ "column-order", order ]
+      ]
       wrap = "<div class=\"ss-preview-column\" #{data_attrs.map { |k, v| "data-#{k}=\"#{v}\"" }.join(" ")}>"
       wrap += html if html
       wrap += "</div>"

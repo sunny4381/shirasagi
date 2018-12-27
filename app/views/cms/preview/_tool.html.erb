@@ -1,17 +1,59 @@
 <%
   show_path ||= nil
-  edit_path ||= nil
-  copy_path ||= nil
-  move_path ||= nil
-  delete_path ||= nil
+  cms_form = nil
 %>
 <% head_for(self) do %>
   <%= stylesheet_link_tag("cms/preview/main") %>
   <%= javascript_include_tag("cms/preview/main") %>
   <script>
+    Link_Checker.url = <%== SS.config.cms.link_check_url.to_json %>;
+    Link_Checker.rootUrl = <%== @cur_site.full_root_url.to_json %>;
+
+    Mobile_Size_Checker.enabled    = <%== @cur_site.mobile_enabled?.to_json %>;
+    Mobile_Size_Checker.mobile_size = <%== @cur_site.mobile_size.to_json %>;
+    Mobile_Size_Checker.check_size = <%== number_to_human_size(@cur_site.mobile_size).to_json %>;
+    Mobile_Size_Checker.hostFullUrl = <%== @cur_site.full_url.to_json %>;
+    Mobile_Size_Checker.message["SizeCheckError"] = <%== I18n.t(
+      'errors.messages.mobile_size_check_failed_to_size',
+      mobile_size: number_to_human_size(@cur_site.mobile_size)
+      ).to_json %>
+
+    <% if rendered %>
+      Form_Preview.form_id = "ss-preview-inplace-item-form";
+      Form_Preview.page_route = <%== (rendered[:page] || rendered[:node]).route.to_json %>;
+
+      Cms_TemplateForm.userId = <%= @cur_user.id %>;
+      Cms_TemplateForm.confirms.delete = <%== t("ss.confirm.delete").to_json %>;
+      Cms_TemplateForm.paths.formColumn = <%== cms_apis_form_column_new_path(id: ":formId", column_id: ":columnId").to_json %>;
+      Cms_TemplateForm.paths.formTempFileSelect = <%== cms_apis_form_temp_file_select_path(id: ":fileId").to_json %>;
+      Cms_TemplateForm.paths.formUrlTemplate = <%== cms_apis_form_path(id: ':id', item_id: (rendered[:page] || rendered[:node]).new_record? ? nil : (rendered[:page] || rendered[:node]).id).to_json %>;
+    <% end %>
+
     SS_Preview.libs.jquery = <%== { js: javascript_path("cms/preview/jquery"), css: stylesheet_path("cms/preview/jquery") }.to_json %>;
     SS_Preview.libs.datetimePicker = <%== { js: javascript_path("cms/preview/datetimepicker"), css: stylesheet_path("cms/preview/datetimepicker") }.to_json %>;
     SS_Preview.libs.colorbox = <%== { js: javascript_path("/assets/js/jquery.colorbox-min.js"), css: "/assets/css/colorbox/colorbox.css" }.to_json %>;
+    SS_Preview.confirms.delete = <%== t("ss.confirm.delete").to_json %>;
+    SS_Preview.notices.deleted = <%== t("ss.notice.deleted").to_json %>;
+
+    <% if rendered %>
+      SS_Preview.item.type = <%== rendered[:type].to_json %>;
+      <% if rendered[:layout] %>
+        SS_Preview.item.layoutId = <%== rendered[:layout].id.to_json %>;
+      <% end %>
+      <% if rendered[:node] %>
+        SS_Preview.item.nodeId = <%== rendered[:node].id.to_json %>;
+      <% end %>
+      <% if rendered[:page] %>
+        SS_Preview.item.pageId = <%== rendered[:page].id.to_json %>;
+        <% if rendered[:page].respond_to?(:form) %>
+          <% cms_form = rendered[:page].form %>
+          <% if cms_form %>
+            SS_Preview.item.formId = <%== cms_form.id.to_json %>;
+            SS_Preview.item.formSubType = <%== cms_form.sub_type.to_json %>;
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
 
     Link_Checker.url = <%== SS.config.cms.link_check_url.to_json %>;
     Link_Checker.rootUrl = <%== @cur_site.full_root_url.to_json %>;
@@ -44,17 +86,39 @@
       SS_Preview.request_path = <%== request.path.to_json %>;
       SS_Preview.form_item = <%== @preview_item.to_json %>;
     <% end %>
-    <% if mode == :preview && rendered && %i[page].include?(rendered[:type]) %>
-      SS_Preview.inplace_form_path.page = <%== edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, id: ":id").to_json %>;
-      SS_Preview.inplace_form_path.column = <%== edit_cms_apis_preview_inplace_edit_page_column_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+    <% if mode == :preview && rendered %>
+      <% if %i[page].include?(rendered[:type]) %>
+        SS_Preview.inplaceFormPath.page = <%== edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.new = <%== "#{new_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId")}?column_id=:columnId".to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.edit = <%== edit_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.destroy = <%== cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.moveUp = <%== move_up_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.moveDown = <%== move_down_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.columnValue.moveAt = <%== move_at_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, page_id: ":pageId", id: ":id").to_json %>;
+        SS_Preview.inplaceFormPath.palette = <%== palette_cms_apis_preview_inplace_edit_form_path(site: @cur_site, id: ":id").to_json %>;
+      <% end %>
     <% end %>
   </script>
 <% end %>
 <% foot_for(self) do %>
   <div id="ss-preview-overlay" class="ss-preview-hide">
     <div class="ss-preview-overlay-tool">
-      <span class="ss-preview-part-name"><%= t("ss.links.edit") %></span>
-      <button type="button" class="ss-preview-btn-edit-inplace"><%= t("ss.links.edit") %></button>
+      <span class="ss-preview-overlay-name"><%= t("ss.links.edit") %></span>
+      <div class="ss-preview-btn-group ss-preview-overlay-btn-group-edit">
+        <button type="button" class="ss-preview-overlay-btn-edit"><%= t("ss.links.edit") %></button>
+      </div>
+
+      <% if cms_form && cms_form.sub_type_entry? %>
+      <div class="ss-preview-btn-group ss-preview-overlay-btn-group-move">
+        <button type="button" class="ss-preview-overlay-btn-move-up"><i class="material-icons md-14">keyboard_arrow_up</i></button>
+        <select class="ss-preview-overlay-btn-move-position"></select>
+        <button type="button" class="ss-preview-overlay-btn-move-down"><i class="material-icons md-14">keyboard_arrow_down</i></button>
+      </div>
+
+      <div class="ss-preview-btn-group ss-preview-overlay-btn-group-delete">
+        <button type="button" class="ss-preview-overlay-btn-delete"><%= t("ss.links.delete") %></button>
+      </div>
+      <% end %>
     </div>
   </div>
   <script>
