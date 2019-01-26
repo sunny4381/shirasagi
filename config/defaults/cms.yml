@@ -17,7 +17,7 @@ production: &production
   serve_static_pages: true
 
   # HTML editor (ckeditor, tinymce, markdown)
-  html_editor: ckeditor
+  html_editor: ckeditor5_or_4
 
   # CKEditor setting
   ckeditor:
@@ -51,6 +51,12 @@ production: &production
     javascripts:
       - /assets/js/ckeditor/ckeditor.js
       - /assets/js/ckeditor/adapters/jquery.js
+
+  ckeditor5:
+    javascripts:
+      - ss/ckeditor5
+    stylesheets:
+      - ss/ckeditor5
 
   tinymce:
     options:
