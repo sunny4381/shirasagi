@@ -39,3 +39,7 @@ ehthumbs.db
 
 # Dotenv
 /.env
+
+# yarn
+public/packs
+node_modules

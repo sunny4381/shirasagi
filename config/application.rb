@@ -18,6 +18,7 @@ module SS
     config.autoload_paths << "#{config.root}/app/jobs/concerns"
     config.assets.paths << "#{config.root}/public/assets/css"
     config.assets.paths << "#{config.root}/public/assets/js"
+    config.assets.paths << "#{config.root}/node_modules"
     config.assets.precompile << proc do |path, fn|
       fn =~ /#{Rails.root}\/app/ && %w(.js .css).include?(::File.extname(path)) && path !~ /\/lib\// && path !~ /\/_/
     end
