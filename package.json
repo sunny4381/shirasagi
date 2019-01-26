@@ -3,5 +3,8 @@
   "version": "1.11.0",
   "description": "SHIRASAGI is Contents Management System.",
   "repository": "https://github.com/shirasagi/shirasagi.git",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^11.2.0"
+  }
 }
