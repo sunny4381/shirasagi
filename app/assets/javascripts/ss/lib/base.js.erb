@@ -382,13 +382,26 @@ this.SS = (function () {
       };
     }
 
+    if (window !== window.top) {
+      params.iframe = true;
+    }
+
     box.find(".ajax-box:not(.cboxElement)").each(function () {
-      var elem = $(this);
+      var elem = window.top.$(this);
       if (elem.attr("target") || elem.data("target")) {
         return;
       }
 
       elem.colorbox(params);
+
+      if (window !== window.top) {
+        elem.on("click", function(ev) {
+          elem.colorbox({ open: true });
+
+          ev.preventDefault();
+          return false;
+        });
+      }
     });
   };
 
