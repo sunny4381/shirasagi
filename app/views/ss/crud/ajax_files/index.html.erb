@@ -1,32 +1,34 @@
 <%= jquery do %>
 
-var onSelect;
-var $element = $.colorbox.element();
-if ($element) {
-  onSelect = $element.data('on-select');
-}
+var $top = window.top.$;
+var $my = $;
+var $other;
+
+var $element = $top.colorbox.element();
+$other = $element[0].ownerDocument.defaultView.$;
+var onSelect = $element.data('on-select');
 
 SS.ajaxForm("form.user-file", {
   success: function(data) {
-    $("#cboxLoadedContent").load("<%= url_for(action: :index, file_size: params[:file_size]) %>", function() {
+    $top("#cboxLoadedContent").load("<%= url_for(action: :index, file_size: params[:file_size]) %>", function() {
       if (!Array.isArray(data) || data.length == 0) return;
 
-      $.each(data, function(index, file) {
-        var item = $(".user-files .select[data-id='" + file._id + "']");
+      $my.each(data, function(index, file) {
+        var item = $my(".user-files .select[data-id='" + file._id + "']");
         var url = item.attr('href');
         if (!url) return true;
         if (onSelect) {
           onSelect(item);
         } else {
-          $.ajax({
+          $my.ajax({
             url: url,
             success: function(data) {
-              $("#selected-files").append(data);
+              $other("#selected-files").append(data);
             }
           });
         }
       });
-      $.colorbox.close();
+      $top.colorbox.close();
     });
   },
   error: function(xhr) {
@@ -43,31 +45,31 @@ SS.ajaxForm("form.user-file", {
 });
 
 if (onSelect) {
-  $(".user-files .select").on('click', function(e) {
-    onSelect($(this));
+  $my(".user-files .select").on('click', function(e) {
+    onSelect($my(this));
     e.preventDefault();
     return false;
   });
 } else {
   SS.ajax(".user-files .select", {
     success: function(data) {
-      var dataFileId = $('<div>' + data + '</div>').find("[data-file-id]").attr("data-file-id");
+      var dataFileId = $my('<div>' + data + '</div>').find("[data-file-id]").attr("data-file-id");
       if (dataFileId) {
-        $("#selected-files .file-view[data-file-id='" + dataFileId + "']").remove();
+        $other("#selected-files .file-view[data-file-id='" + dataFileId + "']").remove();
       }
-      $("#selected-files").append(data);
-      $.colorbox.close();
+      $other("#selected-files").append(data);
+      $top.colorbox.close();
     }
   });
 }
 
-SS.ajaxDelete(".user-files .delete");
+SS.ajaxDelete($my(".user-files .delete")[0]);
 
-var resizing = $('#file-resizing').val();
+var resizing = $my('#file-resizing').val();
 if (resizing) {
-  var label = $('#file-resizing').attr('data-label');
-  var option = $('<option>').val(resizing).text(label).prop('selected', true);
-  $('select.image-size').append(option);
+  var label = $my('#file-resizing').attr('data-label');
+  var option = $my('<option>').val(resizing).text(label).prop('selected', true);
+  $my('select.image-size').append(option);
 }
 <% end %>
 

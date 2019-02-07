@@ -2,10 +2,18 @@ module SS::AjaxFileFilter
   extend ActiveSupport::Concern
 
   included do
-    layout "ss/ajax"
+    layout :choose_layout
   end
 
   private
+
+  def choose_layout
+    if params[:layout].to_s == "iframe"
+      "ss/ajax_in_iframe"
+    else
+      "ss/ajax"
+    end
+  end
 
   def append_view_paths
     append_view_path "app/views/ss/crud/ajax_files"

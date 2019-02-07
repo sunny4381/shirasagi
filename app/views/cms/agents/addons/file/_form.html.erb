@@ -65,14 +65,14 @@ var tempFile = new SS_Addon_TempFile(".upload-drop-area", <%= @cur_user.id %>, o
 
     <span class="upload-menu-new">
       <% if @cur_node %>
-        <%= link_to t('ss.links.upload'), cms_apis_node_temp_files_path, class: "ajax-box btn" %>
+        <%= link_to t('ss.links.upload'), cms_apis_node_temp_files_path(cid: @cur_node, layout: @inplace_mode ? "iframe" : nil), class: "ajax-box btn" %>
       <% else %>
-        <%= link_to t('ss.links.upload'), cms_apis_temp_files_path, class: "ajax-box btn" %>
+        <%= link_to t('ss.links.upload'), cms_apis_temp_files_path(layout: @inplace_mode ? "iframe" : nil), class: "ajax-box btn" %>
       <% end %>
     </span>
     <span class="upload-menu-select">
-      <%= link_to t("sns.user_file"), sns_apis_user_files_path(@cur_user), class: "ajax-box btn" %>
-      <%= link_to t("cms.file"), cms_apis_files_path, class: "ajax-box btn" %>
+      <%= link_to t("sns.user_file"), sns_apis_user_files_path(user: @cur_user, layout: @inplace_mode ? "iframe" : nil), class: "ajax-box btn" %>
+      <%= link_to t("cms.file"), cms_apis_files_path(layout: @inplace_mode ? "iframe" : nil), class: "ajax-box btn" %>
     </span>
     <div class="upload-drop-area">
       <span class="upload-drop-notice"><%= t('ss.notice.file_droppable') %></span>
