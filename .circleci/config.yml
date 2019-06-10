@@ -37,6 +37,10 @@ jobs:
             - ./vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile.lock" }}
 
+      # Copy configuration
+      - run: cp -n config/samples/mongoid.yml config/mongoid.yml
+      - run: cp -n config/samples/secrets.yml config/secrets.yml
+
       # Database setup
       - run: bundle exec rake db:create
       - run: bundle exec rake db:schema:load
