@@ -111,6 +111,7 @@ group :development, :test do
   gem 'rspec-collection_matchers'
   gem 'rspec-its'
   gem 'rspec-rails'
+  gem 'rspec_junit_formatter'
   gem 'rails-controller-testing'
   gem 'rubocop', require: false
   gem 'spring', '~> 2.0.2'
