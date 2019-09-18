@@ -33,6 +33,12 @@ Rails.application.routes.draw do
     get "test/http" => "test/http#index", as: :test_http
     get "test/mail" => "test/mail#index", as: :test_mail
     post "test/mail" => "test/mail#create", as: :send_test_mail
+    namespace "test" do
+      resources :shots, controller: "shot/configs", concerns: :deletion do
+        match :run, via: [:get, :post], on: :member
+        resources :images, controller: "shot/images", concerns: :deletion
+      end
+    end
 
     resource :menu_settings, only: [:show, :edit, :update]
     resource :password_policy, only: [:show, :edit, :update]

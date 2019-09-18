@@ -1,0 +1,40 @@
+<div class="index">
+  <%= render file: "_list_head" %>
+
+  <ul class="list-items">
+    <% @items.each do |item| %>
+    <li class="list-item">
+      <nav class="tap-menu">
+        <% if @tap_menu %>
+          <% @tap_menu.call item %>
+        <% else %>
+          <%= link_to t('ss.links.show'), action: :show, id: item if item.allowed?(:read, @cur_user) %>
+          <%= link_to t('ss.links.edit'), action: :edit, id: item if item.allowed?(:edit, @cur_user) %>
+          <%= link_to t('ss.links.delete'), action: :delete, id: item  if item.allowed?(:delete, @cur_user) %>
+
+          <% if item.try(:image) %>
+            <%= link_to image_tag(item.image.thumb_url), item.image.url, { class: "thumb", target: "_blank" } %>
+          <% elsif item.try(:image?) %>
+            <%= link_to image_tag("#{item.thumb_url}?_=#{item.updated.to_i}", alt: ''), item.url, { class: "thumb", target: "_blank" } %>
+          <% end %>
+        <% end %>
+      </nav>
+
+      <label class="check"><input type="checkbox" name="ids[]" value="<%= item.id %>" /></label>
+      <div class="info">
+        <%= link_to({ action: :show, id: item }, class: "title") do %>
+          <%= image_tag(item.file.url, style: "max-width: 240px") %>
+        <% end %>
+
+        <div class="meta">
+          <span class="title"><%= item.title %></span>
+          <span class="url"><%= item.url %></span>
+          <span class="datetime"><%= item.updated.strftime("%Y/%m/%d %H:%M") %></span>
+        </div>
+      </div>
+    </li>
+    <% end %>
+  </ul>
+</div>
+
+<%= paginate @items if @items.try(:current_page) %>

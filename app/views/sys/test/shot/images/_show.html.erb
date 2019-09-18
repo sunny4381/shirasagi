@@ -1,0 +1,16 @@
+<dl class="see">
+  <dt>Url</dt>
+  <dd><%= @item.url %></dd>
+
+  <dt>Title</dt>
+  <dd><%= @item.title %></dd>
+
+  <% if @item.file.present? %>
+    <dt class="wide">Image</dt>
+    <dd class="wide">
+      <%= link_to(@item.file.url) do %>
+        <%= image_tag(@item.file.url, style: "width: 100%") %>
+      <% end %>
+    </dd>
+  <% end %>
+</dl>
