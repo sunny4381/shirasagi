@@ -12,22 +12,26 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
     @max_count = @options["max_count"].numeric? ? @options["max_count"].to_i : @config.max_count
 
-    @config.pages.destroy_all
+    if @config.queues.blank? || @options["restart"]
+      @config.pages.destroy_all
+      @config.seeds.each do |url|
+        Sys::Test::Shot::Queue.enqueue!(@config, url)
+      end
+    end
 
     @visited_count = 0
-    @pool = @config.seeds.dup
     @last_reported_at = Time.zone.now
     loop do
-      break if @pool.blank?
+      break if @config.queues.blank?
 
-      url = @pool.shift
-      next if url.blank?
+      queue = @config.queues.dequeue
+      break if queue.blank?
 
       try_count = 0
       captured_exception = nil
       while try_count < 3
         begin
-          process(url)
+          process(queue.url)
           captured_exception = nil
           break
         rescue => e
@@ -41,10 +45,12 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         base_message = "#{captured_exception.class} (#{captured_exception.message}):"
         back_trace = "  #{captured_exception.backtrace.join("\n  ")}"
         Rails.logger.error("#{base_message}:\n#{back_trace}")
+      else
+        queue.destroy
       end
 
       if @last_reported_at + 5.minutes <= Time.zone.now
-        Rails.logger.info("there are #{@pool.count.to_s(:delimited)} urls waiting to crawl")
+        Rails.logger.info("there are #{@config.queues.count.to_s(:delimited)} urls waiting to crawl")
         @last_reported_at = Time.zone.now
       end
 
@@ -186,9 +192,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         next
       end
 
-      if !@pool.include?(url)
-        @pool << url
-      end
+      Sys::Test::Shot::Queue.enqueue!(@config, url)
     end
   end
 

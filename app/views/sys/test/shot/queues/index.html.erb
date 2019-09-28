@@ -1,0 +1,30 @@
+<% @tap_menu = proc do |item| %>
+  <%= link_to t('ss.links.delete'), action: :delete, id: item  if @config.allowed?(:delete, @cur_user) %>
+<% end %>
+
+<% @index_title = proc do |item| %>
+  <%= item.url %>
+<% end %>
+
+<% @index_meta = proc do |item| %>
+  <% if item.lock_until.present? && item.lock_until != Voice::Lockable::EPOCH %>
+    <span class="state">crawling</span>
+    <span class="datetime"><%= item.lock_until.strftime("%Y/%m/%d %H:%M") %></span>
+  <% else %>
+    <span class="state">waiting to crawl</span>
+  <% end %>
+<% end %>
+
+<div class="cms-tabs">
+  <%= link_to(sys_test_shot_path(id: @config), { class: "show" }) do %>
+    <span class="tab-name"><%= t("ss.basic_info") %></span>
+  <% end %>
+  <%= link_to(sys_test_shot_queues_path, { class: "queues current" }) do %>
+    <span class="tab-name">Queues</span>
+  <% end %>
+  <%= link_to(sys_test_shot_pages_path, { class: "pages" }) do %>
+    <span class="tab-name">Results</span>
+  <% end %>
+</div>
+
+<%= render file: "ss/crud/index" %>

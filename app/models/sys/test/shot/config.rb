@@ -15,7 +15,7 @@ class Sys::Test::Shot::Config
   field :strip_query_part, type: String, default: "enabled"
 
   has_many :pages, class_name: 'Sys::Test::Shot::Page', dependent: :destroy, inverse_of: :config
-
+  has_many :queues, class_name: 'Sys::Test::Shot::Queue', dependent: :destroy, inverse_of: :config
   permit_params :config_name, :seeds, :allows, :denies, :timeout, :max_count, :strip_query_part
 
   validates :config_name, presence: true, length: { maximum: 80 }

@@ -36,6 +36,7 @@ Rails.application.routes.draw do
     namespace "test" do
       resources :shots, controller: "shot/configs", concerns: :deletion do
         match :run, via: [:get, :post], on: :member
+        resources :queues, controller: "shot/queues", only: %i[index destroy], concerns: :deletion
         resources :pages, controller: "shot/pages", concerns: :deletion do
           get :image, on: :member
         end
