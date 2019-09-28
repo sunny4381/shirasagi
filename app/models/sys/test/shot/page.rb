@@ -21,6 +21,8 @@ class Sys::Test::Shot::Page
   validates :url, presence: true
   validates :url_hash, presence: true
 
+  after_destroy :delete_files
+
   class << self
     def gen_url_hash(url)
       digest = Digest::MD5.hexdigest(url.to_s + SALT)
@@ -45,5 +47,11 @@ class Sys::Test::Shot::Page
     base = "#{path}/.#{url_hash.to_s(16)}"
     base = "#{base}_w#{width}" if width.numeric?
     "#{base}.png"
+  end
+
+  private
+
+  def delete_files
+    ::FileUtils.rm_rf(path)
   end
 end
