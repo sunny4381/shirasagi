@@ -10,4 +10,13 @@
 
   <dt>Deny</dt>
   <dd><%= f.text_area :denies %></dd>
+
+  <dt>Timeout</dt>
+  <dd><%= f.number_field :timeout %></dd>
+
+  <dt>Max Count</dt>
+  <dd><%= f.number_field :max_count %> Leave blank for unlimited</dd>
+
+  <dt>Strip Query</dt>
+  <dd><%= f.select :strip_query_part, @item.strip_query_part_options %></dd>
 </dl>

@@ -8,6 +8,8 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     @options = @options.with_indifferent_access
     @config = Sys::Test::Shot::Config.find(args.shift)
 
+    @max_count = @options["max_count"].numeric? ? @options["max_count"].to_i : @config.max_count
+
     @config.images.destroy_all
 
     @seq = 0
@@ -45,7 +47,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         @last_reported_at = Time.zone.now
       end
 
-      break if @options["max_count"].numeric? && @visited.count >= @options["max_count"].to_i
+      break if @max_count && @max_count != 0 && @visited.count >= @max_count
     end
 
     Rails.logger.info("done #{@visited.count.to_s(:delimited)} urls")
@@ -66,7 +68,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       options.add_argument('no-sandbox')
 
       driver = Selenium::WebDriver.for(:chrome, options: options)
-      driver.manage.timeouts.implicit_wait = @options["timeout"].presence || 60
+      driver.manage.timeouts.implicit_wait = @options["timeout"].presence || @config.timeout || 60
       driver
     end
   end
@@ -207,8 +209,11 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     return if !parsed_url.respond_to?(:query=)
     return if !parsed_url.respond_to?(:fragment=)
 
-    parsed_url.query = nil
-    parsed_url.fragment = nil
+    if @config.strip_query_part?
+      parsed_url.query = nil
+      parsed_url.fragment = nil
+    end
+
     parsed_url.to_s
   end
 
