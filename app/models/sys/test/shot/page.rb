@@ -30,6 +30,16 @@ class Sys::Test::Shot::Page
       # divided by 2 means right 1bit shift. so this value is safe as signed integer
       hash / 2
     end
+
+    def search(params = {})
+      all.search_keyword(params)
+    end
+
+    def search_keyword(params = {})
+      return all if params.blank? || params[:keyword].blank?
+
+      all.keyword_in(params[:keyword], :url, :title, :redirect_to)
+    end
   end
 
   def path

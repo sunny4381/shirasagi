@@ -1,46 +1,35 @@
-<div class="index">
-  <%= render file: "_list_head" %>
+<% @tap_menu = proc do |item| %>
+  <%= link_to t('ss.links.delete'), action: :delete, id: item  if @config.allowed?(:delete, @cur_user) %>
+<% end %>
 
-  <ul class="list-items">
-    <% @items.each do |item| %>
-    <li class="list-item">
-      <nav class="tap-menu">
-        <% if @tap_menu %>
-          <% @tap_menu.call item %>
-        <% else %>
-          <%= link_to t('ss.links.show'), action: :show, id: item if item.allowed?(:read, @cur_user) %>
-          <%= link_to t('ss.links.edit'), action: :edit, id: item if item.allowed?(:edit, @cur_user) %>
-          <%= link_to t('ss.links.delete'), action: :delete, id: item  if item.allowed?(:delete, @cur_user) %>
-
-          <% if item.try(:image) %>
-            <%= link_to image_tag(item.image.thumb_url), item.image.url, { class: "thumb", target: "_blank" } %>
-          <% elsif item.try(:image?) %>
-            <%= link_to image_tag("#{item.thumb_url}?_=#{item.updated.to_i}", alt: ''), item.url, { class: "thumb", target: "_blank" } %>
-          <% end %>
-        <% end %>
-      </nav>
-
-      <label class="check"><input type="checkbox" name="ids[]" value="<%= item.id %>" /></label>
-      <div class="info">
-        <%= link_to({ action: :show, id: item }, class: "title") do %>
-          <% if ::File.exists?(item.image_path) %>
-            <%= image_tag(url_for({ action: :image, id: item, width: Sys::Test::Shot::Page::THUMBNAIL_SIZE }), style: "max-width: 240px") %>
-          <% elsif item.redirect_to.present? %>
-            Redirect to <%= item.redirect_to %>
-          <% else %>
-            <%= item.title || item.url %>
-          <% end %>
-        <% end %>
-
-        <div class="meta">
-          <span class="title"><%= item.title %></span>
-          <span class="url"><%= item.url %></span>
-          <span class="datetime"><%= item.updated.strftime("%Y/%m/%d %H:%M") %></span>
-        </div>
-      </div>
-    </li>
+<% @index_title = proc do |item| %>
+  <%= link_to({ action: :show, id: item }, class: "title") do %>
+    <% if ::File.exists?(item.image_path) %>
+      <%= image_tag(url_for({ action: :image, id: item, width: Sys::Test::Shot::Page::THUMBNAIL_SIZE }), style: "max-width: 240px") %>
+    <% elsif item.redirect_to.present? %>
+      Redirect to <%= item.redirect_to %>
+    <% else %>
+      <%= item.title || item.url %>
     <% end %>
-  </ul>
+  <% end %>
+<% end %>
+
+<% @index_meta = proc do |item| %>
+  <span class="title"><%= item.title %></span>
+  <span class="url"><%= item.url %></span>
+  <span class="datetime"><%= item.updated.strftime("%Y/%m/%d %H:%M") %></span>
+<% end %>
+
+<div class="cms-tabs">
+  <%= link_to(sys_test_shot_path(id: @config), { class: "show" }) do %>
+    <span class="tab-name"><%= t("ss.basic_info") %></span>
+  <% end %>
+  <%= link_to(sys_test_shot_queues_path, { class: "queues" }) do %>
+    <span class="tab-name">Queues</span>
+  <% end %>
+  <%= link_to(sys_test_shot_pages_path, { class: "pages current" }) do %>
+    <span class="tab-name">Results</span>
+  <% end %>
 </div>
 
-<%= paginate @items if @items.try(:current_page) %>
+<%= render file: "ss/crud/index" %>

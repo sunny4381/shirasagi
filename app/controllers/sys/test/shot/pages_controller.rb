@@ -24,6 +24,14 @@ class Sys::Test::Shot::PagesController < ApplicationController
 
   public
 
+  def index
+    raise "403" if !@config.allowed?(:read, @cur_user)
+    set_items
+    @items = @items.search(params[:s]).
+      order_by(_id: -1).
+      page(params[:page]).per(100)
+  end
+
   def image
     set_item
 
