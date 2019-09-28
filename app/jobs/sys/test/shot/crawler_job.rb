@@ -3,28 +3,32 @@ require "selenium-webdriver"
 require 'nokogiri'
 
 class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
+  include Job::SS::TaskFilter
+
   NULL_DEVICE = "/dev/null".freeze
+
+  self.task_class = Sys::Test::Shot::Config
+  self.task_name = "sys::test::shot"
 
   def perform(*args)
     @options = args.extract_options!
     @options = @options.with_indifferent_access
-    @config = Sys::Test::Shot::Config.find(args.shift)
 
-    @max_count = @options["max_count"].numeric? ? @options["max_count"].to_i : @config.max_count
+    @max_count = @options["max_count"].numeric? ? @options["max_count"].to_i : task.max_count
 
-    if @config.queues.blank? || @options["restart"]
-      @config.pages.destroy_all
-      @config.seeds.each do |url|
-        Sys::Test::Shot::Queue.enqueue!(@config, url)
+    if task.queues.blank? || @options["restart"]
+      task.pages.destroy_all
+      task.seeds.each do |url|
+        Sys::Test::Shot::Queue.enqueue!(task, url)
       end
     end
 
     @visited_count = 0
     @last_reported_at = Time.zone.now
     loop do
-      break if @config.queues.blank?
+      break if task.queues.blank?
 
-      queue = @config.queues.dequeue
+      queue = task.queues.dequeue
       break if queue.blank?
 
       try_count = 0
@@ -50,7 +54,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       end
 
       if @last_reported_at + 5.minutes <= Time.zone.now
-        Rails.logger.info("there are #{@config.queues.count.to_s(:delimited)} urls waiting to crawl")
+        Rails.logger.info("there are #{task.queues.count.to_s(:delimited)} urls waiting to crawl")
         @last_reported_at = Time.zone.now
       end
 
@@ -64,6 +68,10 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
   private
 
+  def task_cond
+    { id: arguments.first }
+  end
+
   def driver
     @driver ||= begin
       options = Selenium::WebDriver::Chrome::Options.new
@@ -75,14 +83,14 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       options.add_argument('no-sandbox')
 
       driver = Selenium::WebDriver.for(:chrome, options: options)
-      driver.manage.timeouts.implicit_wait = @options["timeout"].presence || @config.timeout || 60
+      driver.manage.timeouts.implicit_wait = @options["timeout"].presence || task.timeout || 60
       driver
     end
   end
 
   def allowed?(url)
-    @compiled_allows ||= @config.allows.map { |allow| compile(allow) }
-    @compiled_denies ||= @config.denies.map { |deny| compile(deny) }
+    @compiled_allows ||= task.allows.map { |allow| compile(allow) }
+    @compiled_denies ||= task.denies.map { |deny| compile(deny) }
 
     return false if @compiled_allows.none? { |allow| allow.match?(url) }
     return false if @compiled_denies.any? { |deny| deny.match?(url) }
@@ -100,7 +108,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
   def process(url)
     @page = nil
-    if @config.visited?(url)
+    if task.visited?(url)
       Rails.logger.debug("#{url}: already visited")
       return
     end
@@ -111,7 +119,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
     current_url = URI.parse(driver.current_url).to_s
     @page = Sys::Test::Shot::Page.where(
-      config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
+      config_id: task.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
     ).first_or_create
     @page.update(title: driver.title)
 
@@ -124,10 +132,13 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     @visited_count += 1
     if url != current_url
       page = Sys::Test::Shot::Page.where(
-        config_id: @config.id, url: url, url_hash: Sys::Test::Shot::Page.gen_url_hash(url)
+        config_id: task.id, url: url, url_hash: Sys::Test::Shot::Page.gen_url_hash(url)
       ).first_or_create
       page.update(title: @page.title, redirect_to: current_url)
     end
+
+    task.log(url)
+    task.inc(current_count: 1)
 
     if login_form?
       time = Benchmark.realtime do
@@ -137,7 +148,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
       current_url = URI.parse(driver.current_url).to_s
       @page = Sys::Test::Shot::Page.where(
-        config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
+        config_id: task.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
       ).first_or_create
       @page.update(title: driver.title)
 
@@ -179,20 +190,20 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     return if links.blank?
 
     links.each do |url|
+      url = normalize_url(url)
+      next if url.blank?
+
       if !allowed?(url)
         Rails.logger.debug("#{url}: not allowed")
         next
       end
 
-      url = normalize_url(url)
-      next if url.blank?
-
-      if @config.visited?(url)
+      if task.visited?(url)
         Rails.logger.debug("#{url}: already visited")
         next
       end
 
-      Sys::Test::Shot::Queue.enqueue!(@config, url)
+      Sys::Test::Shot::Queue.enqueue!(task, url)
     end
   end
 
@@ -236,7 +247,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     return if !parsed_url.respond_to?(:query=)
     return if !parsed_url.respond_to?(:fragment=)
 
-    if @config.strip_query_part?
+    if task.strip_query_part?
       parsed_url.query = nil
       parsed_url.fragment = nil
     end

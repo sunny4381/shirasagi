@@ -19,6 +19,9 @@
   <%= link_to(sys_test_shot_path(id: @config), { class: "show" }) do %>
     <span class="tab-name"><%= t("ss.basic_info") %></span>
   <% end %>
+  <%= link_to(sys_test_shot_run_path, { class: "run" }) do %>
+    <span class="tab-name">Run</span>
+  <% end %>
   <%= link_to(sys_test_shot_queues_path, { class: "queues current" }) do %>
     <span class="tab-name">Queues</span>
   <% end %>

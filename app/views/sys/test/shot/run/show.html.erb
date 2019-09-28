@@ -1,0 +1,78 @@
+<%= jquery do %>
+
+  var reload;
+  reload = function () {
+    if ($("#task-form .state").html().match(/(ready|running)/)) {
+      $.ajax({
+        url: "<%= url_for(action: :show, format: :json) %>",
+        success: function (data) {
+          var closed, started;
+          started = data["started"] + "";
+          closed = data["closed"] + "";
+          $("#task-form .state").html(data["state"]);
+          $("#task-form .count").html(data["current_count"] + " / " + data["total_count"]);
+          $("#task-form .started").html(started.replace(/\..*/, "").replace("T", " "));
+          $("#task-form .closed").html(closed.replace(/\..*/, "").replace("T", " "));
+          $("#task-form .log").val(data["head_logs"].join("\n"));
+          if (data["state"] === "stop") {
+            $("#task-form .stop-button").hide();
+            $("#task-form .run-button").show();
+          }
+        }
+      });
+    }
+  };
+  setInterval(reload, 10000);
+
+<% end %>
+
+<div class="cms-tabs">
+  <%= link_to(sys_test_shot_path(id: @config), { class: "show" }) do %>
+    <span class="tab-name"><%= t("ss.basic_info") %></span>
+  <% end %>
+  <%= link_to(sys_test_shot_run_path(shot_id: @config), { class: "run current" }) do %>
+    <span class="tab-name">Run</span>
+  <% end %>
+  <%= link_to(sys_test_shot_queues_path, { class: "queues" }) do %>
+    <span class="tab-name">Queues</span>
+  <% end %>
+  <%= link_to(sys_test_shot_pages_path, { class: "pages" }) do %>
+    <span class="tab-name">Results</span>
+  <% end %>
+</div>
+
+<div class="main-box">
+  <%= form_tag({ action: :create }, { id: "task-form" }) do |f| %>
+
+    <dl class="info">
+      <dt><%= @config.t :state %></dt>
+      <dd class="state"><%= @config.state %></dd>
+
+      <dt><%= @config.t :current_count %></dt>
+      <dd class="count"><%= @config.current_count %> / <%= @config.total_count %></dd>
+
+      <dt><%= @config.t :started %></dt>
+      <dd class="started"><%= tryb { @config.started.strftime("%Y/%m/%d %H:%M:%S") } %></dd>
+
+      <dt><%= @config.t :closed %></dt>
+      <dd class="closed"><%= tryb { @config.closed.strftime("%Y/%m/%d %H:%M:%S") } %></dd>
+    </dl>
+
+    <div class="logs">
+      <textarea class="log" readonly="readonly"><%= @config.head_logs.join("\n") %></textarea>
+    </div>
+
+    <footer class="send">
+      <% hide = (@config.running? || @config.state == "ready") ? nil : "display: none;" %>
+      <div class="stop-button" style="<%= hide %>">
+        <%= submit_tag t("ss.buttons.stop"), name: "stop", class: "btn-primary stop" %>
+      </div>
+
+      <% hide = hide.present? ? "" : "display: none;" %>
+      <div class="run-button" style="<%= hide %>">
+        <%= submit_tag t("ss.buttons.run"), class: "btn-primary save" %>
+      </div>
+    </footer>
+
+  <% end %>
+</div>

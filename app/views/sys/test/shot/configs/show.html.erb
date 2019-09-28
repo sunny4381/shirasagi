@@ -4,6 +4,9 @@
   <%= link_to({ action: "show" }, { class: "show current" }) do %>
     <span class="tab-name"><%= t("ss.basic_info") %></span>
   <% end %>
+  <%= link_to(sys_test_shot_run_path(shot_id: @item), { class: "run" }) do %>
+    <span class="tab-name">Run</span>
+  <% end %>
   <%= link_to(sys_test_shot_queues_path(shot_id: @item), { class: "queues" }) do %>
     <span class="tab-name">Queues</span>
   <% end %>
