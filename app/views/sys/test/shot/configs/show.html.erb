@@ -4,7 +4,7 @@
   <%= link_to({ action: "show" }, { class: "show current" }) do %>
     <span class="tab-name"><%= t("ss.basic_info") %></span>
   <% end %>
-  <%= link_to(sys_test_shot_images_path(shot_id: @item), { class: "images" }) do %>
+  <%= link_to(sys_test_shot_pages_path(shot_id: @item), { class: "images" }) do %>
     <span class="tab-name">Results</span>
   <% end %>
 </div>

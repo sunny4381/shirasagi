@@ -14,7 +14,7 @@ class Sys::Test::Shot::Config
   field :max_count, type: Integer
   field :strip_query_part, type: String, default: "enabled"
 
-  has_many :images, class_name: 'Sys::Test::Shot::Image', dependent: :destroy, inverse_of: :config
+  has_many :pages, class_name: 'Sys::Test::Shot::Page', dependent: :destroy, inverse_of: :config
 
   permit_params :config_name, :seeds, :allows, :denies, :timeout, :max_count, :strip_query_part
 
@@ -29,5 +29,10 @@ class Sys::Test::Shot::Config
 
   def strip_query_part?
     strip_query_part.blank? || strip_query_part == "enabled"
+  end
+
+  def visited?(url)
+    url_hash = Sys::Test::Shot::Page.gen_url_hash(url)
+    Sys::Test::Shot::Page.where(config_id: id, url: url, url_hash: url_hash).present?
   end
 end

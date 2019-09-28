@@ -23,7 +23,13 @@
       <label class="check"><input type="checkbox" name="ids[]" value="<%= item.id %>" /></label>
       <div class="info">
         <%= link_to({ action: :show, id: item }, class: "title") do %>
-          <%= image_tag(item.file.url, style: "max-width: 240px") %>
+          <% if ::File.exists?(item.image_path) %>
+            <%= image_tag(url_for({ action: :image, id: item, width: 240 }), style: "max-width: 240px") %>
+          <% elsif item.redirect_to.present? %>
+            Redirect to <%= item.redirect_to %>
+          <% else %>
+            <%= item.title || item.url %>
+          <% end %>
         <% end %>
 
         <div class="meta">

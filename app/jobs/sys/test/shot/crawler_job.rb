@@ -10,10 +10,9 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
     @max_count = @options["max_count"].numeric? ? @options["max_count"].to_i : @config.max_count
 
-    @config.images.destroy_all
+    @config.pages.destroy_all
 
-    @seq = 0
-    @visited = []
+    @visited_count = 0
     @pool = @config.seeds.dup
     @last_reported_at = Time.zone.now
     loop do
@@ -47,10 +46,10 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         @last_reported_at = Time.zone.now
       end
 
-      break if @max_count && @max_count != 0 && @visited.count >= @max_count
+      break if @max_count && @max_count != 0 && @visited_count >= @max_count
     end
 
-    Rails.logger.info("done #{@visited.count.to_s(:delimited)} urls")
+    Rails.logger.info("done #{@visited_count.to_s(:delimited)} urls")
   ensure
     @driver.quit if @driver
   end
@@ -92,8 +91,9 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
   end
 
   def process(url)
-    if @visited.include?(url)
-      Rails.logger.debug("#{url}: already took")
+    @page = nil
+    if @config.visited?(url)
+      Rails.logger.debug("#{url}: already visited")
       return
     end
 
@@ -102,6 +102,12 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       driver.get(url)
     end
     Rails.logger.info("#{url}: visited (#{time * 1000} ms)")
+
+    current_url = URI.parse(driver.current_url).to_s
+    @page = Sys::Test::Shot::Page.where(
+        config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
+    ).first_or_create
+    @page.update(title: driver.title)
 
     time = Benchmark.realtime do
       save_screen_shot
@@ -113,10 +119,12 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     end
     Rails.logger.info("#{url}: extracted links (#{time * 1000} ms)")
 
-    current_url = URI.parse(driver.current_url).to_s
-    @visited << current_url
+    @visited_count += 1
     if url != current_url
-      @visited << url
+      page = Sys::Test::Shot::Page.where(
+          config_id: @config.id, url: url, url_hash: Sys::Test::Shot::Page.gen_url_hash(url)
+      ).first_or_create
+      page.update(title: @page.title, redirect_to: current_url)
     end
 
     if login_form?
@@ -124,6 +132,12 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         login
       end
       Rails.logger.info("#{url}: logged in (#{time * 1000} ms)")
+
+      current_url = URI.parse(driver.current_url).to_s
+      @page = Sys::Test::Shot::Page.where(
+          config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
+      ).first_or_create
+      @page.update(title: driver.title)
 
       time = Benchmark.realtime do
         save_screen_shot
@@ -134,26 +148,17 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         extract_urls_and_enqueue
       end
       Rails.logger.info("#{url}: extracted links (#{time * 1000} ms)")
-
-      current_url = URI.parse(driver.current_url).to_s
-      @visited << current_url
     end
   end
 
   def save_screen_shot
-    current_url = URI.parse(driver.current_url)
-    file = SS::File.create_empty!(
-      cur_user: user, name: "#{@seq}.png", filename: "#{@seq}.png",
-      content_type: "image/png", model: 'ss/file'
-    ) do |file|
-      dir = ::File.dirname(file.path)
-      base = ::File.basename(file.path)
-      driver.save_screenshot("#{dir}/.#{base}.png")
-      ::FileUtils.mv("#{dir}/.#{base}.png", file.path, force: true)
-    end
-    @seq += 1
+    tmp_path = @page.temp_path
+    file_path = @page.image_path
+    dir = ::File.dirname(file_path)
 
-    Sys::Test::Shot::Image.create!(config: @config, url: current_url.to_s, title: driver.title, file: file)
+    ::FileUtils.mkdir_p(dir) if !::Dir.exists?(dir)
+    driver.save_screenshot(tmp_path)
+    ::FileUtils.mv(tmp_path, file_path, force: true)
   end
 
   def extract_urls_and_enqueue
@@ -193,8 +198,8 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       url = normalize_url(url)
       next if url.blank?
 
-      if @visited.include?(url)
-        Rails.logger.debug("#{url}: already took")
+      if @config.visited?(url)
+        Rails.logger.debug("#{url}: already visited")
         next
       end
 

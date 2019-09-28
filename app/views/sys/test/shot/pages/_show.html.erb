@@ -1,0 +1,22 @@
+<dl class="see">
+  <dt>Url</dt>
+  <dd><%= @item.url %></dd>
+
+  <dt>Title</dt>
+  <dd><%= @item.title %></dd>
+
+  <dt>Links To</dt>
+  <dd><%= br @item.links.join("\n") %></dd>
+
+  <dt>Redirect To</dt>
+  <dd><%= @item.redirect_to %></dd>
+
+  <% if ::File.exists?(@item.image_path) %>
+    <dt class="wide">Image</dt>
+    <dd class="wide">
+      <%= link_to({ action: :image }) do %>
+        <%= image_tag(url_for(action: :image), style: "width: 100%") %>
+      <% end %>
+    </dd>
+  <% end %>
+</dl>
