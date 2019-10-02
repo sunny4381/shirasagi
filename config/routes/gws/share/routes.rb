@@ -35,7 +35,7 @@ Rails.application.routes.draw do
 
     scope(path: ':category', defaults: { category: '-' }) do
       resources :files, concerns: [:deletion, :export, :lock] do
-        get :download_history, on: :member
+        get "history/:history_id/download", on: :member, action: "download_history", as: "download_history"
         post :disable, on: :member
         post :disable_all, on: :collection
         post :download_all, on: :collection
@@ -62,13 +62,13 @@ Rails.application.routes.draw do
         resources :files, concerns: [:deletion, :export] do
           post :active, on: :member
           get :recover, on: :member
-          get :download_history, on: :member
+          get "history/:history_id/download", on: :member, action: "download_history", as: "download_history"
         end
         scope(path: "folder-:folder", as: "folder") do
           resources :files, concerns: [:deletion, :export] do
             post :active, on: :member
             get :recover, on: :member
-            get :download_history, on: :member
+            get "history/:history_id/download", on: :member, action: "download_history", as: "download_history"
           end
         end
       end
