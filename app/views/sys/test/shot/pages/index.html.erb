@@ -24,7 +24,7 @@
       <div class="info">
         <%= link_to({ action: :show, id: item }, class: "title") do %>
           <% if ::File.exists?(item.image_path) %>
-            <%= image_tag(url_for({ action: :image, id: item, width: 240 }), style: "max-width: 240px") %>
+            <%= image_tag(url_for({ action: :image, id: item, width: Sys::Test::Shot::Page::THUMBNAIL_SIZE }), style: "max-width: 240px") %>
           <% elsif item.redirect_to.present? %>
             Redirect to <%= item.redirect_to %>
           <% else %>

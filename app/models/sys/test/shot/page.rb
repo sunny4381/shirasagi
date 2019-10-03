@@ -4,6 +4,7 @@ class Sys::Test::Shot::Page
   include Sys::Permission
 
   SALT = "c92b1f9e2b812e8d88141aaaec4570ddcbdcd0fb9c86feb8aa03c9479fbf2171e9179a00fc7f4edf91a8c54bcb6b064fd84d01036aa63647ecb389fa9c29ff5b".freeze
+  THUMBNAIL_SIZE = 240
 
   set_permission_name "sys_users", :edit
 
@@ -34,11 +35,15 @@ class Sys::Test::Shot::Page
     "#{SS::File.root}/sys_test_shot_pages/#{dir_part}/_/#{id}"
   end
 
-  def image_path
-    "#{path}/#{url_hash.to_s(16)}.png"
+  def image_path(width: nil)
+    base = "#{path}/#{url_hash.to_s(16)}"
+    base = "#{base}_w#{width}" if width.numeric?
+    "#{base}.png"
   end
 
-  def temp_path
-    "#{path}/.#{url_hash.to_s(16)}.png"
+  def temp_path(width: nil)
+    base = "#{path}/.#{url_hash.to_s(16)}"
+    base = "#{base}_w#{width}" if width.numeric?
+    "#{base}.png"
   end
 end

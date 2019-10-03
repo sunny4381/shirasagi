@@ -27,7 +27,7 @@ class Sys::Test::Shot::PagesController < ApplicationController
   def image
     set_item
 
-    file = @item.image_path
+    file = @item.image_path(width: params[:width].to_s.presence)
     if !::File.exists?(file)
       raise "404"
     end
