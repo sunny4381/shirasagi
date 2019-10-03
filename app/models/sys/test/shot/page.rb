@@ -3,6 +3,8 @@ class Sys::Test::Shot::Page
   include SS::Document
   include Sys::Permission
 
+  SALT = "c92b1f9e2b812e8d88141aaaec4570ddcbdcd0fb9c86feb8aa03c9479fbf2171e9179a00fc7f4edf91a8c54bcb6b064fd84d01036aa63647ecb389fa9c29ff5b".freeze
+
   set_permission_name "sys_users", :edit
 
   index({ config_id: 1, url_hash: 1 })
@@ -12,18 +14,18 @@ class Sys::Test::Shot::Page
   field :url_hash, type: Integer
   field :title, type: String
   field :redirect_to, type: String
+  field :links, type: SS::Extensions::Lines
 
   validates :config_id, presence: true
   validates :url, presence: true
   validates :url_hash, presence: true
 
-  SALT = "c92b1f9e2b812e8d88141aaaec4570ddcbdcd0fb9c86feb8aa03c9479fbf2171e9179a00fc7f4edf91a8c54bcb6b064fd84d01036aa63647ecb389fa9c29ff5b".freeze
-
   class << self
     def gen_url_hash(url)
       digest = Digest::MD5.hexdigest(url.to_s + SALT)
+      hash = digest[0, 8].to_i(16)
       # divided by 2 means right 1bit shift. so this value is safe as signed integer
-      [ digest ].pack("H*").unpack("N").first / 2
+      hash / 2
     end
   end
 

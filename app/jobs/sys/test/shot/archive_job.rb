@@ -33,18 +33,22 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
   end
 
   def add_page_to_archive(page)
+    entry_name = nil
     if ::File.exists?(page.image_path)
       dir = @archived_items / 1_000
       dir = dir.to_s.rjust(4, "0")
       name = page.id.to_s
-      @output_zip.create_entry("#{dir}/#{name}.png") do |f|
+      entry_name = "#{dir}/#{name}.png"
+      @output_zip.create_entry(entry_name) do |f|
         ::File.open(page.image_path, "rb") do |data|
           ::FileUtils.copy_stream(data, f)
         end
       end
     end
 
-    meta = { id: page.id.to_s, url: page.url, title: page.title, redirect_to: page.redirect_to, path: "#{dir}/#{name}.png" }
+    meta = {
+      id: page.id.to_s, url: page.url, title: page.title, redirect_to: page.redirect_to, links: page.links, path: entry_name
+    }
     @output_meta.write(meta.to_json)
     @output_meta.write("\n")
 

@@ -98,31 +98,25 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     end
 
     Rails.logger.debug("#{url}: visiting")
-    time = Benchmark.realtime do
-      driver.get(url)
-    end
+    time = Benchmark.realtime { driver.get(url) }
     Rails.logger.info("#{url}: visited (#{time * 1000} ms)")
 
     current_url = URI.parse(driver.current_url).to_s
     @page = Sys::Test::Shot::Page.where(
-        config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
+      config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
     ).first_or_create
     @page.update(title: driver.title)
 
-    time = Benchmark.realtime do
-      save_screen_shot
-    end
+    time = Benchmark.realtime { save_screen_shot }
     Rails.logger.info("#{url}: saved screen shot (#{time * 1000} ms)")
 
-    time = Benchmark.realtime do
-      extract_urls_and_enqueue
-    end
+    time = Benchmark.realtime { extract_urls_and_enqueue }
     Rails.logger.info("#{url}: extracted links (#{time * 1000} ms)")
 
     @visited_count += 1
     if url != current_url
       page = Sys::Test::Shot::Page.where(
-          config_id: @config.id, url: url, url_hash: Sys::Test::Shot::Page.gen_url_hash(url)
+        config_id: @config.id, url: url, url_hash: Sys::Test::Shot::Page.gen_url_hash(url)
       ).first_or_create
       page.update(title: @page.title, redirect_to: current_url)
     end
@@ -135,7 +129,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
       current_url = URI.parse(driver.current_url).to_s
       @page = Sys::Test::Shot::Page.where(
-          config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
+        config_id: @config.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
       ).first_or_create
       @page.update(title: driver.title)
 
@@ -162,34 +156,11 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
   end
 
   def extract_urls_and_enqueue
-    html = driver.page_source.to_s
-    return if html.blank?
+    links = extract_urls
+    @page.set(links: links)
+    return if links.blank?
 
-    current_url = URI.parse(driver.current_url)
-
-    # nokogiri を利用して高速化
-    doc = Nokogiri::HTML.parse(html) rescue nil
-    return if doc.blank?
-
-    anchors = doc.css('a')
-    return if anchors.blank?
-
-    anchors.each do |anchor|
-      rel = anchor.attribute("rel")
-      next if rel.present? && rel.value == "nofollow"
-
-      href = anchor.attribute("href")
-      next if href.blank?
-
-      href = href.value.to_s.strip
-      next if href.blank? || href.start_with?("#") || href.start_with?("javascript:")
-
-      url = URI.join(current_url, href).to_s rescue nil
-      next if url.blank?
-      next if !url.start_with?("http:") && !url.start_with?("https:")
-
-      Rails.logger.info("#{current_url} refers to #{url}")
-
+    links.each do |url|
       if !allowed?(url)
         Rails.logger.debug("#{url}: not allowed")
         next
@@ -207,6 +178,41 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
         @pool << url
       end
     end
+  end
+
+  def extract_urls
+    html = driver.page_source.to_s
+    return if html.blank?
+
+    current_url = URI.parse(driver.current_url)
+
+    # nokogiri を利用して高速化
+    doc = Nokogiri::HTML.parse(html) rescue nil
+    return if doc.blank?
+
+    anchors = doc.css('a')
+    return if anchors.blank?
+
+    links = []
+    anchors.each do |anchor|
+      rel = anchor.attribute("rel")
+      next if rel.present? && rel.value == "nofollow"
+
+      href = anchor.attribute("href")
+      next if href.blank?
+
+      href = href.value.to_s.strip
+      next if href.blank? || href.start_with?("#") || href.start_with?("javascript:")
+
+      url = URI.join(current_url, href).to_s rescue nil
+      next if url.blank?
+      next unless url.start_with?("http:", "https:")
+
+      Rails.logger.info("#{current_url} refers to #{url}")
+      links << url
+    end
+
+    links
   end
 
   def normalize_url(url)
