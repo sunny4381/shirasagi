@@ -19,4 +19,27 @@
 
   <dt>Strip Query</dt>
   <dd><%= @item.label :strip_query_part %></dd>
+
+  <% @model::MAX_FORM_COUNT.times do |i| %>
+    <% if @item.send("form#{i}_check_css_selector").present? %>
+      <dt>Form <%= i + 1 %></dt>
+      <dd></dd>
+
+      <dt class="depth-2">Form CSS Selector</dt>
+      <dd class="depth-2"><%= @item.send("form#{i}_check_css_selector") %></dd>
+
+      <% @model::MAX_INPUT_COUNT.times do |j| %>
+        <% if @item.send("form#{i}_input#{j}_css_selector").present? %>
+          <dt class="depth-2">Input <%= j + 1 %></dt>
+          <dd class="depth-2"></dd>
+
+          <dt class="depth-3">CSS Selector</dt>
+          <dd class="depth-3"><%= @item.send("form#{i}_input#{j}_css_selector") %></dd>
+
+          <dt class="depth-3">Value</dt>
+          <dd class="depth-3"><%= @item.send("form#{i}_input#{j}_value") %></dd>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
 </dl>

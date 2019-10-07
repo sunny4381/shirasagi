@@ -46,7 +46,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       end
 
       if captured_exception
-        base_message = "#{captured_exception.class} (#{captured_exception.message}):"
+        base_message = "#{captured_exception.class} (#{captured_exception.message})"
         back_trace = "  #{captured_exception.backtrace.join("\n  ")}"
         Rails.logger.error("#{base_message}:\n#{back_trace}")
       else
@@ -108,6 +108,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
   def process(url)
     @page = nil
+    @nokogiri_doc = nil
     if task.visited?(url)
       Rails.logger.debug("#{url}: already visited")
       return
@@ -122,6 +123,9 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       config_id: task.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
     ).first_or_create
     @page.update(title: driver.title)
+
+    # nokogiri を利用して高速化
+    @nokogiri_doc = Nokogiri::HTML.parse(driver.page_source.to_s) rescue nil
 
     time = Benchmark.realtime { save_screen_shot }
     Rails.logger.info("#{url}: saved screen shot (#{time * 1000} ms)")
@@ -140,17 +144,15 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     task.log(url)
     task.inc(current_count: 1)
 
-    if login_form?
-      time = Benchmark.realtime do
-        login
-      end
-      Rails.logger.info("#{url}: logged in (#{time * 1000} ms)")
-
+    if fill_form_if_available
       current_url = URI.parse(driver.current_url).to_s
       @page = Sys::Test::Shot::Page.where(
         config_id: task.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
       ).first_or_create
       @page.update(title: driver.title)
+
+      # nokogiri を利用して高速化
+      @nokogiri_doc = Nokogiri::HTML.parse(driver.page_source.to_s) rescue nil
 
       time = Benchmark.realtime do
         save_screen_shot
@@ -208,16 +210,10 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
   end
 
   def extract_urls
-    html = driver.page_source.to_s
-    return if html.blank?
+    return if @nokogiri_doc.blank?
 
     current_url = URI.parse(driver.current_url)
-
-    # nokogiri を利用して高速化
-    doc = Nokogiri::HTML.parse(html) rescue nil
-    return if doc.blank?
-
-    anchors = doc.css('a')
+    anchors = @nokogiri_doc.css('a')
     return if anchors.blank?
 
     links = []
@@ -255,16 +251,39 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     parsed_url.to_s
   end
 
-  def login_form?
-    html = driver.page_source.to_s
-    html.include?('<input type="submit" name="commit" value="ログイン" class="btn-primary">')
-  end
+  def fill_form_if_available
+    filled = false
+    Sys::Test::Shot::Config::MAX_FORM_COUNT.times do |i|
+      begin
+        form_css_selector = task.send("form#{i}_check_css_selector")
+        next if form_css_selector.blank?
+        form = @nokogiri_doc.css(form_css_selector).first
+        next if form.blank?
 
-  def login
-    driver.find_element(:name, "item[email]").send_keys("sys")
-    driver.find_element(:name, "item[password]").send_keys("pass")
-    driver.find_element(:name, "commit").click
+        Sys::Test::Shot::Config::MAX_INPUT_COUNT.times do |j|
+          input_css_selector = task.send("form#{i}_input#{j}_css_selector")
+          value = task.send("form#{i}_input#{j}_value")
 
-    sleep 2
+          if input_css_selector.present? && @nokogiri_doc.css(input_css_selector).first
+            driver.find_element(:css, input_css_selector).send_keys(value)
+          end
+        end
+
+        submit_css_selector = "#{form_css_selector} [type='submit']"
+        submit = @nokogiri_doc.css(submit_css_selector).first
+        if submit.present?
+          driver.find_element(:css, submit_css_selector).click
+        else
+          driver.find_element(:css, form_css_selector).submit
+        end
+
+        filled = true
+        break
+      rescue => e
+        Rails.logger.error("#{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
+      end
+    end
+
+    filled
   end
 end
