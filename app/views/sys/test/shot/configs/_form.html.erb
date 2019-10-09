@@ -20,6 +20,9 @@
   <dt>Strip Query</dt>
   <dd><%= f.select :strip_query_part, @item.strip_query_part_options %></dd>
 
+  <dt>Window Size</dt>
+  <dd><%= select_tag("item[in_window_size]", options_for_select(@item.window_size_options, @item.window_size)) %></dd>
+
   <% @model::MAX_FORM_COUNT.times do |i| %>
     <dt>Form <%= i + 1 %></dt>
     <dd></dd>

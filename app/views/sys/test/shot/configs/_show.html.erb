@@ -20,6 +20,9 @@
   <dt>Strip Query</dt>
   <dd><%= @item.label :strip_query_part %></dd>
 
+  <dt>Window Size</dt>
+  <dd><%= @item.label :window_size %></dd>
+
   <% @model::MAX_FORM_COUNT.times do |i| %>
     <% if @item.send("form#{i}_check_css_selector").present? %>
       <dt>Form <%= i + 1 %></dt>
