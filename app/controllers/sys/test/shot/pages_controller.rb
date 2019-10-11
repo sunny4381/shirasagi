@@ -42,4 +42,11 @@ class Sys::Test::Shot::PagesController < ApplicationController
 
     ss_send_file(file, status: :ok, type: Fs.content_type(file), disposition: :inline)
   end
+
+  def slideshow
+    raise "403" if !@config.allowed?(:read, @cur_user)
+    set_items
+    @items = @items.order_by(_id: -1)
+    render layout: "ss/print"
+  end
 end
