@@ -1,10 +1,11 @@
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.1/css/swiper.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.1/js/swiper.min.js"></script>
 
-<div class="image-info" style="width: 100%; height: 40px;">
+<div class="image-info" style="width: 100%; height: 60px;">
   <h2 class="url">header</h2>
   <span class="title"><span>Title: </span><span class="value">title</span></span>
   <span class="redirect-to"><span>RedirectTo: </span><span class="value"><a href="redirect_to">redirect_to</a></span></span>
+  <span class=""><%= link_to "被リンク", { action: :links_from, id: ":id" }, class: "btn btn-links-from ajax-box", data: { href: url_for(action: :links_from, id: ":id") } %></span>
 </div>
 <div class="swiper-container gallery-top" style="width: 100%">
   <div class="swiper-wrapper" style="width: 100%">
@@ -70,6 +71,10 @@
     } else {
       $imageInfo.find(".redirect-to").addClass("hide");
     }
+
+    var href = $imageInfo.find(".btn-links-from").data("href");
+    href = href.replace(/:id/g, id);
+    $imageInfo.find(".btn-links-from").attr("href", href);
   };
 
   showInfo("<%= @items.first.id.to_s %>");

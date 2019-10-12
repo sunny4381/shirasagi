@@ -49,4 +49,12 @@ class Sys::Test::Shot::PagesController < ApplicationController
     @items = @items.order_by(_id: -1)
     render layout: "ss/print"
   end
+
+  def links_from
+    raise "403" if !@config.allowed?(:read, @cur_user)
+    set_items
+    set_item
+    @items = @items.in(links: @item.url).pluck(:url)
+    render layout: "ss/ajax"
+  end
 end

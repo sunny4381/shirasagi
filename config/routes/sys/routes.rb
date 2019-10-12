@@ -40,6 +40,7 @@ Rails.application.routes.draw do
         resources :pages, controller: "shot/pages", only: %i[index show destroy], concerns: :deletion do
           get :image, on: :member
           get :slide_show, on: :collection
+          get :links_from, on: :member
         end
       end
     end

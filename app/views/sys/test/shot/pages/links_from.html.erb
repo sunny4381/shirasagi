@@ -1,0 +1,10 @@
+<dl class="see">
+  <dt class="wide">被リンク (<%= @items.count.to_s(:delimited) %> 件)</dt>
+  <dd class="wide">
+    <ul>
+      <% @items.each do |item| %>
+        <li><%= link_to item, item %></li>
+      <% end %>
+    </ul>
+  </dd>
+</dl>
