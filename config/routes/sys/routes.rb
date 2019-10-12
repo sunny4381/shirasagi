@@ -39,7 +39,7 @@ Rails.application.routes.draw do
         resources :queues, controller: "shot/queues", only: %i[index destroy], concerns: :deletion
         resources :pages, controller: "shot/pages", only: %i[index show destroy], concerns: :deletion do
           get :image, on: :member
-          get :slideshow, on: :collection
+          get :slide_show, on: :collection
         end
       end
     end

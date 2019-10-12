@@ -1,0 +1,107 @@
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.1/css/swiper.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.1/js/swiper.min.js"></script>
+
+<div class="image-info" style="width: 100%; height: 40px;">
+  <h2 class="url">header</h2>
+  <span class="title"><span>Title: </span><span class="value">title</span></span>
+  <span class="redirect-to"><span>RedirectTo: </span><span class="value"><a href="redirect_to">redirect_to</a></span></span>
+</div>
+<div class="swiper-container gallery-top" style="width: 100%">
+  <div class="swiper-wrapper" style="width: 100%">
+    <% @items.each do |item| %>
+      <div id="image-<%= item.id %>" class="swiper-slide" data-id="<%= item.id %>">
+        <% if ::File.exists?(item.image_path) %>
+          <img data-src="<%= url_for(action: :image, id: item) %>" class="swiper-lazy" style="width: 100%">
+          <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+        <% else %>
+          no image
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="swiper-pagination"></div>
+
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-button-next"></div>
+
+  <div class="swiper-scrollbar"></div>
+</div>
+<div class="swiper-container gallery-thumbs">
+  <div class="swiper-wrapper">
+    <% @items.each do |item| %>
+      <div id="thumb-<%= item.id %>" class="swiper-slide">
+        <% if ::File.exists?(item.image_path) %>
+          <img src="<%= url_for(action: :image, id: item, width: 240) %>" loading="lazy" />
+        <% else %>
+          no image
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%= javascript_tag do %>
+  var images = {};
+  <% @items.each do |item| %>
+    images["<%= item.id %>"] = <%== { url: item.url, title: item.title, redirectTo: item.redirect_to }.to_json %>;
+  <% end %>
+
+  var showInfo = function(id) {
+    var image = images[id];
+    var $imageInfo = $(".image-info");
+
+    if (image.url) {
+      $imageInfo.find(".url").text(image.url).removeClass("hide");
+    } else {
+      $imageInfo.find(".url").addClass("hide");
+    }
+
+    if (image.title) {
+      $imageInfo.find(".title .value").text(image.title).removeClass("hide");
+      $imageInfo.find(".title").removeClass("hide");
+    } else {
+      $imageInfo.find(".title").addClass("hide");
+    }
+
+    if (image.redirectTo) {
+      $imageInfo.find(".redirect-to .value").html($("<a/>", { href: image.redirectTo }).text(image.redirectTo));
+      $imageInfo.find(".redirect-to").removeClass("hide");
+    } else {
+      $imageInfo.find(".redirect-to").addClass("hide");
+    }
+  };
+
+  showInfo("<%= @items.first.id.to_s %>");
+
+  var galleryThumbs = new Swiper ('.gallery-thumbs', {
+    spaceBetween: 10,
+    slidesPerView: 4,
+    freeMode: true,
+    watchSlidesVisibility: true,
+    watchSlidesProgress: true,
+  });
+
+  var galleryTop = new Swiper ('.gallery-top', {
+    lazy: true,
+    spaceBetween: 10,
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true
+    },
+    navigation: {
+      prevEl: ".swiper-button-prev",
+      nextEl: ".swiper-button-next"
+    },
+    thumbs: {
+      swiper: galleryThumbs
+    }
+  });
+
+  galleryTop.on("slideChange", function() {
+    setTimeout(function() {
+      var id = $('.gallery-top').find(".swiper-slide-active").data("id");
+      showInfo(id);
+    }, 0);
+  });
+<% end %>
