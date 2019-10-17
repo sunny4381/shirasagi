@@ -77,7 +77,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       options = Selenium::WebDriver::Chrome::Options.new
       options.add_preference('download.prompt_for_download', false)
       options.add_preference('download.default_directory', Rails.root.join("tmp").to_s)
-      options.add_argument("window-size=#{task.screen_size_width},#{task.screen_size_height}")
+      options.add_argument("window-size=#{task.window_size_width},#{task.window_size_height}")
       options.add_argument('--headless')
       options.add_argument('disable-gpu')
       options.add_argument('no-sandbox')
