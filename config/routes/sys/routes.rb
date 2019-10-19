@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     post "test/mail" => "test/mail#create", as: :send_test_mail
     namespace "test" do
       resources :shots, controller: "shot/configs", concerns: :deletion do
+        match :archive, on: :member, via: %i[get post]
         resource :run, controller: "shot/run", only: %i[show create]
         resources :queues, controller: "shot/queues", only: %i[index destroy], concerns: :deletion
         resources :pages, controller: "shot/pages", only: %i[index show destroy], concerns: :deletion do

@@ -1,0 +1,22 @@
+<%= form_for :item, url: { action: :archive }, html: { method: :post, multipart: true } do |f| %>
+  <%= error_messages_for :item %>
+  <div class="addon-views">
+    <div class="addon-view" id="addon-basic">
+      <div class="addon-head"><h2>アーカイブを作成してよろしいですか？</h2></div>
+      <div class="addon-body">
+        <dl class="see">
+          <dt><%= @model.t :config_name %></dt>
+          <dd><%= @item.config_name %></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <footer class="send">
+    <% if @crud_buttons %>
+      <% @crud_buttons.call f %>
+    <% else %>
+      <%= f.submit t("ss.buttons.run"), class: 'btn-primary archive' %>
+      <%= f.button t("ss.buttons.cancel"), class: 'btn-default', type: :reset, onclick: "location.href='#{url_for(action: :index)}'; return false;" %>
+    <% end %>
+  </footer>
+<% end %>

@@ -2,6 +2,7 @@
   <% if params[:action] =~ /show/ %>
     <%= link_to(t('ss.links.edit'), edit_sys_test_shot_path(id: @config), class: :edit) if @config.allowed?(:edit, @cur_user) %>
     <%= link_to(t('ss.links.delete'), delete_sys_test_shot_path(id: @config), class: :delete) if @config.allowed?(:delete, @cur_user) %>
+    <%= link_to("アーカイブする", archive_sys_test_shot_path(id: @config), class: :archive) if @config.allowed?(:read, @cur_user) %>
     <%= link_to(t('ss.links.back_to_index'), sys_test_shots_path, class: "back-to-index") %>
   <% else %>
     <%= link_to(t('ss.links.back_to_index'), sys_test_shots_path, class: "back-to-index") %>

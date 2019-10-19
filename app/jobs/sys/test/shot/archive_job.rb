@@ -3,6 +3,7 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
     @options = args.extract_options!
     @options = @options.with_indifferent_access
     @config = Sys::Test::Shot::Config.find(args.shift)
+    @request_url = @options[:request_url].try { |url| URI.parse(url) rescue nil }
 
     prepare_archive
     create_archive
@@ -69,6 +70,20 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
     @output_meta.unlink
 
     @output_zip.close
-    puts "created: #{@output_zip.filename}"
+
+    url = @output_zip.url
+    if @request_url
+      url = ::URI.join(@request_url, url).to_s
+    end
+
+    Rails.logger.info("created: #{url}")
+    message = SS::Notification.new
+    message.cur_user      = user
+    message.member_ids    = [user.id]
+    message.send_date     = Time.zone.now
+    message.subject       = "[Screenshot] アーカイブを作成しました。"
+    message.format        = 'text'
+    message.text          = "次のURLからダウンロードしてください。\n#{url}"
+    message.save!
   end
 end
