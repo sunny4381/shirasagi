@@ -5,11 +5,14 @@
   <dt>Title</dt>
   <dd><%= @item.title %></dd>
 
+  <dt>Redirect To</dt>
+  <dd><%= @item.redirect_to %></dd>
+
   <dt>Links To</dt>
   <dd><%= br @item.links.join("\n") %></dd>
 
-  <dt>Redirect To</dt>
-  <dd><%= @item.redirect_to %></dd>
+  <dt>被リンク</dt>
+  <dd><%= link_to "被リンク", { action: :links_from, id: @item }, class: "btn btn-links-from ajax-box" %></dd>
 
   <% if ::File.exists?(@item.image_path) %>
     <dt class="wide">Image</dt>
