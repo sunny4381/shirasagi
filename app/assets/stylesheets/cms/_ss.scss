@@ -156,3 +156,38 @@
   background: $white;
   white-space: nowrap;
 }
+
+.cms-file-management {
+  @include display-flex;
+}
+
+.cms-file-management-navi {
+  width: 30%;
+  margin-right: 10px;
+}
+
+.cms-file-management-main {
+  flex: 1;
+}
+
+.cms-btn-group {
+  display: inline-flex;
+  position: relative;
+
+  .btn {
+    &:not(:first-child) {
+      margin-left: -1px;
+    }
+    &:not(:last-child) {
+      @include border-top-right-radius(0);
+      @include border-bottom-right-radius(0);
+    }
+    &:not(:first-child) {
+      @include border-top-left-radius(0);
+      @include border-bottom-left-radius(0);
+    }
+    &.btn-state-active {
+      @include btn-active;
+    }
+  }
+}

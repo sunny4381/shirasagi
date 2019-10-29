@@ -5,12 +5,12 @@ class Cms::SearchContents::FilesController < ApplicationController
 
   model SS::File
 
-  navi_view "cms/search_contents/navi"
+  navi_view "cms/main/navi"
 
   private
 
   def set_crumbs
-    @crumbs << [t("cms.file"), action: :index]
+    @crumbs << [t("cms.search_contents_files"), action: :index]
   end
 
   def fix_params

@@ -1,50 +1,215 @@
-<div class="addon-view">
-  <%= form_for :s, url: { action: :index }, html: { class: :search, multipart: true } do |f| %>
-  <div class="search-contents-form">
-    <dl class="see">
-      <dt><%= t("cms.apis.contents.keyword") %><%= tt("search_contents.files.keyword") %></dt>
-      <dd>
-        <%= f.text_field :keyword, value: params[:s].try(:[], :keyword) %>
-        <%= f.submit t("ss.buttons.search"), name: "search", class: "search btn" %>
-      </dd>
-    </dl>
+<div class="cms-file-management">
+  <div class="cms-file-management-navi">
+    <%= render "ss/crud/addon", addon: { head: false } do %>
+      <div class="tree-navi">
+        <div class="tree-item is-open is-current" data-id="-" data-filename="すべて">
+          <a class="item-name" href="/.g1/schedule/todo/-/readables">すべて</a>
+        </div>
+        <div class="tree-item is-open" data-id="na" data-filename="共有ファイル">
+          <%= link_to t("cms.file"), cms_files_path, class: "item-name" %>
+        </div>
+        <div class="tree-item is-open" data-id="na" data-filename="個人ファイル">
+          <a class="item-name" href="/.g1/schedule/todo/na/readables">個人ファイル</a>
+        </div>
+        <div class="tree-item is-open" data-id="na" data-filename="ゴミ箱">
+          <a class="item-name" href="/.g1/schedule/todo/na/readables">ゴミ箱</a>
+        </div>
+      </div>
+      <hr>
+      <div class="tree-navi">
+        <div class="tree-item is-open" data-id="-" data-filename="最近更新されたファイル">
+          <a class="item-name" href="/.g1/schedule/todo/-/readables">最近更新されたファイル</a>
+        </div>
+        <div class="tree-item is-open" data-id="na" data-filename="最近追加されたファイル">
+          <a class="item-name" href="/.g1/schedule/todo/na/readables">最近追加されたファイル</a>
+        </div>
+        <div class="tree-item is-open" data-id="na" data-filename="お気に入り">
+          <a class="item-name" href="/.g1/schedule/todo/na/readables">お気に入り</a>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render "ss/crud/addon", addon: { head: "フォルダー", toggle: true } do %>
+      <div class="tree-navi">
+        <div class="tree-item is-close" data-id="157" data-filename="ad">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/157?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/ads157/banners">広告バナー</a>
+        </div>
+        <div class="tree-item is-close" data-id="219" data-filename="anpi">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/219?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/board219/anpi_posts">安否掲示板</a>
+        </div>
+        <div class="tree-item is-close" data-id="168" data-filename="anpi-ezine">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/168?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/ezine168/category_nodes">安否メールマガジン</a>
+        </div>
+        <div class="tree-item is-close" data-id="19" data-filename="attention">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/19?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category19/pages">注目情報</a>
+        </div>
+        <div class="tree-item is-close" data-id="218" data-filename="board">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/218?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/board218/posts">災害掲示板</a>
+        </div>
+        <div class="tree-item is-close" data-id="151" data-filename="calendar">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/151?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/event151/pages">イベントカレンダー</a>
+        </div>
+        <div class="tree-item is-close" data-id="253" data-filename="chatbot">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/253?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/chat253/bots">チャットボット</a>
+        </div>
+        <div class="tree-item is-close" data-id="163" data-filename="comment">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/163?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/inquiry163/nodes">パブリックコメント</a>
+        </div>
+        <div class="tree-item is-close" data-id="152" data-filename="css">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/152?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/uploader152/files">CSS</a>
+        </div>
+        <div class="tree-item is-close" data-id="146" data-filename="docs">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/146?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/article146/pages">記事</a>
+        </div>
+        <div class="tree-item is-close" data-id="166" data-filename="ezine">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/166?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/ezine166/pages">メールマガジン</a>
+        </div>
+        <div class="tree-item is-close" data-id="134" data-filename="faq">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/134?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category134/nodes">よくある質問</a>
+        </div>
+        <div class="tree-item is-close" data-id="162" data-filename="feedback">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/162?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/inquiry162/forms">この情報はお役に立ちましたか？</a>
+        </div>
+        <div class="tree-item is-close" data-id="221" data-filename="garbage">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/221?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/garbage221/searches">ゴミ品目検索</a>
+        </div>
+        <div class="tree-item is-close" data-id="1" data-filename="guide">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/1?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category1/nodes">くらしのガイド</a>
+        </div>
+        <div class="tree-item is-close" data-id="153" data-filename="img">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/153?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/uploader153/files">画像</a>
+        </div>
+        <div class="tree-item is-close" data-id="161" data-filename="inquiry">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/161?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/inquiry161/forms">市へのお問い合わせ</a>
+        </div>
+        <div class="tree-item is-close" data-id="185" data-filename="institution">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/185?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/facility185/searches">施設ガイド</a>
+        </div>
+        <div class="tree-item is-close" data-id="154" data-filename="js">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/154?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/uploader154/files">javascript</a>
+        </div>
+        <div class="tree-item is-close" data-id="2" data-filename="kanko">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/2?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category2/nodes">観光・文化・スポーツ</a>
+        </div>
+        <div class="tree-item is-close" data-id="197" data-filename="kanko-info">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/197?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/cms197/nodes">観光情報</a>
+        </div>
+        <div class="tree-item is-close" data-id="3" data-filename="kenko">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/3?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category3/nodes">健康・福祉</a>
+        </div>
+        <div class="tree-item is-close" data-id="188" data-filename="key_visual">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/188?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/key_visual188/images">キービジュアル</a>
+        </div>
+        <div class="tree-item is-close" data-id="4" data-filename="kosodate">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/4?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category4/nodes">子育て・教育</a>
+        </div>
+        <div class="tree-item is-close" data-id="5" data-filename="kurashi">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/5?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category5/nodes">くらし・手続き</a>
+        </div>
+        <div class="tree-item is-close" data-id="189" data-filename="login">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/189?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/member189/logins">ログイン</a>
+        </div>
+        <div class="tree-item is-close" data-id="191" data-filename="mypage">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/191?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/member191/mypages">マイページ</a>
+        </div>
+        <div class="tree-item is-close" data-id="82" data-filename="oshirase">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/82?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category82/pages">お知らせ</a>
+        </div>
+        <div class="tree-item is-close" data-id="190" data-filename="registration">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/190?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/member190/registrations">会員登録</a>
+        </div>
+        <div class="tree-item is-close" data-id="12" data-filename="sangyo">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/12?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category12/nodes">産業・仕事</a>
+        </div>
+        <div class="tree-item is-close" data-id="149" data-filename="search">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/149?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/cms149/site_searches">サイト内検索</a>
+        </div>
+        <div class="tree-item is-close" data-id="17" data-filename="shisei">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/17?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category17/nodes">市政情報</a>
+        </div>
+        <div class="tree-item is-close" data-id="150" data-filename="sitemap">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/150?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/sitemap150/pages">サイトマップ</a>
+        </div>
+        <div class="tree-item is-close" data-id="376" data-filename="test">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/376?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/cms376/pages">テスト</a>
+        </div>
+        <div class="tree-item is-close" data-id="133" data-filename="urgency">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/133?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/category133/pages">緊急情報</a>
+        </div>
+        <div class="tree-item is-close" data-id="160" data-filename="urgency-layout">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/160?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/urgency160/layouts">緊急災害レイアウト</a>
+        </div>
+        <div class="tree-item is-close" data-id="145" data-filename="use">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/145?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/cms145/nodes">ご利用案内</a>
+        </div>
+        <div class="tree-item is-close" data-id="220" data-filename="weather">
+          <a class="item-mark" href="/.s1/cms/apis/node_tree/220?type=cms%2Fnode"><i class="material-icons"></i></a><a class="item-name" href="/.s1/rss220/weather_xmls">気象庁防災XML</a>
+        </div>
+      </div>
+    <% end %>
+
+    <%= render "ss/crud/addon", addon: { head: "使用量", toggle: true, display_body: 'hide' } do %>
+    <% end %>
   </div>
-  <% end %>
 
-  <dl class="see">
-    <dd class="wide">
-      <div id="selected-files">
-        <% @items.each do |file| %>
-          <div class="file-view">
-            <% page = Cms::Page.in(file_ids: file.id).first %>
-            <% next if page.nil? %>
-            <%= link_to cms_page_path(id: page.id), class: :thumb, target: "_blank" do %>
-              <% if file.image? %>
-                <%= image_tag file.thumb_url, alt: file.name %>
-              <% else %>
-                <span class="ext icon-<%= file.extname %>"><%= file.extname %></span>
-              <% end %>
-            <% end %>
-
-            <div class="name">
-              <label>
-                <%= file.name %><br />
-                <%= file.filename %>
-              </label><br />
-            </div>
-            <%= link_to cms_page_path(id: page.id), target: "_blank" do %>
-            <span class="name">
-              <label>
-                <%= page.name %><br />
-                <%= page.filename %>
-              </label><br />
-            </span>
-            <% end %>
-          </div>
+  <div class="cms-file-management-main addon-view">
+    <div class="list-head">
+      <div class="list-head-search">
+        <%= form_for :s, url: { action: :index }, html: { class: "index-search", multipart: true } do |f| %>
+          <%= f.text_field :keyword, style: "width: 200px;" %>
+          <%= f.submit t("ss.buttons.search"), name: "search", class: "search btn" %>
         <% end %>
       </div>
-    </dd>
-  </dl>
-</div>
 
-<%= paginate @items %>
+      <div class="cms-btn-group mr-1">
+        <button type="button" class="btn btn-state-active" style="height: 36px; line-height: normal;">すべて</button>
+        <button type="button" class="btn" style="height: 36px; line-height: normal;">画像・動画</button>
+        <button type="button" class="btn" style="height: 36px; line-height: normal;">文書</button>
+        <button type="button" class="btn" style="height: 36px; line-height: normal;">その他</button>
+      </div>
+
+      <div class="cms-btn-group">
+        <button type="button" class="btn" style="padding: 2px 6px; height: 36px; line-height: normal;"><i class="material-icons md-24">list</i></button>
+        <button type="button" class="btn btn-state-active" style="padding: 2px 6px; height: 36px; line-height: normal;"><i class="material-icons md-24">view_module</i></button>
+        <button type="button" class="btn" style="padding: 2px 6px; height: 36px; line-height: normal;"><i class="material-icons md-24">view_carousel</i></button>
+      </div>
+    </div>
+
+    <dl class="see">
+      <dd class="wide">
+        <div id="selected-files">
+          <% @items.each do |file| %>
+            <div class="file-view">
+              <% page = Cms::Page.in(file_ids: file.id).first %>
+              <% next if page.nil? %>
+              <%= link_to cms_page_path(id: page.id), class: :thumb, target: "_blank" do %>
+                <% if file.image? %>
+                  <%= image_tag file.thumb_url, alt: file.name %>
+                <% else %>
+                  <span class="ext icon-<%= file.extname %>"><%= file.extname %></span>
+                <% end %>
+              <% end %>
+
+              <div class="name">
+                <label>
+                  <%= file.name %><br/>
+                  <%= file.filename %>
+                </label><br/>
+              </div>
+              <%= link_to cms_page_path(id: page.id), target: "_blank" do %>
+              <span class="name">
+                <label>
+                  <%= page.name %><br/>
+                  <%= page.filename %>
+                </label><br/>
+              </span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </dd>
+    </dl>
+
+    <%= paginate @items %>
+  </div>
+</div>
