@@ -114,12 +114,17 @@ Rails.application.routes.draw do
     resources :public_notices, concerns: [:deletion, :copy]
     resources :sys_notices, only: [:index, :show]
 
-    resources :files, concerns: [:deletion, :template] do
-      get :view, on: :member
-      get :thumb, on: :member
-      get :download, on: :member
-      get :resize, on: :member
-      post :resize, on: :member
+    namespace "file" do
+      resources :shares, concerns: [:deletion, :template] do
+        get :view, on: :member
+        get :thumb, on: :member
+        get :download, on: :member
+        get :resize, on: :member
+        post :resize, on: :member
+      end
+      scope path: ':folder/:file_type/:view_mode' do
+        resources :managements, concerns: [:deletion]
+      end
     end
 
     resources :page_searches, concerns: :deletion do
@@ -143,7 +148,6 @@ Rails.application.routes.draw do
     get "search_contents/html" => "search_contents/html#index"
     post "search_contents/html" => "search_contents/html#update"
     match "search_contents/pages" => "search_contents/pages#index", via: [:get, :post]
-    match "search_contents/files" => "search_contents/files#index", via: [:get, :post]
     get "search_contents/:id" => "page_search_contents#show", as: "page_search_contents"
     delete "search_contents/pages" => "search_contents/pages#destroy_all"
     get "search_contents/:id/download" => "page_search_contents#download", as: "download_page_search_contents"

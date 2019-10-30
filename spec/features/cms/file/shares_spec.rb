@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe "cms_files", type: :feature, dbscope: :example, tmpdir: true do
+describe "cms_file_shares", type: :feature, dbscope: :example, tmpdir: true do
   let(:site) { cms_site }
   let(:item) { tmp_ss_file(contents: "#{Rails.root}/spec/fixtures/ss/logo.png", site: site, user: cms_user, model: 'cms/file') }
-  let(:index_path) { cms_files_path site.id }
-  let(:new_path) { new_cms_file_path site.id }
-  let(:show_path) { cms_file_path site.id, item }
-  let(:edit_path) { edit_cms_file_path site.id, item }
-  let(:delete_path) { delete_cms_file_path site.id, item }
+  let(:index_path) { cms_file_shares_path site.id }
+  let(:new_path) { new_cms_file_share_path site.id }
+  let(:show_path) { cms_file_share_path site.id, item }
+  let(:edit_path) { edit_cms_file_share_path site.id, item }
+  let(:delete_path) { delete_cms_file_share_path site.id, item }
 
   context "with auth" do
     before { login_cms_user }

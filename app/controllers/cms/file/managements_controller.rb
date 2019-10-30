@@ -1,4 +1,4 @@
-class Cms::SearchContents::FilesController < ApplicationController
+class Cms::File::ManagementsController < ApplicationController
   include Cms::BaseFilter
   include Cms::ApiFilter::Contents
   include SS::FileFilter

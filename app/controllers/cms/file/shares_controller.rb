@@ -1,4 +1,4 @@
-class Cms::FilesController < ApplicationController
+class Cms::File::SharesController < ApplicationController
   include Cms::BaseFilter
   include Cms::CrudFilter
   include SS::FileFilter

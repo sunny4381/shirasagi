@@ -23,7 +23,7 @@
 <% end %>
 
 <nav class="main-navi">
-  <h2><%= link_to "ファイル管理", cms_search_contents_files_path, class: "icon-conv" %></h2>
+  <h2><%= link_to "ファイル管理", cms_file_managements_path(folder: '-', file_type: '-', view_mode: '-'), class: "icon-conv" %></h2>
   <h2><%= link_to t("cms.search_contents"), cms_search_contents_pages_path, class: "icon-conv" %></h2>
   <h2><%= link_to t("cms.check_links"), cms_check_links_pages_path, class: "icon-conv" %></h2>
 
