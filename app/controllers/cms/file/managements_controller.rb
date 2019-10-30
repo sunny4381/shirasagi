@@ -1,5 +1,6 @@
 class Cms::File::ManagementsController < ApplicationController
   include Cms::BaseFilter
+  include Cms::CrudFilter
   include Cms::ApiFilter::Contents
   include SS::FileFilter
 
@@ -10,11 +11,16 @@ class Cms::File::ManagementsController < ApplicationController
   private
 
   def set_crumbs
-    @crumbs << [t("cms.search_contents_files"), action: :index]
+    @crumbs << ["ファイル管理", action: :index]
   end
 
   def fix_params
-    { cur_user: @cur_user, cur_site: @cur_site }
+    { cur_user: @cur_user }
+  end
+
+  def set_item
+    @item = @model.find(params[:id])
+    @item.attributes = fix_params
   end
 
   public
@@ -26,5 +32,13 @@ class Cms::File::ManagementsController < ApplicationController
       in(id: file_ids).
       order_by(filename: 1).
       page(params[:page]).per(50)
+  end
+
+  def show
+    render
+  end
+
+  def edit
+    render
   end
 end

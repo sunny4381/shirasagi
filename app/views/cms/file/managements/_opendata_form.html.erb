@@ -1,0 +1,159 @@
+<dl class="see mod-cms-opendata-dataset">
+  <dt>データセット
+    <div class="tooltip">?
+      <ul style="display: none;">
+        <li>ページをオープンデータとして登録するかどうかを選択します。<br></li>
+      </ul>
+    </div>
+  </dt>
+  <dd>
+    <ul>
+      <li>
+        <label>
+          <input type="radio" value="none" name="item[opendata_dataset_state]" id="item_opendata_dataset_state_none">
+          データセットとして登録しない
+        </label>
+      </li>
+      <li>
+        <label>
+          <input type="radio" value="public" name="item[opendata_dataset_state]" id="item_opendata_dataset_state_public">
+          データセット（公開）で登録する
+        </label>
+      </li>
+      <li>
+        <label>
+          <input type="radio" value="closed" name="item[opendata_dataset_state]" id="item_opendata_dataset_state_closed">
+          データセット（非公開）で登録する
+        </label>
+      </li>
+      <li>
+        <label>
+          <input type="radio" value="existance" checked="checked" name="item[opendata_dataset_state]" id="item_opendata_dataset_state_existance">
+          既存のデータセットに登録する
+          <input type="hidden" name="item[opendata_dataset_ids][]" id="item_opendata_dataset_ids_" value="" class="hidden-ids">
+          <a class="ajax-box cboxElement" href="/.s1/cms/apis/opendata_ref/datasets146?single=1">データセットを選択する</a>
+          <table class="index ajax-selected">
+            <thead>
+            <tr>
+              <th class="name">データセット</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-id="79">
+              <td><input type="hidden" name="item[opendata_dataset_ids][]" id="item_opendata_dataset_ids_" value="79">
+                サンプルデータ【1】
+              </td>
+              <td><a class="deselect btn" href="#">削除</a></td>
+            </tr>
+            </tbody>
+          </table>
+        </label>
+      </li>
+    </ul>
+  </dd>
+</dl>
+
+<dl class="see mod-cms-opendata-category category-form">
+  <dt>分野
+    <div class="tooltip">?
+      <ul style="display: none;">
+        <li>ページをオープンデータとして登録する際、どの分野を使用するかを設定します。<br></li>
+        <li>設定した分野がデータセットに設定されます。<br></li>
+      </ul>
+    </div>
+  </dt>
+  <dd>
+    <input type="hidden" name="item[opendata_category_ids][]" id="item_opendata_category_ids_" value="">
+    <div class="parent">
+      <label>
+        <input type="checkbox" name="item[opendata_category_ids][]" id="item_opendata_category_ids_287" value="287">
+        観光・文化・スポーツ
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_category_ids][]" id="item_opendata_category_ids_288" value="288">
+        健康・福祉
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_category_ids][]" id="item_opendata_category_ids_289" value="289" checked="checked">
+        子育て・教育
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_category_ids][]" id="item_opendata_category_ids_290" value="290">
+        くらし・手続き
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_category_ids][]" id="item_opendata_category_ids_291" value="291">
+        産業・仕事
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_category_ids][]" id="item_opendata_category_ids_292" value="292">
+        市政情報
+      </label>
+    </div>
+  </dd>
+</dl>
+
+<dl class="see mod-cms-opendata-area category-form">
+  <dt>地域
+    <div class="tooltip">?
+      <ul style="display: none;">
+        <li>ページをオープンデータとして登録する際、どの地域を使用するかを設定します。<br></li>
+        <li>設定した地域がデータセットに設定されます。<br></li>
+      </ul>
+    </div>
+  </dt>
+  <dd>
+    <input type="hidden" name="item[opendata_area_ids][]" id="item_opendata_area_ids_" value="">
+    <div class="parent">
+      <label>
+        <input type="checkbox" name="item[opendata_area_ids][]" id="item_opendata_area_ids_370" value="370">
+        シラサギ市
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_area_ids][]" id="item_opendata_area_ids_371" value="371" checked="checked">
+        東区
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_area_ids][]" id="item_opendata_area_ids_372" value="372">
+        北区
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_area_ids][]" id="item_opendata_area_ids_373" value="373">
+        南区
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_area_ids][]" id="item_opendata_area_ids_374" value="374">
+        西区
+      </label>
+    </div>
+  </dd>
+</dl>
+
+<dl class="see mod-cms-opendata-dataset-group category-form">
+  <dt>データセットグループ
+    <div class="tooltip">?
+      <ul style="display: none;">
+        <li>ページをオープンデータとして登録する際、どのデータセット・グループを使用するかを設定します。<br></li>
+        <li>設定したデータセット・グループがデータセットに設定されます。<br></li>
+      </ul>
+    </div>
+  </dt>
+  <dd>
+    <input type="hidden" name="item[opendata_dataset_group_ids][]" id="item_opendata_dataset_group_ids_" value="">
+    <div class="parent">
+      <label>
+        <input type="checkbox" name="item[opendata_dataset_group_ids][]" id="item_opendata_dataset_group_ids_1" value="1" checked="checked">
+        データセットグループ1
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_dataset_group_ids][]" id="item_opendata_dataset_group_ids_2" value="2">
+        データセットグループ2
+      </label>
+      <label>
+        <input type="checkbox" name="item[opendata_dataset_group_ids][]" id="item_opendata_dataset_group_ids_3" value="3">
+        データセットグループ3
+      </label>
+    </div>
+  </dd>
+</dl>

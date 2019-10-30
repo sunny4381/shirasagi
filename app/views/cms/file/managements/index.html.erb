@@ -180,9 +180,7 @@
         <div id="selected-files">
           <% @items.each do |file| %>
             <div class="file-view">
-              <% page = Cms::Page.in(file_ids: file.id).first %>
-              <% next if page.nil? %>
-              <%= link_to cms_page_path(id: page.id), class: :thumb, target: "_blank" do %>
+              <%= link_to({ action: :show, id: file.id }, class: :thumb) do %>
                 <% if file.image? %>
                   <%= image_tag file.thumb_url, alt: file.name %>
                 <% else %>
@@ -196,7 +194,9 @@
                   <%= file.filename %>
                 </label><br/>
               </div>
-              <%= link_to cms_page_path(id: page.id), target: "_blank" do %>
+              <% page = Cms::Page.in(file_ids: file.id).first %>
+              <% next if page.nil? %>
+              <%= link_to({ action: :show, id: file.id }) do %>
               <span class="name">
                 <label>
                   <%= page.name %><br/>

@@ -1,0 +1,21 @@
+<% addons = @addons || @item.try(:addons) || [] %>
+
+<div class="addon-views">
+  <%
+    addon_options = {}
+    addon_options[:id] = "addon-basic"
+    addon_options[:head] = @addon_basic_name || t("ss.basic_info") if addons.size > 0
+  %>
+  <% buf = render file: "_show", locals: { addon: addon_options } %>
+  <%= render "ss/crud/addon", addon: addon_options do %>
+    <%= buf %>
+  <% end %>
+  <%= render "ss/crud/addon", addon: { head: "オープンデータ", toggle: true } do %>
+    <%= render "opendata" %>
+  <% end %>
+  <%= render "ss/crud/addon", addon: { head: "変更履歴", toggle: true } do %>
+    <%= render "history" %>
+  <% end %>
+
+  <%= render file: "_addons_show", locals: { addons: addons } if addons.size > 0 %>
+</div>

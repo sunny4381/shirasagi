@@ -1,0 +1,22 @@
+<nav class="nav-menu">
+  <% if params[:action] =~ /index/ %>
+    <%= link_to t('ss.links.new'), { action: :new }, class: :new %>
+    <% download_url = url_for(action: :download_all) rescue (url_for(action: :download) rescue nil) %>
+    <% if download_url %>
+      <%= link_to(t('ss.links.download'), download_url, class: :download) %>
+    <% end %>
+    <%= link_to(t('ss.links.import'), { action: :import }, { class: :import }) rescue nil %>
+  <% elsif params[:action] =~ /new|create|lock|download|import/ %>
+    <%= link_to t('ss.links.back_to_index'), { action: :index }, class: "back-to-index" %>
+  <% elsif params[:action] =~ /edit|update|delete|move|command|contains_urls/ %>
+    <%= link_to t('ss.links.back_to_show'), { action: :show, id: @item }, class: "back-to-show" %>
+    <%= link_to t('ss.links.back_to_index'), { action: :index }, class: "back-to-index" %>
+  <% else %>
+    <%= link_to t('ss.links.edit'), { action: :edit, id: @item }, class: :edit %>
+    <%= link_to "ページを作成する", { action: :edit, id: @item }, class: :edit %>
+    <%= link_to(t('ss.links.copy'), { action: :copy, id: @item }, class: :copy) rescue nil %>
+    <%= link_to(t('ss.links.move'), { action: :move, id: @item }, class: :move) rescue nil %>
+    <%= link_to t('ss.links.delete'), { action: :delete, id: @item }, class: :delete %>
+    <%= link_to t('ss.links.back_to_index'), { action: :index }, class: "back-to-index" %>
+  <% end %>
+</nav>
