@@ -14,6 +14,7 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
 
   def prepare_archive
     @output_zip = SS::ZipCreator.new("sys-test-shot.zip", user)
+    @output_config = ::Tempfile.new("cfg", Rails.root.join("tmp").to_s)
     @output_meta = ::Tempfile.new("meta", Rails.root.join("tmp").to_s)
     @archived_items = 0
   end
@@ -22,6 +23,9 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
     each_page do |page|
       add_page_to_archive(page)
     end
+
+    @output_config.write(@config.to_json)
+    @output_config.write("\n")
   end
 
   def each_page
@@ -59,13 +63,19 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
   def finalize_archive
     return unless @output_zip
 
+    @output_config.flush
+    @output_config.rewind
+    @output_zip.create_entry(".config.json") do |f|
+      ::FileUtils.copy_stream(@output_config, f)
+    end
+    @output_config.close
+    @output_config.unlink
+
     @output_meta.flush
     @output_meta.rewind
-
     @output_zip.create_entry(".meta.json") do |f|
       ::FileUtils.copy_stream(@output_meta, f)
     end
-
     @output_meta.close
     @output_meta.unlink
 
