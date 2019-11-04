@@ -6,6 +6,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
+    "@claviska/jquery-minicolors": "^2.3.4",
     "jquery": "^1.12.4",
     "jquery-form": "^4.2.2",
     "jquery-ui-dist": "^1.12.1",
