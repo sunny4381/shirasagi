@@ -179,7 +179,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     file_path_thumb = @page.image_path(width: Sys::Test::Shot::Page::THUMBNAIL_SIZE)
 
     ::FileUtils.rm_f(tmp_path_thumb)
-    pid = spawn({}, "convert", file_path, "-resize", "240x", tmp_path_thumb, in: NULL_DEVICE, out: NULL_DEVICE, err: NULL_DEVICE)
+    pid = spawn({}, "convert", file_path, "-resize", "#{Sys::Test::Shot::Page::THUMBNAIL_SIZE}x", tmp_path_thumb, in: NULL_DEVICE, out: NULL_DEVICE, err: NULL_DEVICE)
     _, status = Process.waitpid2(pid)
     if status.exitstatus == 0 && ::File.exists?(tmp_path_thumb)
       ::FileUtils.mv(tmp_path_thumb, file_path_thumb, force: true)
