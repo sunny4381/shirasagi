@@ -511,6 +511,8 @@ GEM
       childprocess (>= 0.5, < 2.0)
       rubyzip (~> 1.2, >= 1.2.2)
     shellany (0.0.1)
+    simpacker (1.1.0)
+      railties (>= 4.2)
     simple_captcha2 (0.4.3)
       rails (>= 4.1)
     simple_oauth (0.3.1)
@@ -689,6 +691,7 @@ DEPENDENCIES
   scss_lint
   sdoc
   selenium-webdriver
+  simpacker
   simple_captcha2
   simplecov
   simplecov-csv

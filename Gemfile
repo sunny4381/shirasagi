@@ -28,6 +28,7 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'marked-rails'
 gem 'momentjs-rails'
+gem 'simpacker'
 
 # Additional
 gem 'browser'
