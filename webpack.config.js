@@ -1,5 +1,6 @@
 const path = require("path");
 const WebpackAssetsManifest = require("webpack-assets-manifest");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const glob = require("glob");
 
 const { NODE_ENV } = process.env;
@@ -43,8 +44,21 @@ module.exports = {
             presets: ["@babel/preset-env"]
           }
         }
+      },
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader"]
+      },
+      {
+        test: /\.scss$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
       }
     ]
   },
-  plugins: [new WebpackAssetsManifest({ publicPath: true, writeToDisk: true })]
+  plugins: [
+    new WebpackAssetsManifest({ publicPath: true, writeToDisk: true }),
+    new MiniCssExtractPlugin({
+      filename: isProd ? "[name]-[hash].css" : "[name].css"
+    })
+  ]
 };
