@@ -3,12 +3,17 @@
   "devDependencies": {
     "@babel/core": "^7.7.2",
     "@babel/preset-env": "^7.7.1",
+    "autoprefixer": "^9.7.1",
     "babel-loader": "^8.0.6",
+    "css-declaration-sorter": "^4.0.1",
     "css-loader": "^3.2.0",
+    "css-mqpacker": "^7.0.0",
     "fibers": "^4.0.2",
     "glob": "^7.1.6",
     "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.13.0",
+    "postcss-loader": "^3.0.0",
+    "postcss-preset-env": "^6.7.0",
     "sass": "^1.23.7",
     "sass-loader": "^8.0.0",
     "webpack": "^4.41.2",
@@ -23,5 +28,9 @@
     "jquery-form": "^4.2.2",
     "jquery-ui-dist": "^1.12.1",
     "jquery-ujs": "^1.2.2"
-  }
+  },
+  "browserslist": [
+    "last 2 version",
+    "ie >= 11"
+  ]
 }

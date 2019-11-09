@@ -6,6 +6,11 @@ const glob = require("glob");
 const { NODE_ENV } = process.env;
 const isProd = NODE_ENV === "production";
 
+// PostCSS Plugins
+const postcssPresetEnv = require("postcss-preset-env");
+const autoprefixer = require("autoprefixer");
+const cssDeclarationSorter = require("css-declaration-sorter");
+
 const entries = {};
 glob.sync("app/javascript/*.js").forEach(filePath => {
   const name = path.basename(filePath, path.extname(filePath));
@@ -53,11 +58,38 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          {
+            loader: "postcss-loader",
+            options: {
+              plugins: loader => [
+                postcssPresetEnv(),
+                autoprefixer(),
+                cssDeclarationSorter({ order: "smacss" })
+              ]
+            }
+          }
+        ]
       },
       {
         test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "sass-loader",
+          {
+            loader: "postcss-loader",
+            options: {
+              plugins: loader => [
+                postcssPresetEnv(),
+                autoprefixer(),
+                cssDeclarationSorter({ order: "smacss" })
+              ]
+            }
+          }
+        ]
       }
     ]
   },
