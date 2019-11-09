@@ -15,7 +15,10 @@
 </title>
 <%= safe_join controller.stylesheets.map { |path| stylesheet_link_tag(path, media: "all") }, "\n" %>
 <%= safe_join controller.javascripts.map { |path| javascript_include_tag(path) }, "\n" %>
-<%= javascript_pack_tag("application") %>
+<%= javascript_pack_tag("ss") %>
+<%= javascript_pack_tag("cms") %>
+<%= javascript_pack_tag("gws") %>
+<%= javascript_pack_tag("webmail") %>
 <!--[if lt IE 9]>
 <script src="/assets/js/html5.js"></script>
 <script src="/assets/js/selectivizr-min.js"></script>
