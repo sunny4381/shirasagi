@@ -14,6 +14,7 @@
   <% else %>
     <%= link_to t('ss.links.edit'), { action: :edit, id: @item }, class: :edit %>
     <%= link_to "ページを作成する", { action: :edit, id: @item }, class: :edit %>
+    <%= link_to "オープンデータを作成する", { action: :edit, id: @item }, class: :edit %>
     <%= link_to(t('ss.links.copy'), { action: :copy, id: @item }, class: :copy) rescue nil %>
     <%= link_to(t('ss.links.move'), { action: :move, id: @item }, class: :move) rescue nil %>
     <%= link_to t('ss.links.delete'), { action: :delete, id: @item }, class: :delete %>

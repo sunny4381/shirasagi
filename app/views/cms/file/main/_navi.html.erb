@@ -1,0 +1,9 @@
+<nav class="mod-navi">
+  <h2>ファイル管理</h2>
+  <h3><%= link_to "コンテンツファイル", cms_file_managements_path(folder: '-', file_type: '-', view_mode: '-') %></h3>
+  <h3><%= link_to t("cms.file"), cms_file_shares_path %></h3>
+  <h3><%= link_to "個人ファイル", sns_cur_user_files_path %></h3>
+  <h3><%= link_to "ゴミ箱", sns_cur_user_files_path %></h3>
+</nav>
+
+<%= render partial: "cms/main/navi" %>

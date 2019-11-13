@@ -159,6 +159,10 @@
 
 .cms-file-management {
   @include display-flex;
+
+  .position-relative {
+    position: relative;
+  }
 }
 
 .cms-file-management-navi {

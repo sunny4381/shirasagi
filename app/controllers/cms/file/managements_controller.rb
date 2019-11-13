@@ -6,7 +6,7 @@ class Cms::File::ManagementsController < ApplicationController
 
   model SS::File
 
-  navi_view "cms/main/navi"
+  navi_view "cms/file/main/navi"
 
   private
 
