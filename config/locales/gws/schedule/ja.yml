@@ -9,6 +9,7 @@ ja:
     search_times: 空き時間を検索
     navi:
       holiday: 休日設定
+      calendar: 外部カレンダー
       category: 種別設定
       todo: ToDo一覧
       trash: ゴミ箱
@@ -131,6 +132,17 @@ ja:
         repeat_base: 繰り返し基準
         wdays: 曜日
 
+    calendars:
+      header:
+        name: カレンダー種別
+        text: 説明
+      ics:
+        name: iCalendar (ICS)
+        text: iCalendar形式のカレンダーを取り込みます。
+      google:
+        name: Google カレンダー
+        text: Google カレンダーからカレンダーを取り込みます。
+
   gws/schedule/todo:
     active: 削除を取り消す
     disabled_items: 削除済み
@@ -216,9 +228,11 @@ ja:
       gws/schedule/todo/member: 担当者
       gws/schedule/todo/comment_post: コメント
       gws/schedule/todo/category: プロジェクト・工程
+      gws/schedule/ics_calendar: iCalendar (ICS)
 
   gws_role:
     edit_gws_schedule_holidays: 休日の管理
+    edit_gws_schedule_calendars: カレンダーの利用
     read_other_gws_schedule_plans: 予定の閲覧（全て）
     read_private_gws_schedule_plans: 予定の閲覧（所有）
     edit_other_gws_schedule_plans: 予定の編集（全て）
@@ -261,6 +275,7 @@ ja:
       gws/schedule/approval: 承認
       gws/schedule/todo_comment: ToDoコメント
       gws/schedule/todo_category: プロジェクト・工程
+      gws/schedule/calendar: カレンダー
     errors:
       models:
         gws/schedule/plan:
@@ -368,6 +383,11 @@ ja:
         depth_level: 深さ
         in_basename: プロジェクト・工程名
         in_parent_id: 親プロジェクト・工程名
+      gws/schedule/calendar:
+        name: 名前
+        description: 説明
+      gws/addon/schedule/ics_calendar:
+        ics_url: URL
 
   tooltip:
     gws/schedule/planable:
@@ -448,6 +468,17 @@ ja:
     gws/addon/schedule/attendance:
       attendance_check_state:
         - 出欠確認を有効にするかしないかを選択してください。
+
+    gws/schedule/calendar:
+      name:
+        - カレンダーの名前を入力します。
+      description:
+        - カレンダーの説明を入力します。
+
+    gws/addon/schedule/ics_calendar:
+      ics_url:
+        - iCalendar 形式のファイルを配信している URL を入力します。
+        - "例: https://demo.ss-proj.org/calendar/index.ics"
 
   gws_notification:
     gws/schedule/plan:

@@ -21,9 +21,12 @@
   <% if Gws::Schedule::Plan.allowed?(:use, @cur_user, site: @cur_site) %>
     <h3><%= link_to t('gws/schedule.tabs.search'), gws_schedule_search_path %></h3>
     <h3><%= link_to t('ss.links.import'), gws_schedule_csv_path %></h3>
-    <% if Gws::Schedule::Plan.allowed?(:trash, @cur_user, site: @cur_site) %>
-      <h3><%= link_to t('ss.links.trash'), gws_schedule_trashes_path, class: 'trash' %></h3>
-    <% end %>
+  <% end %>
+  <% if Gws::Schedule::Calendar.allowed?(:read, @cur_user, site: @cur_site) %>
+    <h3><%= link_to t('gws/schedule.navi.calendar'), gws_schedule_calendars_path %></h3>
+  <% end %>
+  <% if Gws::Schedule::Plan.allowed?(:trash, @cur_user, site: @cur_site) %>
+    <h3><%= link_to t('ss.links.trash'), gws_schedule_trashes_path, class: 'trash' %></h3>
   <% end %>
 
   <% if Gws::Schedule::Holiday.allowed?(:read, @cur_user, site: @cur_site) %>

@@ -50,6 +50,7 @@ Rails.application.routes.draw do
     resources :comments, path: ':plan_id/comments', only: [:create, :edit, :update, :destroy], concerns: :deletion
     resource :attendance, path: ':plan_id/:user_id/attendance', only: [:edit, :update]
     resource :approval, path: ':plan_id/:user_id/approval', only: [:edit, :update]
+    resources :calendars, concerns: [:deletion]
 
     namespace 'todo' do
       get '/' => redirect { |p, req| "#{req.path}/-/readables" }, as: :main
