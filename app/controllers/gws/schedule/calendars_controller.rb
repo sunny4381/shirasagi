@@ -53,4 +53,17 @@ class Gws::Schedule::CalendarsController < ApplicationController
     return render_create(false) unless @item.allowed?(:edit, @cur_user, site: @cur_site, strict: true)
     render_create @item.save
   end
+
+  def sync
+    set_item
+    raise "403" unless @item.allowed?(:edit, @cur_user, site: @cur_site)
+
+    if request.get?
+      render
+      return
+    end
+
+    Gws::Schedule::CalendarSyncJob.bind(site_id: @cur_site, user_id: @cur_user).perform_later(@item.id.to_s)
+    redirect_to({ action: :show }, { notice: t("gws/schedule.notice.start_calendar_synchronization") })
+  end
 end

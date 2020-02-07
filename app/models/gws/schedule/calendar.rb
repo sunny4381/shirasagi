@@ -37,8 +37,8 @@ class Gws::Schedule::Calendar
     end
 
     def calendar_models
-      CALENDARS.keys.map do |key|
-        calendar_model(key)
+      CALENDARS.keys.map do |type|
+        calendar_model(type)
       end
     end
 
@@ -61,6 +61,12 @@ class Gws::Schedule::Calendar
       self.addons.select do |addon|
         addon.type.nil? || addons.include?(addon.klass)
       end
+    end
+  end
+
+  def calendar_model_options
+    CALENDARS.keys.map do |type|
+      [ I18n.t("gws/schedule.calendars.#{type}.name"), type.to_s ]
     end
   end
 end

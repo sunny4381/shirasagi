@@ -95,6 +95,7 @@ ja:
       send_email: メールを作成する
       send_message: メッセージを作成する
       copy_email_address: メールアドレスをコピー
+      sync: 同期する
     buttons:
       save: 保存
       new: 新規作成
@@ -140,6 +141,7 @@ ja:
       close: 閉じる
       csv: CSV
       ignore_alerts_and_save: 警告を無視して保存する
+      sync: 同期
     confirm:
       delete: 削除してよろしいですか？
       soft_delete: 削除してよろしいですか？
@@ -160,6 +162,7 @@ ja:
       send: 送信してよろしいですか？
       publish: 公開してよろしいですか？
       depublish: 非公開にしてよろしいですか？
+      sync: 同期してよろしいですか？
     notice:
       saved: 保存しました。
       deleted: 削除しました。

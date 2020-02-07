@@ -143,6 +143,9 @@ ja:
         name: Google カレンダー
         text: Google カレンダーからカレンダーを取り込みます。
 
+    notice:
+      start_calendar_synchronization: カレンダーの同期を開始しました。
+
   gws/schedule/todo:
     active: 削除を取り消す
     disabled_items: 削除済み
@@ -384,6 +387,7 @@ ja:
         in_basename: プロジェクト・工程名
         in_parent_id: 親プロジェクト・工程名
       gws/schedule/calendar:
+        calendar_model: カレンダー種別
         name: 名前
         description: 説明
       gws/addon/schedule/ics_calendar:
@@ -591,3 +595,4 @@ ja:
     models:
       gws/schedule/trash_purge_job: 予定ゴミ箱の掃除
       gws/schedule/todo_trash_purge_job: ToDoゴミ箱の掃除
+      gws/schedule/calendar_sync_job: カレンダーの同期
