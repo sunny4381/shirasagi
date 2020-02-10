@@ -8,6 +8,9 @@ module Gws::Schedule::Planable
     # 状態
     field :state, type: String, default: 'public'
 
+    # UUID
+    field :uuid, type: String
+
     # 名称
     field :name, type: String
 
@@ -25,6 +28,7 @@ module Gws::Schedule::Planable
     permit_params :api, :api_start, :api_end, :category_id
     permit_params :state, :name, :start_on, :end_on, :start_at, :end_at, :allday
 
+    before_validation :set_uuid
     before_validation :set_from_drop_time_api, if: -> { api == 'drop' && api_start.index('T') }
     before_validation :set_from_drop_date_api, if: -> { api == 'drop' && !api_start.index('T') }
     before_validation :set_from_resize_time_api, if: -> { api == 'resize' && api_start.index('T') }
@@ -32,6 +36,7 @@ module Gws::Schedule::Planable
     before_validation :set_dates_on
     before_validation :set_datetimes_at
 
+    validates :uuid, presence: true
     validates :name, presence: true, length: { maximum: 80 }
     validates :start_at, presence: true, datetime: true
     validates :end_at, presence: true, datetime: true
@@ -88,6 +93,10 @@ module Gws::Schedule::Planable
   end
 
   private
+
+  def set_uuid
+    self.uuid ||= SecureRandom.uuid
+  end
 
   # API / Mode: month, week, day
   # - 時間予定(複数日)を別の日に移動
