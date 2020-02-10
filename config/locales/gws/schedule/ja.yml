@@ -390,6 +390,7 @@ ja:
         calendar_model: カレンダー種別
         name: 名前
         description: 説明
+        color: 表示色
       gws/addon/schedule/ics_calendar:
         ics_url: URL
 
@@ -478,6 +479,10 @@ ja:
         - カレンダーの名前を入力します。
       description:
         - カレンダーの説明を入力します。
+      color:
+        - 表示色を入力します。
+        -
+        - 表示色は "#RRGGBB" 形式で入力します（RR, GG, BB はそれぞれ赤、緑、青の成分を16進数で入力）。
 
     gws/addon/schedule/ics_calendar:
       ics_url:

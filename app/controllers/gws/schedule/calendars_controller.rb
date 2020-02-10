@@ -19,6 +19,10 @@ class Gws::Schedule::CalendarsController < ApplicationController
     { cur_site: @cur_site, cur_user: @cur_user }
   end
 
+  def pre_params
+    { color: SS::RandomColor.random_rgb.to_s }
+  end
+
   def new_item
     if request.get?
       # new

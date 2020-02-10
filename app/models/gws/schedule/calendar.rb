@@ -2,6 +2,7 @@ class Gws::Schedule::Calendar
   include SS::Document
   include Gws::Reference::User
   include Gws::Reference::Site
+  include Gws::Schedule::Colorize
   include Gws::Addon::Schedule::IcsCalendar
   include Gws::Addon::Schedule::GoogleCalendar
   include Gws::Addon::Member
@@ -18,8 +19,9 @@ class Gws::Schedule::Calendar
   field :name, type: String
   field :description, type: String
   field :calendar_model, type: String
+  field :color, type: String
 
-  permit_params :name, :description, :calendar_model
+  permit_params :name, :description, :calendar_model, :color
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :description, length: { maximum: 400 }

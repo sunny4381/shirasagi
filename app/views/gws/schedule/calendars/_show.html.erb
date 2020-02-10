@@ -7,4 +7,9 @@
 
   <dt><%= @model.t :description %></dt>
   <dd><%= @item.description %></dd>
+
+  <% if @item.color.present? %>
+    <dt><%= @model.t :color %></dt>
+    <dd><span class="gws-category-label" style="<%= category_label_css(@item) %>"><%= @item.name %></span></dd>
+  <% end %>
 </dl>
