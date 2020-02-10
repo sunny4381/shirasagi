@@ -113,4 +113,18 @@ class SS::RandomColor
       yield self.next
     end
   end
+
+  class << self
+    def default_generator
+      @default_generator ||= SS::RandomColor.new
+    end
+
+    def random_hsl
+      default_generator.next
+    end
+
+    def random_rgb
+      random_hsl.to_rgb
+    end
+  end
 end
