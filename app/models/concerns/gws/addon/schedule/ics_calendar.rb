@@ -6,7 +6,8 @@ module Gws::Addon::Schedule::IcsCalendar
 
   included do
     field :ics_url, type: String
-    permit_params :ics_url
+    field :ics_time_zone, type: String
+    permit_params :ics_url, :ics_time_zone
     validates :ics_url, url: { scheme: %w(http https) }
     validates :ics_url, presence: true, if: -> { calendar_model == "ics" }
   end
