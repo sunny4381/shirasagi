@@ -139,6 +139,9 @@ ja:
       ics:
         name: iCalendar (ICS)
         text: iCalendar形式のカレンダーを取り込みます。
+      cal_dav:
+        name: CalDAV
+        text: CalDAV カレンダーからカレンダーを取り込みます。
       google:
         name: Google カレンダー
         text: Google カレンダーからカレンダーを取り込みます。
@@ -232,6 +235,7 @@ ja:
       gws/schedule/todo/comment_post: コメント
       gws/schedule/todo/category: プロジェクト・工程
       gws/schedule/ics_calendar: iCalendar (ICS)
+      gws/schedule/cal_dav_calendar: CalDAV
 
   gws_role:
     edit_gws_schedule_holidays: 休日の管理
@@ -393,6 +397,10 @@ ja:
         color: 表示色
       gws/addon/schedule/ics_calendar:
         ics_url: URL
+      gws/addon/schedule/cal_dav_calendar:
+        cal_dav_url: URL
+        cal_dav_username: ユーザーID
+        cal_dav_password: パスワード
 
   tooltip:
     gws/schedule/planable:
@@ -488,6 +496,15 @@ ja:
       ics_url:
         - iCalendar 形式のファイルを配信している URL を入力します。
         - "例: https://demo.ss-proj.org/calendar/index.ics"
+
+    gws/addon/schedule/cal_dav_calendar:
+      cal_dav_url:
+        - CalDAV プロトコルをサポートしているカレンダーの URL を入力します。
+        - "例: https://caldav.calendar.yahoo.co.jp/"
+      cal_dav_username:
+        - カレンダーへログインする際に必要なユーザーIDを入力します。
+      cal_dav_password:
+        - カレンダーへログインする際に必要なパスワードを入力します。
 
   gws_notification:
     gws/schedule/plan:

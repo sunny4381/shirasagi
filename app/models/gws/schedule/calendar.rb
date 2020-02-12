@@ -4,6 +4,7 @@ class Gws::Schedule::Calendar
   include Gws::Reference::Site
   include Gws::Schedule::Colorize
   include Gws::Addon::Schedule::IcsCalendar
+  include Gws::Addon::Schedule::CalDavCalendar
   include Gws::Addon::Schedule::GoogleCalendar
   include Gws::Addon::Member
   include Gws::SitePermission
@@ -13,6 +14,7 @@ class Gws::Schedule::Calendar
 
   CALENDARS = {
     ics: { addons: [ Gws::Addon::Schedule::IcsCalendar ].freeze }.freeze,
+    cal_dav: { addons: [ Gws::Addon::Schedule::CalDavCalendar ].freeze }.freeze,
     google: { addons: [ Gws::Addon::Schedule::GoogleCalendar ].freeze }.freeze
   }.freeze
 

@@ -1,4 +1,7 @@
 class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
+
+  before_perform :ensure_cal_dav_methods
+
   def perform(*args)
     @options = args.extract_options!
     @imported_uuids = []
@@ -15,12 +18,19 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
 
   private
 
+  def ensure_cal_dav_methods
+    Faraday::Connection::METHODS << :propfind if !Faraday::Connection::METHODS.include?(:propfind)
+    Faraday::Connection::METHODS << :proppatch if !Faraday::Connection::METHODS.include?(:proppatch)
+  end
+
   def sync(calendar)
     Rails.logger.info("#{calendar.name}(#{calendar.id}): start synchronizing ...")
 
     case calendar.calendar_model
     when "ics"
       sync_ics(calendar)
+    when "cal_dav"
+      sync_cal_dav(calendar)
     when "google"
       sync_google(calendar)
     end
@@ -30,14 +40,18 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
     Rails.logger.warn("#{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
   end
 
-  def sync_ics(calendar)
-    http_client = Faraday.new(url: calendar.ics_url) do |builder|
+  def create_http_client(url)
+    http_client = Faraday.new(url: url) do |builder|
       builder.request  :url_encoded
       builder.response :logger, Rails.logger
       builder.adapter Faraday.default_adapter
     end
     http_client.headers[:user_agent] += " (SHIRASAGI/#{SS.version}; PID/#{Process.pid})"
+    http_client
+  end
 
+  def sync_ics(calendar)
+    http_client = create_http_client(calendar.ics_url)
     response = http_client.get
     unless response.success?
       Rails.logger.warn("#{calendar.name}(#{calendar.id}): failed to download ics file from '#{calendar.ics_url}'")
@@ -56,6 +70,131 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
         end
       end
     end
+  end
+
+  def sync_cal_dav(calendar)
+    if calendar.cal_dav_cache_principal_url.blank?
+      get_current_user_principal(calendar)
+    end
+    if calendar.cal_dav_cache_principal_url.blank?
+      Rails.logger.warn("#{calendar.name}(#{calendar.id}): unable to determine calendar's principal url")
+      return
+    end
+
+    get_calendar_collection(calendar)
+
+    raise NotImplementedError
+  end
+
+  def get_current_user_principal(calendar)
+    paths = [
+      "/.well-known/caldav", "/", "/caldav/v2", "/principals/users/#{calendar.cal_dav_username}/",
+      "/principals/", "/dav/principals/"
+    ]
+
+    response = nil
+    paths.each do |path|
+      url = URI.join(calendar.cal_dav_url, path).to_s
+      response = _current_user_principal(calendar, url)
+      break if response.success?
+    end
+
+    return false if !response.success?
+
+    doc = REXML::Document.new(response.body)
+    if doc.elements["//D:current-user-principal/D:href"].length > 0
+      path = doc.elements["//D:current-user-principal/D:href"].text
+      calendar.cal_dav_cache_principal_url = URI.join(calendar.cal_dav_url, path).to_s
+    elsif doc.elements["//D:principal-URL/D:href"].length > 0
+      path = doc.elements["//D:principal-URL/D:href"].text
+      calendar.cal_dav_cache_principal_url = URI.join(calendar.cal_dav_url, path).to_s
+    end
+
+    resource_types = []
+    doc.elements["//D:resourcetype"].each do |node|
+      next if node.node_type != :element
+
+      resource_types << node.namespace + node.name
+    end
+    calendar.cal_dav_cache_resource_types = resource_types.uniq.sort
+    calendar.cal_dav_cache_refreshed_at = Time.zone.now
+    calendar.save
+  end
+
+  def _current_user_principal(calendar, url)
+    # current_user_principal_xml = <<-PRINCIPAL_XML
+    # <?xml version="1.0" encoding="utf-8" ?>
+    # <D:propfind xmlns:D="DAV:">
+    #   <D:prop>
+    #     <D:current-user-principal/>
+    #     <D:principal-URL/>
+    #     <D:resourcetype/>
+    #   </D:prop>
+    # </D:propfind>
+    # PRINCIPAL_XML
+    current_user_principal_xml = <<PRINCIPAL_XML
+<?xml version="1.0" encoding="UTF-8"?>
+<A:propfind xmlns:A="DAV:">
+  <A:prop>
+    <A:current-user-principal/>
+    <A:principal-URL/>
+    <A:resourcetype/>
+  </A:prop>
+</A:propfind>
+PRINCIPAL_XML
+
+    http_client = create_http_client(url)
+    response = http_client.run_request(:propfind, nil, current_user_principal_xml, nil) do |request|
+      request.headers["Content-Type"] = "text/xml"
+      request.headers["Depth"] = "0"
+      request.headers["Brief"] = "t"
+      request.headers["Accept"] = "*/*"
+    end
+
+    if response.status == 401 && basic_auth?(response)
+      # Basic 認証
+      credential = Base64.strict_encode64([ calendar.cal_dav_username, SS::Crypt.decrypt(calendar.cal_dav_password) ].join(":"))
+      response = http_client.run_request(:propfind, nil, current_user_principal_xml, nil) do |request|
+        request.headers["Content-Type"] = "text/xml; charset=utf-8"
+        request.headers["Depth"] = "0"
+        request.headers["Brief"] = "t"
+        request.headers["Accept"] = "*/*"
+        request.headers["Authorization"] = "Basic #{credential}"
+      end
+    end
+
+    response
+  end
+
+  def get_calendar_collection(calendar)
+    allprop_xml = <<PROPNAME_XML
+<?xml version="1.0" encoding="UTF-8"?>
+<A:propfind xmlns:A="DAV:">
+  <A:allprop/>
+</A:propfind>
+PROPNAME_XML
+    http_client = create_http_client(calendar.cal_dav_cache_principal_url)
+    response = http_client.run_request(:propfind, nil, allprop_xml, nil) do |request|
+      request.headers["Content-Type"] = "text/xml"
+      request.headers["Depth"] = "1"
+      request.headers["Brief"] = "t"
+      request.headers["Accept"] = "*/*"
+    end
+
+    if response.status == 401 && basic_auth?(response)
+      # Basic 認証
+      credential = Base64.strict_encode64([ calendar.cal_dav_username, SS::Crypt.decrypt(calendar.cal_dav_password) ].join(":"))
+      response = http_client.run_request(:propfind, nil, allprop_xml, nil) do |request|
+        request.headers["Content-Type"] = "text/xml"
+        request.headers["Depth"] = "1"
+        request.headers["Brief"] = "t"
+        request.headers["Accept"] = "*/*"
+        request.headers["Authorization"] = "Basic #{credential}"
+      end
+    end
+
+    puts "status=#{response.status}, body=#{response.body}"
+    response
   end
 
   def sync_google(calendar)
@@ -182,5 +321,12 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
       next if s == dates[0].split(/ /)[i]
       return [dates[0], dates[1].split(/ /)[i..-1].join(' ')].join(' - ')
     end
+  end
+
+  def basic_auth?(response)
+    www_authenticate = response.headers["www-authenticate"]
+    return false if www_authenticate.blank?
+
+    www_authenticate.include?("Basic realm")
   end
 end
