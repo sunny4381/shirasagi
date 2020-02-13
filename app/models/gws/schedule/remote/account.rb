@@ -21,6 +21,9 @@ class Gws::Schedule::Remote::Account
   field :description, type: String
   field :calendar_model, type: String
 
+  has_many :calendars, class_name: "Gws::Schedule::Remote::Calendar", dependent: :destroy, inverse_of: :account,
+           order: { order: 1, created: 1 }
+
   permit_params :name, :description, :calendar_model
 
   validates :name, presence: true, length: { maximum: 80 }

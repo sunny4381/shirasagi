@@ -4,14 +4,16 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
 
   def perform(*args)
     @options = args.extract_options!
-    @imported_uuids = []
+    @imported_calendars = []
+    @imported_events = []
 
-    Gws::Schedule::Calendar.site(site).in(id: args).to_a.each do |calendar|
-      @imported_uuids.clear
+    Gws::Schedule::Remote::Account.site(site).in(id: args).to_a.each do |account|
+      @imported_calendars.clear
+      @imported_events.clear
 
-      sync(calendar)
+      sync_account(account)
 
-      count = Gws::Schedule::Plan.site(site).calendar(calendar).nin(uuid: @imported_uuids).destroy_all
+      count = Gws::Schedule::Plan.site(site).in(calendar_id: @imported_calendars).nin(uuid: @imported_events).destroy_all
       Rails.logger.info("#{calendar.name}(#{calendar.id}): delete non-related #{count} plans") if count > 0
     end
   end
@@ -21,24 +23,99 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
   def ensure_cal_dav_methods
     Faraday::Connection::METHODS << :propfind if !Faraday::Connection::METHODS.include?(:propfind)
     Faraday::Connection::METHODS << :proppatch if !Faraday::Connection::METHODS.include?(:proppatch)
+    Faraday::Connection::METHODS << :report if !Faraday::Connection::METHODS.include?(:report)
   end
 
-  def sync(calendar)
-    Rails.logger.info("#{calendar.name}(#{calendar.id}): start synchronizing ...")
+  def sync_account(account)
+    Rails.logger.info("#{account.name}(#{account.id}): start synchronizing ...")
 
-    case calendar.calendar_model
+    case account.calendar_model
     when "ics"
-      sync_ics(calendar)
+      sync_account_ics(account)
     when "cal_dav"
-      sync_cal_dav(calendar)
+      sync_account_cal_dav(account)
     when "google"
-      sync_google(calendar)
+      sync_account_google(account)
     end
 
-    Rails.logger.info("#{calendar.name}(#{calendar.id}): imported #{@imported_uuids.length.to_s(:delimited)} events")
+    Rails.logger.info("#{account.name}(#{account.id}): imported #{@imported_events.length.to_s(:delimited)} events")
   rescue => e
     Rails.logger.warn("#{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
   end
+
+  def sync_account_google(account)
+    accessor = Gws::Schedule::Remote::GoogleCalendar.new(
+      cur_site: site, cur_user: user, access_token: account.google_access_token, refresh_token: account.google_refresh_token
+    )
+
+    calendar_settings = accessor.calendar_collection(account.google_calendar_home_set)
+    calendar_settings.reject! { |calendar_setting| calendar_setting[:url].blank? }
+    calendar_settings.reject! { |calendar_setting| calendar_setting[:display_name].blank? }
+    calendar_settings.reject! { |calendar_setting| calendar_setting[:calendar_components].blank? }
+    calendar_settings.select! { |calendar_setting| calendar_setting[:calendar_components].include?("VEVENT") }
+    calendar_settings.each do |calendar_setting|
+      calendar = account.calendars.where(google_calender_url: calendar_setting[:url]).first_or_initialize do |calendar|
+        calendar.name = calendar_setting[:display_name]
+        calendar.description = calendar_setting[:calendar_description] if calendar_setting[:calendar_description].present?
+        calendar.order = calendar_setting[:calendar_order].to_i if calendar_setting[:calendar_order].numeric?
+        calendar.color = calendar_setting[:calendar_color] if calendar_setting[:calendar_color].present?
+        calendar.privileges = calendar_setting[:privileges] if calendar_setting[:privileges].present?
+      end
+      calendar.cur_site = site
+      calendar.cur_user = user
+      if calendar.new_record?
+        if !calendar.save
+          Rails.logger.warn(calendar.errors.full_messages.join("\n"))
+          next
+        end
+      end
+
+      sync_calendar_google(accessor, account, calendar)
+      @imported_calendars << calendar.id
+    end
+  ensure
+    account.update(google_access_token: accessor.access_token) if account.google_access_token != accessor.access_token
+  end
+
+  def sync_calendar_google(accessor, account, calendar)
+    event_settings = accessor.query_events(calendar.google_calender_url)
+    event_settings.each do |event_setting|
+      calendar_data = event_setting[:calendar_data]
+      next if calendar_data.blank?
+
+      ics_calendars = Icalendar::Calendar.parse(calendar_data) rescue nil
+      next if ics_calendars.blank?
+
+      ics_calendars.each do |ics_calendar|
+        time_zone = extract_time_zone(calendar, ics_calendar)
+
+        ics_calendar.events.each do |ics_event|
+          plan = import_ics_event(calendar, ics_event, time_zone, event_setting[:etag])
+          if plan
+            @imported_events << plan.uuid
+            Rails.logger.info("imported #{plan.name}(#{plan.id}) in #{term(plan)}")
+          end
+        end
+      end
+    end
+  end
+
+  # def sync(calendar)
+  #   Rails.logger.info("#{calendar.name}(#{calendar.id}): start synchronizing ...")
+  #
+  #   case calendar.calendar_model
+  #   when "ics"
+  #     sync_ics(calendar)
+  #   when "cal_dav"
+  #     sync_cal_dav(calendar)
+  #   when "google"
+  #     sync_google(calendar)
+  #   end
+  #
+  #   Rails.logger.info("#{calendar.name}(#{calendar.id}): imported #{@imported_events.length.to_s(:delimited)} events")
+  # rescue => e
+  #   Rails.logger.warn("#{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
+  # end
 
   def create_http_client(url)
     http_client = Faraday.new(url: url) do |builder|
@@ -50,159 +127,150 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
     http_client
   end
 
-  def sync_ics(calendar)
-    http_client = create_http_client(calendar.ics_url)
-    response = http_client.get
-    unless response.success?
-      Rails.logger.warn("#{calendar.name}(#{calendar.id}): failed to download ics file from '#{calendar.ics_url}'")
-      return
-    end
+  # def sync_ics(calendar)
+  #   http_client = create_http_client(calendar.ics_url)
+  #   response = http_client.get
+  #   unless response.success?
+  #     Rails.logger.warn("#{calendar.name}(#{calendar.id}): failed to download ics file from '#{calendar.ics_url}'")
+  #     return
+  #   end
+  #
+  #   ics_calendars = Icalendar::Calendar.parse(response.body)
+  #   ics_calendars.each do |ics_calendar|
+  #     time_zone = extract_time_zone(calendar, ics_calendar)
+  #
+  #     ics_calendar.events.each do |ics_event|
+  #       plan = import_ics_event(calendar, ics_event, time_zone)
+  #       if plan
+  #         @imported_events << plan.uuid
+  #         Rails.logger.info("imported #{plan.name}(#{plan.id}) in #{term(plan)}")
+  #       end
+  #     end
+  #   end
+  # end
+  #
+  # def sync_cal_dav(calendar)
+  #   if calendar.cal_dav_cache_principal_url.blank?
+  #     get_current_user_principal(calendar)
+  #   end
+  #   if calendar.cal_dav_cache_principal_url.blank?
+  #     Rails.logger.warn("#{calendar.name}(#{calendar.id}): unable to determine calendar's principal url")
+  #     return
+  #   end
+  #
+  #   get_calendar_collection(calendar)
+  #
+  #   raise NotImplementedError
+  # end
 
-    ics_calendars = Icalendar::Calendar.parse(response.body)
-    ics_calendars.each do |ics_calendar|
-      time_zone = extract_time_zone(calendar, ics_calendar)
+  # def get_current_user_principal(calendar)
+  #   paths = [
+  #     "/.well-known/caldav", "/", "/caldav/v2", "/principals/users/#{calendar.cal_dav_username}/",
+  #     "/principals/", "/dav/principals/"
+  #   ]
+  #
+  #   response = nil
+  #   paths.each do |path|
+  #     url = URI.join(calendar.cal_dav_url, path).to_s
+  #     response = _current_user_principal(calendar, url)
+  #     break if response.success?
+  #   end
+  #
+  #   return false if !response.success?
+  #
+  #   doc = REXML::Document.new(response.body)
+  #   if doc.elements["//D:current-user-principal/D:href"].length > 0
+  #     path = doc.elements["//D:current-user-principal/D:href"].text
+  #     calendar.cal_dav_cache_principal_url = URI.join(calendar.cal_dav_url, path).to_s
+  #   elsif doc.elements["//D:principal-URL/D:href"].length > 0
+  #     path = doc.elements["//D:principal-URL/D:href"].text
+  #     calendar.cal_dav_cache_principal_url = URI.join(calendar.cal_dav_url, path).to_s
+  #   end
+  #
+  #   resource_types = []
+  #   doc.elements["//D:resourcetype"].each do |node|
+  #     next if node.node_type != :element
+  #
+  #     resource_types << node.namespace + node.name
+  #   end
+  #   calendar.cal_dav_cache_resource_types = resource_types.uniq.sort
+  #   calendar.cal_dav_cache_refreshed_at = Time.zone.now
+  #   calendar.save
+  # end
 
-      ics_calendar.events.each do |ics_event|
-        plan = import_ics_event(calendar, ics_event, time_zone)
-        if plan
-          @imported_uuids << plan.uuid
-          Rails.logger.info("imported #{plan.name}(#{plan.id}) in #{term(plan)}")
-        end
-      end
-    end
-  end
+  # def _current_user_principal(calendar, url)
+  #   current_user_principal_xml = <<~PRINCIPAL_XML
+  #     <?xml version="1.0" encoding="UTF-8"?>
+  #     <A:propfind xmlns:A="DAV:">
+  #       <A:prop>
+  #         <A:current-user-principal/>
+  #         <A:principal-URL/>
+  #         <A:resourcetype/>
+  #       </A:prop>
+  #     </A:propfind>
+  #   PRINCIPAL_XML
+  #
+  #   http_client = create_http_client(url)
+  #   response = http_client.run_request(:propfind, nil, current_user_principal_xml, nil) do |request|
+  #     request.headers["Content-Type"] = "text/xml"
+  #     request.headers["Depth"] = "0"
+  #     request.headers["Brief"] = "t"
+  #     request.headers["Accept"] = "*/*"
+  #   end
+  #
+  #   if response.status == 401 && basic_auth?(response)
+  #     # Basic 認証
+  #     credential = Base64.strict_encode64([ calendar.cal_dav_username, SS::Crypt.decrypt(calendar.cal_dav_password) ].join(":"))
+  #     response = http_client.run_request(:propfind, nil, current_user_principal_xml, nil) do |request|
+  #       request.headers["Content-Type"] = "text/xml; charset=utf-8"
+  #       request.headers["Depth"] = "0"
+  #       request.headers["Brief"] = "t"
+  #       request.headers["Accept"] = "*/*"
+  #       request.headers["Authorization"] = "Basic #{credential}"
+  #     end
+  #   end
+  #
+  #   response
+  # end
 
-  def sync_cal_dav(calendar)
-    if calendar.cal_dav_cache_principal_url.blank?
-      get_current_user_principal(calendar)
-    end
-    if calendar.cal_dav_cache_principal_url.blank?
-      Rails.logger.warn("#{calendar.name}(#{calendar.id}): unable to determine calendar's principal url")
-      return
-    end
+  # def get_calendar_collection(calendar)
+  #   allprop_xml = <<~PROPNAME_XML
+  #     <?xml version="1.0" encoding="UTF-8"?>
+  #     <A:propfind xmlns:A="DAV:">
+  #       <A:allprop/>
+  #     </A:propfind>
+  #   PROPNAME_XML
+  #   http_client = create_http_client(calendar.cal_dav_cache_principal_url)
+  #   response = http_client.run_request(:propfind, nil, allprop_xml, nil) do |request|
+  #     request.headers["Content-Type"] = "text/xml"
+  #     request.headers["Depth"] = "1"
+  #     request.headers["Brief"] = "t"
+  #     request.headers["Accept"] = "*/*"
+  #   end
+  #
+  #   if response.status == 401 && basic_auth?(response)
+  #     # Basic 認証
+  #     credential = Base64.strict_encode64([ calendar.cal_dav_username, SS::Crypt.decrypt(calendar.cal_dav_password) ].join(":"))
+  #     response = http_client.run_request(:propfind, nil, allprop_xml, nil) do |request|
+  #       request.headers["Content-Type"] = "text/xml"
+  #       request.headers["Depth"] = "1"
+  #       request.headers["Brief"] = "t"
+  #       request.headers["Accept"] = "*/*"
+  #       request.headers["Authorization"] = "Basic #{credential}"
+  #     end
+  #   end
+  #
+  #   puts "status=#{response.status}, body=#{response.body}"
+  #   response
+  # end
 
-    get_calendar_collection(calendar)
-
-    raise NotImplementedError
-  end
-
-  def get_current_user_principal(calendar)
-    paths = [
-      "/.well-known/caldav", "/", "/caldav/v2", "/principals/users/#{calendar.cal_dav_username}/",
-      "/principals/", "/dav/principals/"
-    ]
-
-    response = nil
-    paths.each do |path|
-      url = URI.join(calendar.cal_dav_url, path).to_s
-      response = _current_user_principal(calendar, url)
-      break if response.success?
-    end
-
-    return false if !response.success?
-
-    doc = REXML::Document.new(response.body)
-    if doc.elements["//D:current-user-principal/D:href"].length > 0
-      path = doc.elements["//D:current-user-principal/D:href"].text
-      calendar.cal_dav_cache_principal_url = URI.join(calendar.cal_dav_url, path).to_s
-    elsif doc.elements["//D:principal-URL/D:href"].length > 0
-      path = doc.elements["//D:principal-URL/D:href"].text
-      calendar.cal_dav_cache_principal_url = URI.join(calendar.cal_dav_url, path).to_s
-    end
-
-    resource_types = []
-    doc.elements["//D:resourcetype"].each do |node|
-      next if node.node_type != :element
-
-      resource_types << node.namespace + node.name
-    end
-    calendar.cal_dav_cache_resource_types = resource_types.uniq.sort
-    calendar.cal_dav_cache_refreshed_at = Time.zone.now
-    calendar.save
-  end
-
-  def _current_user_principal(calendar, url)
-    # current_user_principal_xml = <<-PRINCIPAL_XML
-    # <?xml version="1.0" encoding="utf-8" ?>
-    # <D:propfind xmlns:D="DAV:">
-    #   <D:prop>
-    #     <D:current-user-principal/>
-    #     <D:principal-URL/>
-    #     <D:resourcetype/>
-    #   </D:prop>
-    # </D:propfind>
-    # PRINCIPAL_XML
-    current_user_principal_xml = <<PRINCIPAL_XML
-<?xml version="1.0" encoding="UTF-8"?>
-<A:propfind xmlns:A="DAV:">
-  <A:prop>
-    <A:current-user-principal/>
-    <A:principal-URL/>
-    <A:resourcetype/>
-  </A:prop>
-</A:propfind>
-PRINCIPAL_XML
-
-    http_client = create_http_client(url)
-    response = http_client.run_request(:propfind, nil, current_user_principal_xml, nil) do |request|
-      request.headers["Content-Type"] = "text/xml"
-      request.headers["Depth"] = "0"
-      request.headers["Brief"] = "t"
-      request.headers["Accept"] = "*/*"
-    end
-
-    if response.status == 401 && basic_auth?(response)
-      # Basic 認証
-      credential = Base64.strict_encode64([ calendar.cal_dav_username, SS::Crypt.decrypt(calendar.cal_dav_password) ].join(":"))
-      response = http_client.run_request(:propfind, nil, current_user_principal_xml, nil) do |request|
-        request.headers["Content-Type"] = "text/xml; charset=utf-8"
-        request.headers["Depth"] = "0"
-        request.headers["Brief"] = "t"
-        request.headers["Accept"] = "*/*"
-        request.headers["Authorization"] = "Basic #{credential}"
-      end
-    end
-
-    response
-  end
-
-  def get_calendar_collection(calendar)
-    allprop_xml = <<PROPNAME_XML
-<?xml version="1.0" encoding="UTF-8"?>
-<A:propfind xmlns:A="DAV:">
-  <A:allprop/>
-</A:propfind>
-PROPNAME_XML
-    http_client = create_http_client(calendar.cal_dav_cache_principal_url)
-    response = http_client.run_request(:propfind, nil, allprop_xml, nil) do |request|
-      request.headers["Content-Type"] = "text/xml"
-      request.headers["Depth"] = "1"
-      request.headers["Brief"] = "t"
-      request.headers["Accept"] = "*/*"
-    end
-
-    if response.status == 401 && basic_auth?(response)
-      # Basic 認証
-      credential = Base64.strict_encode64([ calendar.cal_dav_username, SS::Crypt.decrypt(calendar.cal_dav_password) ].join(":"))
-      response = http_client.run_request(:propfind, nil, allprop_xml, nil) do |request|
-        request.headers["Content-Type"] = "text/xml"
-        request.headers["Depth"] = "1"
-        request.headers["Brief"] = "t"
-        request.headers["Accept"] = "*/*"
-        request.headers["Authorization"] = "Basic #{credential}"
-      end
-    end
-
-    puts "status=#{response.status}, body=#{response.body}"
-    response
-  end
-
-  def sync_google(calendar)
-    raise NotImplementedError
-  end
+  # def sync_google(calendar)
+  #   raise NotImplementedError
+  # end
 
   def extract_time_zone(calendar, ics_calendar)
     time_zone_id = utf8_str_array(ics_calendar.x_wr_timezone).first
+    time_zone_id ||= ics_calendar.timezones.first.try(:tzid)
     time_zone_id ||= calendar.ics_time_zone.presence
 
     time_zone = nil
@@ -213,7 +281,7 @@ PROPNAME_XML
     ActiveSupport::TimeZone.find_tzinfo("UTC")
   end
 
-  def import_ics_event(calendar, ics_event, time_zone)
+  def import_ics_event(calendar, ics_event, time_zone, schedule_tag)
     dtstart = ics_event.dtstart
     all_day = dtstart.value_type.casecmp("DATE") == 0
 
@@ -240,6 +308,7 @@ PROPNAME_XML
       url: ics_event.url, description: utf8_str(ics_event.description), location: utf8_str(ics_event.location),
       contacts: utf8_str_array(ics_event.contact), categories: utf8_str_array(ics_event.categories)
     )
+    plan.cal_dav_schedule_tag = schedule_tag
 
     if all_day
       plan.start_at = plan.start_on = dtstart.value.in_time_zone(time_zone).in_time_zone

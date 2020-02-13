@@ -8,7 +8,16 @@ class Gws::Schedule::Remote::Calendar
   set_permission_name "gws_schedule_calendars", :edit
 
   belongs_to :account, class_name: "Gws::Schedule::Remote::Account"
-  field :color, type: String
+  has_many :plans, class_name: "Gws::Schedule::Plan", dependent: :destroy, inverse_of: :calendar
 
-  permit_params :color
+  field :name, type: String
+  field :description, type: String
+  field :order, type: Integer
+  field :color, type: String
+  field :privileges, type: SS::Extensions::Words
+
+  # google
+  field :google_calender_url, type: String
+
+  permit_params :name, :description, :color, :order, :color, :privileges
 end
