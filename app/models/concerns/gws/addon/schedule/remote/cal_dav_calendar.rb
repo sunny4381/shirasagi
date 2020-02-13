@@ -1,4 +1,4 @@
-module Gws::Addon::Schedule::CalDavCalendar
+module Gws::Addon::Schedule::Remote::CalDavCalendar
   extend ActiveSupport::Concern
   extend SS::Addon
 
@@ -8,7 +8,7 @@ module Gws::Addon::Schedule::CalDavCalendar
     field :cal_dav_url, type: String
     field :cal_dav_username, type: String
     field :cal_dav_password, type: String
-    #
+    # cache
     field :cal_dav_cache_refreshed_at, type: DateTime
     field :cal_dav_cache_principal_url, type: String
     field :cal_dav_cache_resource_types, type: Array

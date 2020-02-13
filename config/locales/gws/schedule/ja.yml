@@ -9,7 +9,7 @@ ja:
     search_times: 空き時間を検索
     navi:
       holiday: 休日設定
-      calendar: 外部カレンダー
+      remote_account: 外部カレンダー
       category: 種別設定
       todo: ToDo一覧
       trash: ゴミ箱
@@ -234,8 +234,9 @@ ja:
       gws/schedule/todo/member: 担当者
       gws/schedule/todo/comment_post: コメント
       gws/schedule/todo/category: プロジェクト・工程
-      gws/schedule/ics_calendar: iCalendar (ICS)
-      gws/schedule/cal_dav_calendar: CalDAV
+      gws/schedule/remote/ics_calendar: iCalendar (ICS)
+      gws/schedule/remote/cal_dav_calendar: CalDAV
+      gws/schedule/remote/google_calendar: Google カレンダー
 
   gws_role:
     edit_gws_schedule_holidays: 休日の管理
@@ -282,7 +283,7 @@ ja:
       gws/schedule/approval: 承認
       gws/schedule/todo_comment: ToDoコメント
       gws/schedule/todo_category: プロジェクト・工程
-      gws/schedule/calendar: カレンダー
+      gws/schedule/remote/account: 外部カレンダー
     errors:
       models:
         gws/schedule/plan:
@@ -390,14 +391,14 @@ ja:
         depth_level: 深さ
         in_basename: プロジェクト・工程名
         in_parent_id: 親プロジェクト・工程名
-      gws/schedule/calendar:
+      gws/schedule/remote/account:
         calendar_model: カレンダー種別
         name: 名前
         description: 説明
         color: 表示色
-      gws/addon/schedule/ics_calendar:
+      gws/addon/schedule/remote/ics_calendar:
         ics_url: URL
-      gws/addon/schedule/cal_dav_calendar:
+      gws/addon/schedule/remote/cal_dav_calendar:
         cal_dav_url: URL
         cal_dav_username: ユーザーID
         cal_dav_password: パスワード
@@ -492,12 +493,12 @@ ja:
         -
         - 表示色は "#RRGGBB" 形式で入力します（RR, GG, BB はそれぞれ赤、緑、青の成分を16進数で入力）。
 
-    gws/addon/schedule/ics_calendar:
+    gws/addon/schedule/remote/ics_calendar:
       ics_url:
         - iCalendar 形式のファイルを配信している URL を入力します。
         - "例: https://demo.ss-proj.org/calendar/index.ics"
 
-    gws/addon/schedule/cal_dav_calendar:
+    gws/addon/schedule/remote/cal_dav_calendar:
       cal_dav_url:
         - CalDAV プロトコルをサポートしているカレンダーの URL を入力します。
         - "例: https://caldav.calendar.yahoo.co.jp/"

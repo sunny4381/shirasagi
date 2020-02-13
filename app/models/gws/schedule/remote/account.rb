@@ -1,11 +1,10 @@
-class Gws::Schedule::Calendar
+class Gws::Schedule::Remote::Account
   include SS::Document
   include Gws::Reference::User
   include Gws::Reference::Site
-  include Gws::Schedule::Colorize
-  include Gws::Addon::Schedule::IcsCalendar
-  include Gws::Addon::Schedule::CalDavCalendar
-  include Gws::Addon::Schedule::GoogleCalendar
+  include Gws::Addon::Schedule::Remote::IcsCalendar
+  include Gws::Addon::Schedule::Remote::CalDavCalendar
+  include Gws::Addon::Schedule::Remote::GoogleCalendar
   include Gws::Addon::Member
   include Gws::SitePermission
 
@@ -13,17 +12,16 @@ class Gws::Schedule::Calendar
   set_permission_name "gws_schedule_calendars", :edit
 
   CALENDARS = {
-    ics: { addons: [ Gws::Addon::Schedule::IcsCalendar ].freeze }.freeze,
-    cal_dav: { addons: [ Gws::Addon::Schedule::CalDavCalendar ].freeze }.freeze,
-    google: { addons: [ Gws::Addon::Schedule::GoogleCalendar ].freeze }.freeze
+    ics: { addons: [ Gws::Addon::Schedule::Remote::IcsCalendar ].freeze }.freeze,
+    cal_dav: { addons: [ Gws::Addon::Schedule::Remote::CalDavCalendar ].freeze }.freeze,
+    google: { addons: [ Gws::Addon::Schedule::Remote::GoogleCalendar ].freeze }.freeze
   }.freeze
 
   field :name, type: String
   field :description, type: String
   field :calendar_model, type: String
-  field :color, type: String
 
-  permit_params :name, :description, :calendar_model, :color
+  permit_params :name, :description, :calendar_model
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :description, length: { maximum: 400 }

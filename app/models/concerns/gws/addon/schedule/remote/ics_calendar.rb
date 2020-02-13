@@ -1,4 +1,4 @@
-module Gws::Addon::Schedule::IcsCalendar
+module Gws::Addon::Schedule::Remote::IcsCalendar
   extend ActiveSupport::Concern
   extend SS::Addon
 

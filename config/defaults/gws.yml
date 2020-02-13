@@ -63,6 +63,12 @@ production: &production
       ad:
         image_limit: 5
 
+  schedule:
+    google_calendar:
+      use: false
+      client_id: "put your CLIENT ID if you want to use schedule with Google Calendar"
+      client_secret: "put your CLIENT SECRET if you want to use schedule with Google Calendar"
+
   chorg:
     models:
       - "Gws::Board::Category"
