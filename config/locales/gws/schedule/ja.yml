@@ -151,6 +151,7 @@ ja:
       start_calendar_synchronization: カレンダーの同期を開始しました。
       calendar_synchronization_error: 同期エラー
       n_out_of_m: "%{m} 件中 %{n} 件を表示しています。"
+      no_remote_calendars: カレンダーがありません。同期を実行し、外部カレンダーをシラサギへ取り込んでください。
 
   gws/schedule/todo:
     active: 削除を取り消す

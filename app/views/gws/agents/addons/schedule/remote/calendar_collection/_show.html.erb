@@ -1,7 +1,7 @@
 <dl class="see">
   <dt class="wide"></dt>
-  <dd class="wide"><%= link_to t("gws/schedule.buttons.manage_remote_calendars"), gws_schedule_remote_account_calendars_path(account_id: @item), class: "btn" %></dd>
   <% if @item.calendars.present? %>
+    <dd class="wide"><%= link_to t("gws/schedule.buttons.manage_remote_calendars"), gws_schedule_remote_account_calendars_path(account_id: @item), class: "btn" %></dd>
     <dd class="wide">
       <table class="index">
         <tbody>
@@ -19,5 +19,7 @@
         </tfoot>
       </table>
     </dd>
+  <% else %>
+    <dd class="wide"><%= t("gws/schedule.notice.no_remote_calendars") %></dd>
   <% end %>
 </dl>
