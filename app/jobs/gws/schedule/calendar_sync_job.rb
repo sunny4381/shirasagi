@@ -316,9 +316,11 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
     plan.cal_dav_error = ""
 
     if all_day
-      plan.start_at = plan.start_on = dtstart.value.in_time_zone(time_zone).in_time_zone
-      plan.end_at = plan.end_on = dtend.value.in_time_zone(time_zone).in_time_zone
       plan.allday = "allday"
+      plan.start_on = dtstart.value.in_time_zone(time_zone).in_time_zone
+      plan.end_on = dtend.value.in_time_zone(time_zone).in_time_zone.yesterday
+      plan.start_at = plan.start_on
+      plan.end_at = plan.end_on.end_of_day
     else
       plan.start_at = dtstart.value.in_time_zone(time_zone).in_time_zone
       plan.end_at = dtend.value.in_time_zone(time_zone).in_time_zone
