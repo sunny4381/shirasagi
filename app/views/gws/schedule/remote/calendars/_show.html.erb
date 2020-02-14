@@ -1,0 +1,20 @@
+<dl class="see">
+  <dt><%= @model.t :name %></dt>
+  <dd><%= @item.name %></dd>
+
+  <dt><%= @model.t :description %></dt>
+  <dd><%= br @item.description %></dd>
+
+  <dt><%= @model.t :order %></dt>
+  <dd><%= @item.order %></dd>
+
+  <dt><%= @model.t :color %></dt>
+  <dd>
+    <% if @item.color.present? %>
+      <span class="gws-category-label" style="<%= category_label_css(@item) %>"><%= @item.name %></span>
+    <% end %>
+  </dd>
+
+  <dt><%= @model.t :privileges %></dt>
+  <dd><%= @item.privileges %></dd>
+</dl>

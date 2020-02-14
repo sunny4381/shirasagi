@@ -53,6 +53,7 @@ Rails.application.routes.draw do
     namespace 'remote' do
       resources :accounts, concerns: [:deletion] do
         match :sync, on: :member, via: [:get, :post]
+        resources :calendars, concerns: [:deletion]
       end
     end
 

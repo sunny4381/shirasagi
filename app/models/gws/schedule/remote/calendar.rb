@@ -27,5 +27,15 @@ class Gws::Schedule::Remote::Calendar
     def and_writable
       all.in(privileges: "write")
     end
+
+    def search(params = nil)
+      all.search_keyword(params)
+    end
+
+    def search_keyword(params = nil)
+      return all if params.blank? || params[:keyword].blank?
+
+      all.keyword_in(params[:keyword], :name, :description)
+    end
   end
 end

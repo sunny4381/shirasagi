@@ -1,0 +1,16 @@
+<dl class="see">
+  <dt><%= @model.t :name %><%= @model.tt :name %></dt>
+  <dd><%= f.text_field :name %></dd>
+
+  <dt><%= @model.t :description %><%= @model.tt :description %></dt>
+  <dd><%= f.text_area :description %></dd>
+
+  <dt><%= @model.t :order %><%= @model.tt :order %></dt>
+  <dd><%= f.number_field :order %></dd>
+
+  <dt><%= @model.t :color %><%= @model.tt :color %></dt>
+  <dd><%= f.text_field :color, class: 'js-color' %></dd>
+
+  <dt><%= @model.t :privileges %></dt>
+  <dd><%= @item.privileges %></dd>
+</dl>

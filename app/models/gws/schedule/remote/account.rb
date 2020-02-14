@@ -2,6 +2,7 @@ class Gws::Schedule::Remote::Account
   include SS::Document
   include Gws::Reference::User
   include Gws::Reference::Site
+  include Gws::Addon::Schedule::Remote::CalendarCollection
   include Gws::Addon::Schedule::Remote::IcsCalendar
   include Gws::Addon::Schedule::Remote::CalDavCalendar
   include Gws::Addon::Schedule::Remote::GoogleCalendar

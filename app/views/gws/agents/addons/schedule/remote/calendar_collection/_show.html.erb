@@ -1,0 +1,23 @@
+<dl class="see">
+  <dt class="wide"></dt>
+  <dd class="wide"><%= link_to t("gws/schedule.buttons.manage_remote_calendars"), gws_schedule_remote_account_calendars_path(account_id: @item), class: "btn" %></dd>
+  <% if @item.calendars.present? %>
+    <dd class="wide">
+      <table class="index">
+        <tbody>
+        <% @item.calendars.limit(5).each do |calendar| %>
+        <tr>
+          <td><%= link_to calendar.name, gws_schedule_remote_account_calendar_path(account_id: @item, id: calendar) %></td>
+        </tr>
+        <% end %>
+        </tbody>
+        <tfoot>
+        <tr>
+          <% m = @item.calendars.count %>
+          <td><%= t("gws/schedule.notice.n_out_of_m", n: m > 5 ? 5 : m, m: m) %></td>
+        </tr>
+        </tfoot>
+      </table>
+    </dd>
+  <% end %>
+</dl>

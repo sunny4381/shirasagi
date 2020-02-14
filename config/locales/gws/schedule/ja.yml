@@ -49,6 +49,7 @@ ja:
       delete_later: 以降すべて
       delete_all: 一連のスケジュールすべて
       comment: コメント
+      manage_remote_calendars: カレンダーを管理する
     options:
       allday:
         allday: 終日
@@ -149,6 +150,7 @@ ja:
     notice:
       start_calendar_synchronization: カレンダーの同期を開始しました。
       calendar_synchronization_error: 同期エラー
+      n_out_of_m: "%{m} 件中 %{n} 件を表示しています。"
 
   gws/schedule/todo:
     active: 削除を取り消す
@@ -238,6 +240,7 @@ ja:
       gws/schedule/remote/ics_calendar: iCalendar (ICS)
       gws/schedule/remote/cal_dav_calendar: CalDAV
       gws/schedule/remote/google_calendar: Google カレンダー
+      gws/schedule/remote/calendar_collection: カレンダー
 
   gws_role:
     edit_gws_schedule_holidays: 休日の管理
@@ -284,7 +287,8 @@ ja:
       gws/schedule/approval: 承認
       gws/schedule/todo_comment: ToDoコメント
       gws/schedule/todo_category: プロジェクト・工程
-      gws/schedule/remote/account: 外部カレンダー
+      gws/schedule/remote/account: 外部アカウント
+      gws/schedule/remote/calendar: 外部カレンダー
     errors:
       models:
         gws/schedule/plan:
@@ -396,7 +400,12 @@ ja:
         calendar_model: カレンダー種別
         name: 名前
         description: 説明
+      gws/schedule/remote/calendar:
+        name: 名前
+        description: 説明
+        order: 並び順
         color: 表示色
+        privileges: 権限
       gws/addon/schedule/remote/ics_calendar:
         ics_url: URL
       gws/addon/schedule/remote/cal_dav_calendar:
