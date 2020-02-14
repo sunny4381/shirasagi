@@ -402,6 +402,9 @@ ja:
         cal_dav_url: URL
         cal_dav_username: ユーザーID
         cal_dav_password: パスワード
+      gws/reference/schedule/calendar:
+        calendar_id: カレンダー
+        cal_dav_schedule_tag: CalDAVタグ
 
   tooltip:
     gws/schedule/planable:

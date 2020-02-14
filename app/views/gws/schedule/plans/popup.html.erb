@@ -9,6 +9,11 @@ $('.popup-attributes .custom-group-name').click(function() {
 
 <div class="popup-title"><%= link_to @item.name, { action: :show } %></div>
 <div class="popup-date"><%= term(@item) %></div>
+<% if Gws::Schedule::Remote::Account.allowed?(:read, @cur_user, site: @cur_site) && Gws::Schedule::Remote::Account.site(@cur_site).member(@cur_user).present? %>
+  <% if @item.calendar.present? %>
+    <div class="popup-calendar"><%= @item.calendar.try(:name) %></div>
+  <% end %>
+<% end %>
 
 <% if @item.text.present? %>
 <div class="popup-description">

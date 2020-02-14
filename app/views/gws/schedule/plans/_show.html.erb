@@ -24,4 +24,9 @@
   <dt><%= @model.t :color %></dt>
   <dd><%= content_tag :span, @item.name, style: "background-color: #{@item.color}; color: #{@item.text_color}" %></dd>
   <% end %>
+
+  <% if Gws::Schedule::Remote::Account.allowed?(:read, @cur_user, site: @cur_site) && Gws::Schedule::Remote::Account.site(@cur_site).member(@cur_user).present? %>
+    <dt><%= @model.t :calendar_id %></dt>
+    <dd><%= @item.calendar.try(:name) %></dd>
+  <% end %>
 </dl>
