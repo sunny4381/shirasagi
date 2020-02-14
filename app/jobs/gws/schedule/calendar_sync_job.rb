@@ -299,6 +299,11 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
       new_plan.calendar = calendar
       new_plan.uuid = uid
       new_plan.member_ids = [ user.id ]
+      new_plan.readable_setting_range = "private"
+      new_plan.readable_member_ids = [ user.id ]
+      new_plan.custom_group_ids = []
+      new_plan.group_ids = []
+      new_plan.user_ids = [ user.id ]
       new_plan
     end
     plan.cur_site = site
