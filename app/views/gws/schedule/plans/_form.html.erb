@@ -41,7 +41,7 @@
   <dt><%= @model.t :color %><%= @model.tt :color %></dt>
   <dd><%= f.text_field :color, class: 'js-color', 'data-clear' => 1 %></dd>
 
-  <% if Gws::Schedule::Remote::Account.allowed?(:read, @cur_user, site: @cur_site) && Gws::Schedule::Remote::Account.site(@cur_site).member(@cur_user).present? %>
+  <% if Gws::Schedule::Remote::Calendar.allowed?(:read, @cur_user, site: @cur_site) && Gws::Schedule::Remote::Calendar.site(@cur_site).member(@cur_user).present? %>
     <dt><%= @model.t :calendar_id %></dt>
     <dd><%= @item.calendar.try(:name) %></dd>
   <% end %>

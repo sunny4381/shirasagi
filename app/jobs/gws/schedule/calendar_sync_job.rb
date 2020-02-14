@@ -60,6 +60,7 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
         calendar.order = calendar_setting[:calendar_order].to_i if calendar_setting[:calendar_order].numeric?
         calendar.color = calendar_setting[:calendar_color] if calendar_setting[:calendar_color].present?
         calendar.privileges = calendar_setting[:privileges] if calendar_setting[:privileges].present?
+        calendar.member_ids = [ user.id ]
       end
       calendar.cur_site = site
       calendar.cur_user = user
