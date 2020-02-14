@@ -3,7 +3,8 @@ class Gws::Schedule::Plan
   include Gws::Referenceable
   include Gws::Reference::User
   include Gws::Reference::Site
-  include Gws::Reference::Schedule::Calendar
+  include Gws::Reference::Schedule::Remote::Calendar
+  include Gws::Reference::Schedule::Remote::CalDav
   include Gws::Schedule::Priority
   include Gws::Schedule::Colorize
   include Gws::Schedule::Planable

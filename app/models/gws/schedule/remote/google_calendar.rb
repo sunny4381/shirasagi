@@ -193,7 +193,6 @@ class Gws::Schedule::Remote::GoogleCalendar
     response = run_report(calendar_url, query_events_request(options), depth: 1)
     return unless response.success?
 
-    puts response.body
     doc = Nokogiri::XML(response.body)
     ret = []
     doc.xpath("//D:response", NS).each do |response_node|
@@ -208,6 +207,9 @@ class Gws::Schedule::Remote::GoogleCalendar
         etag = extract_text(prop_stat_node.xpath("D:prop/D:getetag", NS).first)
         event_info[:etag] = etag if etag.present?
 
+        schedule_tag = extract_text(prop_stat_node.xpath("D:prop/caldav:schedule-tag", NS).first)
+        event_info[:schedule_tag] = schedule_tag if schedule_tag.present?
+
         calendar_data = extract_text(prop_stat_node.xpath("D:prop/caldav:calendar-data", NS).first)
         event_info[:calendar_data] = calendar_data if calendar_data.present?
       end
@@ -216,6 +218,46 @@ class Gws::Schedule::Remote::GoogleCalendar
     end
 
     ret
+  end
+
+  def update_event(plan)
+    calendar = plan.calendar
+    return false if calendar.blank?
+
+    calendar_data = convert_plan_to_calendar_data(plan)
+
+    url = URI.join(calendar.google_calender_url, "#{plan.uuid}.ics").to_s
+    response = run_put_event(url, calendar_data, schedule_tag: plan.cal_dav_schedule_tag.presence)
+    unless response.success?
+      plan.set(cal_dav_status_code: response.status, cal_dav_error: response.body)
+      return false
+    end
+
+    response = run_get_event(url, etag: plan.cal_dav_etag.presence)
+    unless response.success?
+      plan.set(cal_dav_status_code: response.status, cal_dav_error: response.body)
+      return false
+    end
+
+    etag = response.headers["ETag"]
+    schedule_tag = response.headers["Schedule-Tag"]
+    if etag.present? && schedule_tag.present?
+      plan.set(
+        cal_dav_status_code: response.status, cal_dav_etag: etag, cal_dav_schedule_tag: schedule_tag, cal_dav_error: ""
+      )
+      return true
+    end
+
+    false
+  end
+
+  def destroy_event(plan)
+    calendar = plan.calendar
+    return false if calendar.blank?
+
+    url = URI.join(calendar.google_calender_url, "#{plan.uuid}.ics").to_s
+    response = run_delete_event(url, schedule_tag: plan.cal_dav_schedule_tag.presence)
+    response.success?
   end
 
   private
@@ -272,6 +314,88 @@ class Gws::Schedule::Remote::GoogleCalendar
         request.headers["Accept"] = "*/*"
         request.headers["Authorization"] = "Bearer #{access_token}"
         request.body = body
+      end
+
+      if response.status == 401
+        refresh_access_token
+        count += 1
+        next
+      end
+
+      break
+    end
+
+    response
+  end
+
+  def run_put_event(url, body, schedule_tag: nil)
+    http_client = create_http_client(url)
+    count = 0
+    response = nil
+    while count < 2
+      response = http_client.run_request(:put, nil, nil, nil) do |request|
+        request.headers["Content-Type"] = "text/calendar"
+        if schedule_tag.present?
+          # サーバー側で更新されていればエラーにする指定（更新を意図し、意図しない上書きを防止したい場合に効果的）
+          request.headers["If-Schedule-Tag-Match"] = schedule_tag
+        else
+          # 作成されいていればエラーにする指定（新規作成を意図する場合に効果的）
+          request.headers["If-None-Match"] = "*"
+        end
+        request.headers["Accept"] = "*/*"
+        request.headers["Authorization"] = "Bearer #{access_token}"
+        request.body = body
+      end
+
+      if response.status == 401
+        refresh_access_token
+        count += 1
+        next
+      end
+
+      break
+    end
+
+    response
+  end
+
+  def run_get_event(url, etag: nil)
+    http_client = create_http_client(url)
+    count = 0
+    response = nil
+    while count < 2
+      response = http_client.run_request(:get, nil, nil, nil) do |request|
+        request.headers["Content-Type"] = "text/calendar"
+        if etag.present?
+          request.headers["If-None-Match"] = etag
+        end
+        request.headers["Accept"] = "*/*"
+        request.headers["Authorization"] = "Bearer #{access_token}"
+      end
+
+      if response.status == 401
+        refresh_access_token
+        count += 1
+        next
+      end
+
+      break
+    end
+
+    response
+  end
+
+  def run_delete_event(url, schedule_tag: nil)
+    http_client = create_http_client(url)
+    count = 0
+    response = nil
+    while count < 2
+      response = http_client.run_request(:delete, nil, nil, nil) do |request|
+        if schedule_tag.present?
+          request.headers["If-Schedule-Tag-Match"] = schedule_tag
+        end
+        request.headers["Accept"] = "*/*"
+        request.headers["Authorization"] = "Bearer #{access_token}"
       end
 
       if response.status == 401
@@ -360,6 +484,7 @@ class Gws::Schedule::Remote::GoogleCalendar
       <caldav:calendar-query xmlns:D="DAV:" xmlns:caldav="urn:ietf:params:xml:ns:caldav">
         <D:prop>
           <D:getetag/>
+          <caldav:schedule-tag/>
           <caldav:calendar-data/>
         </D:prop>
         <caldav:filter>
@@ -373,5 +498,39 @@ class Gws::Schedule::Remote::GoogleCalendar
     END_QUERY
 
     query
+  end
+
+  def convert_plan_to_calendar_data(plan)
+    require "icalendar/tzinfo"
+
+    calendar = ::Icalendar::Calendar.new
+    calendar.version = "2.0"
+    calendar.prodid = "-//SHIRASAGI Project//SHIRASAGI v#{SS.version}//EN"
+    calendar.calscale = "GREGORIAN"
+
+    # VTIMEZONE
+    tz = TZInfo::Timezone.get(Time.zone.tzinfo.identifier)
+    calendar.timezone(tz.ical_timezone(Time.zone.now))
+
+    # VEVENT
+    calendar.event do |event|
+      event.transp = "OPAQUE"
+      event.uid = plan.uuid
+      if plan.allday?
+        event.dtstart = ::Icalendar::Values::Date.new(plan.start_on.to_date, tzid: tz.identifier)
+        event.dtend = ::Icalendar::Values::Date.new(plan.end_on.to_date, tzid: tz.identifier)
+      else
+        event.dtstart = ::Icalendar::Values::DateTime.new(plan.start_at, tzid: tz.identifier)
+        event.dtend = ::Icalendar::Values::DateTime.new(plan.end_at, tzid: tz.identifier)
+      end
+      event.summary = plan.name
+      event.description = plan.text
+
+      event.created = event.dtstamp = ::Icalendar::Values::DateTime.new(plan.created.utc, tzid: 'UTC')
+      event.last_modified = ::Icalendar::Values::DateTime.new(plan.updated.utc, tzid: 'UTC')
+    end
+
+    calendar.publish
+    calendar.to_ical.gsub(/\R/, "\r\n")
   end
 end

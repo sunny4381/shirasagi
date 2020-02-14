@@ -11,7 +11,12 @@ $('.popup-attributes .custom-group-name').click(function() {
 <div class="popup-date"><%= term(@item) %></div>
 <% if Gws::Schedule::Remote::Calendar.allowed?(:read, @cur_user, site: @cur_site) && Gws::Schedule::Remote::Calendar.site(@cur_site).member(@cur_user).present? %>
   <% if @item.calendar.present? %>
-    <div class="popup-calendar"><%= @item.calendar.try(:name) %></div>
+    <div class="popup-calendar">
+      <%= @item.calendar.try(:name) %>
+      <% if @item.cal_dav_status_code.present? && !(200..299).include?(@item.cal_dav_status_code) %>
+        <span class="popup-calendar-synchronization-error"><%= t("gws/schedule.notice.calendar_synchronization_error") %></span>
+      <% end %>
+    </div>
   <% end %>
 <% end %>
 

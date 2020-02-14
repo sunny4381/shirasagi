@@ -148,6 +148,7 @@ ja:
 
     notice:
       start_calendar_synchronization: カレンダーの同期を開始しました。
+      calendar_synchronization_error: 同期エラー
 
   gws/schedule/todo:
     active: 削除を取り消す
@@ -402,8 +403,10 @@ ja:
         cal_dav_url: URL
         cal_dav_username: ユーザーID
         cal_dav_password: パスワード
-      gws/reference/schedule/calendar:
+      gws/reference/schedule/remote/calendar:
         calendar_id: カレンダー
+      gws/reference/schedule/remote/cal_dav:
+        cal_dav_etag: "CalDAV ETag"
         cal_dav_schedule_tag: CalDAVタグ
 
   tooltip:

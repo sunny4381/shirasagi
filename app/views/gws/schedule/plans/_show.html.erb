@@ -28,5 +28,11 @@
   <% if Gws::Schedule::Remote::Calendar.allowed?(:read, @cur_user, site: @cur_site) && Gws::Schedule::Remote::Calendar.site(@cur_site).member(@cur_user).present? %>
     <dt><%= @model.t :calendar_id %></dt>
     <dd><%= @item.calendar.try(:name) %></dd>
+    <% if @item.cal_dav_status_code.present? && !(200..299).include?(@item.cal_dav_status_code) %>
+      <dd class="calendar-synchronization-error">
+        <span><%= t("gws/schedule.notice.calendar_synchronization_error") %></span>
+        <!-- <%= @item.cal_dav_error %> -->
+      </dd>
+    <% end %>
   <% end %>
 </dl>

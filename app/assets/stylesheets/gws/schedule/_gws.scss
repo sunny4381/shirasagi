@@ -638,6 +638,16 @@
   .popup-date {
     padding: 2px 0 0;
   }
+  .popup-calendar-synchronization-error {
+    &:before {
+      content: "("
+    }
+    &:after {
+      content: ")"
+    }
+    font-weight: bold;
+    color: $orange;
+  }
   .popup-description {
     margin-top: 5px;
     padding-top: 5px;
@@ -748,6 +758,14 @@
 .calendar {
   ~ .calendar .fc-row-name td {
     border-top-width: 0;
+  }
+}
+
+.calendar-synchronization-error {
+  background-color: $orange;
+  color: #fff;
+  span {
+    padding: 5px 5px;
   }
 }
 

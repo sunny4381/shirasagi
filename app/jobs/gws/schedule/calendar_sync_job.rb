@@ -91,7 +91,7 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
         time_zone = extract_time_zone(calendar, ics_calendar)
 
         ics_calendar.events.each do |ics_event|
-          plan = import_ics_event(calendar, ics_event, time_zone, event_setting[:etag])
+          plan = import_ics_event(calendar, ics_event, time_zone, event_setting.slice(:etag, :schedule_tag))
           if plan
             @imported_events << plan.uuid
             Rails.logger.info("imported #{plan.name}(#{plan.id}) in #{term(plan)}")
@@ -282,7 +282,7 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
     ActiveSupport::TimeZone.find_tzinfo("UTC")
   end
 
-  def import_ics_event(calendar, ics_event, time_zone, schedule_tag)
+  def import_ics_event(calendar, ics_event, time_zone, params)
     dtstart = ics_event.dtstart
     all_day = dtstart.value_type.casecmp("DATE") == 0
 
@@ -309,7 +309,11 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
       url: ics_event.url, description: utf8_str(ics_event.description), location: utf8_str(ics_event.location),
       contacts: utf8_str_array(ics_event.contact), categories: utf8_str_array(ics_event.categories)
     )
-    plan.cal_dav_schedule_tag = schedule_tag
+
+    plan.cal_dav_status_code = 200
+    plan.cal_dav_etag = params[:etag]
+    plan.cal_dav_schedule_tag = params[:schedule_tag]
+    plan.cal_dav_error = ""
 
     if all_day
       plan.start_at = plan.start_on = dtstart.value.in_time_zone(time_zone).in_time_zone

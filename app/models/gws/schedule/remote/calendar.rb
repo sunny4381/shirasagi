@@ -22,4 +22,10 @@ class Gws::Schedule::Remote::Calendar
   field :google_calender_url, type: String
 
   permit_params :name, :description, :color, :order, :color, :privileges
+
+  class << self
+    def and_writable
+      all.in(privileges: "write")
+    end
+  end
 end

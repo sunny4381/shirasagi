@@ -80,6 +80,33 @@ module Gws::Schedule::PlanFilter
     ) rescue nil
   end
 
+  def update_remote_event
+    account = @item.calendar.account
+    return if account.blank?
+
+    accessor = Gws::Schedule::Remote::GoogleCalendar.new(
+      cur_site: @cur_site, cur_user: @cur_user,
+      access_token: account.google_access_token, refresh_token: account.google_refresh_token
+    )
+    accessor.update_event(@item)
+    account.set(google_access_token: accessor.access_token) if account.google_access_token != accessor.access_token
+  end
+
+  def destroy_remote_event(item = nil)
+    item ||= @item
+    return if item.calendar.blank?
+
+    account = item.calendar.account
+    return if account.blank?
+
+    accessor = Gws::Schedule::Remote::GoogleCalendar.new(
+      cur_site: @cur_site, cur_user: @cur_user,
+      access_token: account.google_access_token, refresh_token: account.google_refresh_token
+    )
+    accessor.destroy_event(item)
+    account.set(google_access_token: accessor.access_token) if account.google_access_token != accessor.access_token
+  end
+
   public
 
   def index
@@ -110,6 +137,7 @@ module Gws::Schedule::PlanFilter
     saved = @item.save
     render_create saved, location: redirection_url
     send_approval_mail if saved && @item.approval_present?
+    update_remote_event if saved && @item.calendar.present?
   end
 
   def update
@@ -122,13 +150,26 @@ module Gws::Schedule::PlanFilter
     saved = @item.update
     render_update saved, location: redirection_url
     send_approval_mail if saved && @item.approval_present?
+    update_remote_event if saved && @item.calendar.present?
   end
 
   def destroy
     raise "403" unless @item.allowed?(:delete, @cur_user, site: @cur_site)
 
     @item.edit_range = params.dig(:item, :edit_range)
-    render_destroy @item.destroy
+    destroyed = @item.destroy
+    render_destroy destroyed
+    destroy_remote_event if destroyed && @item.calendar.present?
+  end
+
+  def destroy_all
+    before_items = @selected_items.to_a
+
+    super
+
+    errored_item_ids = @items.map(&:id).map(&:to_s)
+    deleted_items = before_items.reject { |item| errored_item_ids.include?(item.id.to_s) }
+    deleted_items.each { |item| destroy_remote_event(item) }
   end
 
   def copy
