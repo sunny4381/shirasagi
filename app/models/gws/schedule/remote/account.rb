@@ -5,10 +5,8 @@ class Gws::Schedule::Remote::Account
   include Gws::Addon::Schedule::Remote::IcsCalendar
   include Gws::Addon::Schedule::Remote::CalDavCalendar
   include Gws::Addon::Schedule::Remote::GoogleCalendar
-  include Gws::Addon::Member
   include Gws::SitePermission
 
-  member_ids_optional
   set_permission_name "gws_schedule_calendars", :edit
 
   CALENDARS = {
