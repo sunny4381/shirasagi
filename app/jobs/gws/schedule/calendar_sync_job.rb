@@ -58,7 +58,7 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
         calendar.name = calendar_setting[:display_name]
         calendar.description = calendar_setting[:calendar_description] if calendar_setting[:calendar_description].present?
         calendar.order = calendar_setting[:calendar_order].to_i if calendar_setting[:calendar_order].numeric?
-        calendar.color = calendar_setting[:calendar_color] if calendar_setting[:calendar_color].present?
+        calendar.color = normalize_ics_color(calendar_setting[:calendar_color]) if calendar_setting[:calendar_color].present?
         calendar.privileges = calendar_setting[:privileges] if calendar_setting[:privileges].present?
         calendar.member_ids = [ user.id ]
       end
@@ -402,5 +402,28 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
     return false if www_authenticate.blank?
 
     www_authenticate.include?("Basic realm")
+  end
+
+  def normalize_ics_color(color)
+    return if color.blank?
+    return if !color.starts_with?("#")
+
+    color = color.downcase
+    case color.length
+    when 4
+      # "#RGB" format is valid
+      color
+    when 7
+      # "#RRGGBB" format is valid
+      color
+    when 9
+      # "#RRGGBBAA" format is valid, but remove "AA" part
+      color = color[0..6]
+    else
+      # others are invalid
+      color = nil
+    end
+
+    color
   end
 end
