@@ -16,13 +16,14 @@ class Chat::Intent
   field :phrase, type: SS::Extensions::Words
   field :suggest, type: SS::Extensions::Words
   field :response, type: String
+  field :link, type: SS::Extensions::Words
   field :question, type: String
   field :site_search, type: String
   field :order, type: Integer
 
   belongs_to :node, class_name: "Chat::Node::Bot", inverse_of: :intents
 
-  permit_params :name, :phrase, :suggest, :response, :question, :site_search, :order
+  permit_params :name, :phrase, :suggest, :response, :link, :question, :site_search, :order
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :phrase, presence: true
