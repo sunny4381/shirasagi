@@ -80,6 +80,8 @@ class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
 
   def sync_calendar_google(accessor, account, calendar)
     event_settings = accessor.query_events(calendar.google_calender_url)
+    return if event_settings.blank?
+
     event_settings.each do |event_setting|
       calendar_data = event_setting[:calendar_data]
       next if calendar_data.blank?
