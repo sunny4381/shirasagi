@@ -42,9 +42,13 @@ class Gws::Schedule::Remote::AccountsController < ApplicationController
     @addons = @model.calendar_addons(@item.calendar_model)
   end
 
-  def redirect_to_google_consent_screen
+  def redirect_uri
+    # url_for(protocol: "https", action: :new, calendar_model: @item.calendar_model)
+    "urn:ietf:wg:oauth:2.0:oob"
+  end
+
+  def google_consent_screen_url
     client_id = SS.config.gws.schedule.dig("google_calendar", "client_id")
-    redirect_uri = url_for(action: :new, calendar_model: @item.calendar_model)
     scope = "https://www.googleapis.com/auth/calendar"
     state = SS::Crypt.encrypt({ time: Time.zone.now.to_i }.to_json)
     query = {
@@ -52,7 +56,7 @@ class Gws::Schedule::Remote::AccountsController < ApplicationController
       access_type: "offline", state: state
     }
 
-    redirect_to URI::HTTPS.build(host: "accounts.google.com", path: "/o/oauth2/v2/auth", query: query.to_query).to_s
+    URI::HTTPS.build(host: "accounts.google.com", path: "/o/oauth2/v2/auth", query: query.to_query).to_s
   end
 
   public
@@ -65,33 +69,16 @@ class Gws::Schedule::Remote::AccountsController < ApplicationController
       return
     end
 
-    if @item.calendar_model == "google" && params[:state].blank?
-      redirect_to_google_consent_screen
+    if @item.calendar_model == "google" && params[:code].blank?
+      @google_consent_screen_url = google_consent_screen_url
+      render file: 'google_code'
       return
     end
 
-    if @item.calendar_model == "google" && params[:state].present?
-      state = SS::Crypt.decrypt(params[:state])
-      if state.blank?
-        redirect_to_google_consent_screen
-        return
-      end
-
-      state = JSON.parse(state)
-      if Time.zone.now.to_i - state["time"] >= GOOGLE_OAUTH_TIMEOUT
-        redirect_to_google_consent_screen
-        return
-      end
-
-      if params[:code].blank?
-        redirect_to_google_consent_screen
-        return
-      end
-
+    if @item.calendar_model == "google" && params[:code].present?
       authorization_code = params[:code]
       client_id = SS.config.gws.schedule.dig("google_calendar", "client_id")
       client_secret = SS.config.gws.schedule.dig("google_calendar", "client_secret")
-      redirect_uri = url_for(action: :new, calendar_model: @item.calendar_model)
 
       response = Faraday.post(
         "https://www.googleapis.com/oauth2/v4/token",
@@ -99,7 +86,7 @@ class Gws::Schedule::Remote::AccountsController < ApplicationController
         grant_type: "authorization_code", access_type: "offline", state: params[:state]
       )
       unless response.success?
-        redirect_to_google_consent_screen
+        redirect_to({ action: :new }, { notice: "エラー" })
         return
       end
 

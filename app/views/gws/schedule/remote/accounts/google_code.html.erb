@@ -1,0 +1,27 @@
+<%= form_for :item, url: { action: :new }, html: { id: "item-form", method: "get", autocomplete: :off } do |f| %>
+  <%= error_messages_for :item %>
+
+  <dd><%= hidden_field_tag :calendar_model, "google" %></dd>
+  <div class="addon-views">
+    <%= render "ss/crud/addon" do %>
+      <dl class="see">
+        <dt>コード</dt>
+        <dd><%= text_field_tag :code %></dd>
+        <dd><%= link_to "Google へアクセスしコードを入手する", @google_consent_screen_url, target: "_blank", class: "btn" %></dd>
+        <dd>
+          <%= link_to "Google へアクセスしコードを入手する", @google_consent_screen_url, target: "_blank" %>をクリックし、
+          ブラウザに表示されたコードをコピーし、上の入力欄にペーストした後、下の保存ボタンをクリックしてください。
+        </dd>
+      </dl>
+    <% end %>
+  </div>
+
+  <footer class="send">
+    <% if @crud_buttons %>
+      <% @crud_buttons.call f %>
+    <% else %>
+      <%= f.submit t("ss.buttons.save"), class: 'btn-primary save' %>
+      <%= f.button t("ss.buttons.cancel"), class: 'btn-default', type: :reset, onclick: "location.href='#{url_for(action: :index)}'; return false;" %>
+    <% end %>
+  </footer>
+<% end %>
