@@ -129,7 +129,10 @@ class Gws::Schedule::Remote::AccountsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to({ action: :show }, { notice: t("gws/schedule.notice.start_calendar_synchronization") }) }
-      format.json { render json: { job_id: job.job_id }, status: :ok }
+      format.json do
+        data = { status: "ok", data: { job_id: job.job_id, notice: t("gws/schedule.notice.start_calendar_synchronization") } }
+        render json: { status: "ok", data: data }, status: :ok
+      end
     end
   end
 end

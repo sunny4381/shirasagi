@@ -51,6 +51,35 @@
     <h2><%= link_to @cur_site.menu_schedule_label || t('modules.gws/schedule'), gws_schedule_main_path, class: "navi-icon icon-schedule" %></h2>
     <%= menus %>
   </nav>
+
+  <% calenders = Gws::Schedule::Remote::Calendar.site(@cur_site).member(@cur_user) %>
+  <% if calenders.present? %>
+    <% accounts = Gws::Schedule::Remote::Account.site(@cur_site).in(id: calenders.pluck(:account_id).uniq) %>
+    <% calenders = calenders.to_a %>
+    <nav class="mod-navi">
+    <% accounts.each do |account| %>
+      <h2><%= account.name %></h2>
+      <% calenders.each do |calendar| %>
+        <% next if calendar.account_id != account.id %>
+        <h3 style="position: relative;">
+          <span>
+            <%= calendar.name %>
+          </span>
+          <span class="gws-remote-schedule-calendar-sync" data-href="<%= sync_gws_schedule_remote_account_calendar_path(account_id: account, id: calendar) %>" style="position: absolute; top: 0; right: 5px;">
+            <button>
+              <i class="material-icons md-dark"></i>
+            </button>
+          </span>
+        </h3>
+      <% end %>
+    <% end %>
+    </nav>
+    <%= jquery do %>
+      Gws_Schedule_Remote_Calendar_Sync.message = <%== t("ss.confirm.sync").to_json %>;
+      Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = <%== status_gws_job_apis_task_path(id: ":ID").to_json %>;
+      Gws_Schedule_Remote_Calendar_Sync.render();
+    <% end %>
+  <% end %>
 <% end %>
 
 <%= render partial: 'gws/main/navi' %>
