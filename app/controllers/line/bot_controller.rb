@@ -77,7 +77,8 @@ class Line::BotController < ApplicationController
                 "text": text(event)
             }
         }
-    template << question(event) if phrase(event).question == 'enabled'
+    template << site_search(event) if phrase(event).site_search == 'enabled'
+    template << question if phrase(event).question == 'enabled'
     template
   end
 
@@ -103,7 +104,8 @@ class Line::BotController < ApplicationController
                 "text": text.join("").gsub(%r{</?[^>]+?>},'')
             }
         }
-    template << question(event) if phrase(event).question == 'enabled'
+    template << site_search(event) if phrase(event).site_search == 'enabled'
+    template << question if phrase(event).question == 'enabled'
     template
   end
 
@@ -113,7 +115,8 @@ class Line::BotController < ApplicationController
             "type": "text",
             "text": phrase(event).response.gsub(%r{</?[^>]+?>},'')
         }
-    template << question(event) if phrase(event).question == 'enabled'
+    template << site_search(event) if phrase(event).site_search == 'enabled'
+    template << question if phrase(event).question == 'enabled'
     template
   end
 
@@ -129,14 +132,13 @@ class Line::BotController < ApplicationController
           "text": Chat::Node::Bot.first.chat_retry.gsub(%r{</?[^>]+?>},'')
       })
     else
-      client.reply_message(event['replyToken'], {
-          "type": "text",
-          "text": Chat::Node::Bot.first.exception_text.gsub(%r{</?[^>]+?>},'')
-      })
+      template = []
+      template << no_match << site_search(event)
+      client.reply_message(event['replyToken'], template)
     end
   end
 
-  def question(event)
+  def question
     {
         "type": "template",
         "altText": "this is a confirm template",
@@ -156,6 +158,37 @@ class Line::BotController < ApplicationController
                 }
             ]
         }
+    }
+  end
+
+  def site_search(event)
+    site = Cms::Site.find_by_domain(request_host).id
+    @site_search_node = Cms::Node::SiteSearch.find_by(site_id: site)
+      uri = URI.parse(@site_search_node.url)
+      uri.query = { s: { keyword: event.message['text'] } }.to_query
+      url = uri.try(:to_s)
+    template = {
+        "type": "template",
+        "altText": "this is a buttons template",
+        "template": {
+            "type": "buttons",
+            "text": "サイト内検索結果を開く",
+            "actions": [
+                {
+                    "type": "uri",
+                    "label": "サイト内検索結果へ移動",
+                    "uri": "https://" + Cms::Site.find(site).domains[1] + url
+                }
+            ]
+        }
+    }
+    template
+  end
+
+  def no_match
+    {
+        "type": "text",
+        "text": Chat::Node::Bot.first.exception_text.gsub(%r{</?[^>]+?>},'')
     }
   end
 end
