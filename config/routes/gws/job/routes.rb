@@ -15,5 +15,11 @@ Rails.application.routes.draw do
     end
 
     resources :reservations, only: [:index, :show, :destroy], concerns: [:deletion]
+
+    namespace 'apis' do
+      resources :tasks, only: [] do
+        get :status, on: :member
+      end
+    end
   end
 end
