@@ -46,4 +46,22 @@ class Gws::Schedule::Remote::CalendarsController < ApplicationController
       search(params[:s]).
       page(params[:page]).per(50)
   end
+
+  def sync
+    set_item
+    raise "403" unless @item.allowed?(:edit, @cur_user, site: @cur_site)
+
+    if request.get?
+      render
+      return
+    end
+
+    job_class = Gws::Schedule::Remote::EventSyncJob.bind(site_id: @cur_site, user_id: @cur_user)
+    job = job_class.perform_later(@item.id.to_s)
+
+    respond_to do |format|
+      format.html { redirect_to({ action: :show }, { notice: t("gws/schedule.notice.start_calendar_synchronization") }) }
+      format.json { render json: { job_id: job.job_id }, status: :ok }
+    end
+  end
 end
