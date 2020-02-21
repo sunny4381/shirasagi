@@ -1,4 +1,4 @@
-class Gws::Schedule::CalendarSyncJob < Gws::ApplicationJob
+class Gws::Schedule::Remote::CalendarAndEventSyncJob < Gws::ApplicationJob
 
   before_perform :ensure_cal_dav_methods
 
