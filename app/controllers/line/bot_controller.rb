@@ -28,7 +28,11 @@ class Line::BotController < ApplicationController
           begin
             if phrase(event).present?
               if phrase(event).suggest.present?
-                client.reply_message(event['replyToken'], suggest(event))
+                # if phrase(event).suggest.count > 4
+                  client.reply_message(event['replyToken'], suggests(event))
+                # else
+                #   client.reply_message(event['replyToken'], suggest(event))
+                # end
               elsif phrase(event).link.present?
                 client.reply_message(event['replyToken'], link(event))
               elsif phrase(event).response.present?
@@ -58,29 +62,29 @@ class Line::BotController < ApplicationController
     end
   end
 
-  def suggest(event)
-    actions = []
-    phrase(event).suggest.each do |suggest|
-      actions << {
-          "type": "message",
-          "label": suggest,
-          "text": suggest
-      }
-    end
-    template =
-        {
-            "type": "template",
-            "altText": "this is a buttons template",
-            "template": {
-                "type": "buttons",
-                "actions": actions,
-                "text": text(event)
-            }
-        }
-    template << site_search(event) if phrase(event).site_search == 'enabled'
-    template << question if phrase(event).question == 'enabled'
-    template
-  end
+  # def suggest(event)
+  #   actions = []
+  #   phrase(event).suggest.each do |suggest|
+  #     actions << {
+  #         "type": "message",
+  #         "label": suggest,
+  #         "text": suggest
+  #     }
+  #   end
+  #   template =
+  #       {
+  #           "type": "template",
+  #           "altText": "this is a buttons template",
+  #           "template": {
+  #               "type": "buttons",
+  #               "actions": actions,
+  #               "text": text(event)
+  #           }
+  #       }
+  #   template << site_search(event) if phrase(event).site_search == 'enabled'
+  #   template << question if phrase(event).question == 'enabled'
+  #   template
+  # end
 
   def link(event)
     labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
@@ -163,10 +167,10 @@ class Line::BotController < ApplicationController
 
   def site_search(event)
     site = Cms::Site.find_by_domain(request_host).id
-    @site_search_node = Cms::Node::SiteSearch.find_by(site_id: site)
-      uri = URI.parse(@site_search_node.url)
-      uri.query = { s: { keyword: event.message['text'] } }.to_query
-      url = uri.try(:to_s)
+    site_search_node = Cms::Node::SiteSearch.find_by(site_id: site)
+    uri = URI.parse(site_search_node.url)
+    uri.query = { s: { keyword: event.message['text'] } }.to_query
+    url = uri.try(:to_s)
     template = {
         "type": "template",
         "altText": "this is a buttons template",
@@ -177,7 +181,7 @@ class Line::BotController < ApplicationController
                 {
                     "type": "uri",
                     "label": "サイト内検索結果へ移動",
-                    "uri": "https://" + Cms::Site.find(site).domains[1] + url
+                    "uri": "https://" + Cms::Site.find(site).domains[0] + url
                 }
             ]
         }
@@ -190,5 +194,42 @@ class Line::BotController < ApplicationController
         "type": "text",
         "text": Chat::Node::Bot.first.exception_text.gsub(%r{</?[^>]+?>},'')
     }
+  end
+
+  def suggests(event)
+    suggests = phrase(event).suggest
+    actions = suggests.each_slice(4).to_a
+
+    ary = []
+    array = []
+    actions.each do |action|
+      action.each do |suggest|
+        array << {
+            "type": "message",
+            "label": suggest,
+            "text": suggest
+        }
+      end
+      ary << array
+      array = []
+    end
+
+    templates = []
+    ary.each do |action|
+      template =
+          {
+              "type": "template",
+              "altText": "this is a buttons template",
+              "template": {
+                  "type": "buttons",
+                  "actions": action,
+                  "text": text(event)
+              }
+          }
+      templates << template
+    end
+    templates << site_search(event) if phrase(event).site_search == 'enabled'
+    templates << question if phrase(event).question == 'enabled'
+    templates
   end
 end
