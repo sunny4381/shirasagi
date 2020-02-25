@@ -28,11 +28,7 @@ class Line::BotController < ApplicationController
           begin
             if phrase(event).present?
               if phrase(event).suggest.present?
-                # if phrase(event).suggest.count > 4
                 client.reply_message(event['replyToken'], suggests(event))
-                # else
-                #   client.reply_message(event['replyToken'], suggest(event))
-                # end
               elsif phrase(event).link.present?
                 client.reply_message(event['replyToken'], links(event))
               elsif phrase(event).response.present?
@@ -53,66 +49,7 @@ class Line::BotController < ApplicationController
   def phrase(event)
     Chat::Intent.find_by({phrase: event.message['text']})
   end
-
-  def text(event)
-    if phrase(event).suggest.present? && phrase(event).response.present?
-      phrase(event).response.gsub(%r{</?[^>]+?>},'')
-    else
-      Chat::Node::Bot.first.response_template.gsub(%r{</?[^>]+?>},'')
-    end
-  end
-
-  # def suggest(event)
-  #   actions = []
-  #   phrase(event).suggest.each do |suggest|
-  #     actions << {
-  #         "type": "message",
-  #         "label": suggest,
-  #         "text": suggest
-  #     }
-  #   end
-  #   template =
-  #       {
-  #           "type": "template",
-  #           "altText": "this is a buttons template",
-  #           "template": {
-  #               "type": "buttons",
-  #               "actions": actions,
-  #               "text": text(event)
-  #           }
-  #       }
-  #   template << site_search(event) if phrase(event).site_search == 'enabled'
-  #   template << question if phrase(event).question == 'enabled'
-  #   template
-  # end
-
-  # def link(event)
-  #   labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
-  #   actions = []
-  #   labels.zip(phrase(event).link).each do |label, link|
-  #     actions << {
-  #         "type": "uri",
-  #         "label": label.gsub(%r{</?[^>]+?>},''),
-  #         "uri": link
-  #     }
-  #   end
-  #   template = []
-  #   text = phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/)
-  #   template <<
-  #       {
-  #           "type": "template",
-  #           "altText": "this is a buttons template",
-  #           "template": {
-  #               "type": "buttons",
-  #               "actions": actions,
-  #               "text": text.join("").gsub(%r{</?[^>]+?>},'')
-  #           }
-  #       }
-  #   template << site_search(event) if phrase(event).site_search == 'enabled'
-  #   template << question if phrase(event).question == 'enabled'
-  #   template
-  # end
-
+  
   def res(event)
     template =
         {
@@ -196,26 +133,38 @@ class Line::BotController < ApplicationController
     }
   end
 
+  def suggest_text(event, templates)
+    if templates.empty?
+      if phrase(event).suggest.present? && phrase(event).response.present?
+        phrase(event).response.gsub(%r{</?[^>]+?>},'')
+      else
+        Chat::Node::Bot.first.response_template.gsub(%r{</?[^>]+?>},'')
+      end
+    else
+      "選択肢#{templates.length + 1}"
+    end
+  end
+
   def suggests(event)
     suggests = phrase(event).suggest
     actions = suggests.each_slice(4).to_a
 
-    ary = []
-    array = []
+    action_templates = []
+    suggest_templates = []
     actions.each do |action|
       action.each do |suggest|
-        array << {
+        suggest_templates << {
             "type": "message",
             "label": suggest,
             "text": suggest
         }
       end
-      ary << array
-      array = []
+      action_templates << suggest_templates
+      suggest_templates = []
     end
 
     templates = []
-    ary.each do |action|
+    action_templates.each do |action|
       template =
           {
               "type": "template",
@@ -223,7 +172,7 @@ class Line::BotController < ApplicationController
               "template": {
                   "type": "buttons",
                   "actions": action,
-                  "text": text(event)
+                  "text": suggest_text(event, templates)
               }
           }
       templates << template
@@ -233,26 +182,37 @@ class Line::BotController < ApplicationController
     templates
   end
 
+  def link_text(event, templates)
+    if templates.empty?
+      if phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/).present?
+        phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/).join("").gsub(%r{</?[^>]+?>},'')
+      else
+        Chat::Node::Bot.first.response_template.gsub(%r{</?[^>]+?>},'')
+      end
+    else
+      "選択肢#{templates.length + 1}"
+    end
+  end
+
   def links(event)
     labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
     actions = labels.each_slice(4).to_a
-    ary = []
-    array = []
+    action_templates = []
+    link_templates = []
     actions.each do |action|
       action.zip(phrase(event).link).each do |label, link|
-        array << {
+        link_templates << {
             "type": "uri",
             "label": label.gsub(%r{</?[^>]+?>},''),
             "uri": link
         }
       end
-      ary << array
-      array = []
+      action_templates << link_templates
+      link_templates = []
     end
 
     templates = []
-    text = phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/)
-    ary.each do |action|
+    action_templates.each do |action|
       template =
           {
               "type": "template",
@@ -260,7 +220,7 @@ class Line::BotController < ApplicationController
               "template": {
                   "type": "buttons",
                   "actions": action,
-                  "text": text.join("").gsub(%r{</?[^>]+?>},'')
+                  "text": link_text(event, templates)
               }
           }
       templates << template
