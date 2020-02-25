@@ -12,6 +12,7 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
   Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = null;
   Gws_Schedule_Remote_Calendar_Sync.delay = 5000;
   Gws_Schedule_Remote_Calendar_Sync.instances = [];
+  Gws_Schedule_Remote_Calendar_Sync.jobCompletionLoopCount = 0;
 
   Gws_Schedule_Remote_Calendar_Sync.render = function() {
     $(".gws-schedule-remote-calendar").each(function() {
@@ -28,7 +29,7 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
 
   Gws_Schedule_Remote_Calendar_Sync.prototype.render = function() {
     var self = this;
-    this.$el.find("button").on("click", function() {
+    this.$el.on("click", "button", function() {
       self.onSync();
     });
   };
@@ -53,36 +54,64 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
       dataType: "json"
     }).done(function(data) {
       SS.notice(data["data"]["notice"]);
-      self.startJobCompletionLoop(data["data"]["job_id"]);
+
+      Gws_Schedule_Remote_Calendar_Sync.jobCompletionLoopCount++;
+
+      var loop = new JobCompletionLoop(data["data"]["job_id"]);
+      loop.done(function() {
+        // job has been completed
+        self.$el.html(self.innerHtml);
+
+        Gws_Schedule_Remote_Calendar_Sync.jobCompletionLoopCount--;
+        if (Gws_Schedule_Remote_Calendar_Sync.jobCompletionLoopCount === 0) {
+          // use setTimeout to give browsers a chance to DOM rendering
+          setTimeout(function() { self.reload(); }, 10);
+        }
+      });
+      loop.start();
     }).fail(function(xhr, status, error) {
       self.$el.html(error);
     });
   };
 
-  Gws_Schedule_Remote_Calendar_Sync.prototype.startJobCompletionLoop = function(jobId) {
+  Gws_Schedule_Remote_Calendar_Sync.prototype.reload = function() {
+    if (!confirm(Gws_Schedule_Remote_Calendar_Sync.confirmations.reload)) {
+      return;
+    }
+
+    // reload button が存在する場合は、ボタンをクリックする
+    var buttons = $(document).find(".fc-reload-button");
+    if (buttons.length > 0) {
+      buttons[0].click();
+      return;
+    }
+
+    // reload button が存在しない場合は、全体を再読み込み。
+    location.reload();
+  };
+
+  function JobCompletionLoop(jobId) {
+    this.jobId = jobId;
+    this.url = Gws_Schedule_Remote_Calendar_Sync.jobStatusPath.replace(":ID", this.jobId);
+    this.defer = $.Deferred();
+    this.promise = this.defer.promise();
+  }
+
+  JobCompletionLoop.prototype.done = function(f) {
+    this.promise.done(f);
+  };
+
+  JobCompletionLoop.prototype.start = function(f) {
     var self = this;
     $.ajax({
-      url: Gws_Schedule_Remote_Calendar_Sync.jobStatusPath.replace(":ID", jobId),
+      url: this.url,
       type: "GET",
       dataType: "json"
     }).done(function(data) {
       // job is still running or standing by
-      setTimeout(function() { self.startJobCompletionLoop(jobId); }, Gws_Schedule_Remote_Calendar_Sync.delay);
+      setTimeout(function() { self.start(); }, Gws_Schedule_Remote_Calendar_Sync.delay);
     }).fail(function(xhr, status, error) {
-      // job has been completed
-      self.$el.html(self.innerHtml);
-
-      // use setTimeout to give browsers a chance to DOM rendering
-      setTimeout(function() {
-        if (confirm(Gws_Schedule_Remote_Calendar_Sync.confirmations.reload)) {
-          var buttons = $(document).find(".fc-reload-button");
-          if (buttons.length > 0) {
-            buttons[0].click();
-            return;
-          }
-          location.reload();
-        }
-      }, 0);
+      self.defer.resolve();
     });
   };
 
