@@ -29,12 +29,12 @@ class Line::BotController < ApplicationController
             if phrase(event).present?
               if phrase(event).suggest.present?
                 # if phrase(event).suggest.count > 4
-                  client.reply_message(event['replyToken'], suggests(event))
+                client.reply_message(event['replyToken'], suggests(event))
                 # else
                 #   client.reply_message(event['replyToken'], suggest(event))
                 # end
               elsif phrase(event).link.present?
-                client.reply_message(event['replyToken'], link(event))
+                client.reply_message(event['replyToken'], links(event))
               elsif phrase(event).response.present?
                 client.reply_message(event['replyToken'], res(event))
               end
@@ -86,32 +86,32 @@ class Line::BotController < ApplicationController
   #   template
   # end
 
-  def link(event)
-    labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
-    actions = []
-    labels.zip(phrase(event).link).each do |label, link|
-      actions << {
-          "type": "uri",
-          "label": label.gsub(%r{</?[^>]+?>},''),
-          "uri": link
-      }
-    end
-    template = []
-    text = phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/)
-    template <<
-        {
-            "type": "template",
-            "altText": "this is a buttons template",
-            "template": {
-                "type": "buttons",
-                "actions": actions,
-                "text": text.join("").gsub(%r{</?[^>]+?>},'')
-            }
-        }
-    template << site_search(event) if phrase(event).site_search == 'enabled'
-    template << question if phrase(event).question == 'enabled'
-    template
-  end
+  # def link(event)
+  #   labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
+  #   actions = []
+  #   labels.zip(phrase(event).link).each do |label, link|
+  #     actions << {
+  #         "type": "uri",
+  #         "label": label.gsub(%r{</?[^>]+?>},''),
+  #         "uri": link
+  #     }
+  #   end
+  #   template = []
+  #   text = phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/)
+  #   template <<
+  #       {
+  #           "type": "template",
+  #           "altText": "this is a buttons template",
+  #           "template": {
+  #               "type": "buttons",
+  #               "actions": actions,
+  #               "text": text.join("").gsub(%r{</?[^>]+?>},'')
+  #           }
+  #       }
+  #   template << site_search(event) if phrase(event).site_search == 'enabled'
+  #   template << question if phrase(event).question == 'enabled'
+  #   template
+  # end
 
   def res(event)
     template =
@@ -224,6 +224,43 @@ class Line::BotController < ApplicationController
                   "type": "buttons",
                   "actions": action,
                   "text": text(event)
+              }
+          }
+      templates << template
+    end
+    templates << site_search(event) if phrase(event).site_search == 'enabled'
+    templates << question if phrase(event).question == 'enabled'
+    templates
+  end
+
+  def links(event)
+    labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
+    actions = labels.each_slice(4).to_a
+    ary = []
+    array = []
+    actions.each do |action|
+      action.zip(phrase(event).link).each do |label, link|
+        array << {
+            "type": "uri",
+            "label": label.gsub(%r{</?[^>]+?>},''),
+            "uri": link
+        }
+      end
+      ary << array
+      array = []
+    end
+
+    templates = []
+    text = phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/)
+    ary.each do |action|
+      template =
+          {
+              "type": "template",
+              "altText": "this is a buttons template",
+              "template": {
+                  "type": "buttons",
+                  "actions": action,
+                  "text": text.join("").gsub(%r{</?[^>]+?>},'')
               }
           }
       templates << template
