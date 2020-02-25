@@ -142,6 +142,7 @@ ja:
       csv: CSV
       ignore_alerts_and_save: 警告を無視して保存する
       sync: 同期
+      reload: 再読込
     confirm:
       delete: 削除してよろしいですか？
       soft_delete: 削除してよろしいですか？
