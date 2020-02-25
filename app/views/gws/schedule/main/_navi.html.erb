@@ -56,22 +56,22 @@
   <% if calenders.present? %>
     <% accounts = Gws::Schedule::Remote::Account.site(@cur_site).in(id: calenders.pluck(:account_id).uniq) %>
     <% calenders = calenders.to_a %>
-    <nav class="mod-navi">
+    <nav class="mod-navi gws-schedule-remote-calendars">
     <% accounts.each do |account| %>
       <h2><%= account.name %></h2>
+      <ul>
       <% calenders.each do |calendar| %>
         <% next if calendar.account_id != account.id %>
-        <h3 style="position: relative;">
+        <li class="gws-schedule-remote-calendar" data-href="<%= sync_gws_schedule_remote_account_calendar_path(account_id: account, id: calendar, format: "json") %>">
           <span>
             <%= calendar.name %>
           </span>
-          <span class="gws-remote-schedule-calendar-sync" data-href="<%= sync_gws_schedule_remote_account_calendar_path(account_id: account, id: calendar, format: "json") %>" style="position: absolute; top: 0; right: 5px;">
-            <button>
-              <i class="material-icons md-dark"></i>
-            </button>
-          </span>
-        </h3>
+          <button>
+            <i class="material-icons md-13">refresh</i>
+          </button>
+        </li>
       <% end %>
+      </ul>
     <% end %>
     </nav>
     <%= jquery do %>

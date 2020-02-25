@@ -14,7 +14,7 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
   Gws_Schedule_Remote_Calendar_Sync.instances = [];
 
   Gws_Schedule_Remote_Calendar_Sync.render = function() {
-    $(".gws-remote-schedule-calendar-sync").each(function() {
+    $(".gws-schedule-remote-calendar").each(function() {
       var instance = new Gws_Schedule_Remote_Calendar_Sync(this);
       Gws_Schedule_Remote_Calendar_Sync.instances.push(instance);
     });
