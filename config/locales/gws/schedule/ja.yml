@@ -155,6 +155,7 @@ ja:
 
     confirm:
       sync_completed_and_reload: 同期が完了しました。再読込してよろしいですか？
+      sync_all_calendar: すべてのカレンダーを同期してよろしいですか？
 
   gws/schedule/todo:
     active: 削除を取り消す

@@ -11,10 +11,18 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
   };
   Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = null;
   Gws_Schedule_Remote_Calendar_Sync.delay = 5000;
+  Gws_Schedule_Remote_Calendar_Sync.instances = [];
 
   Gws_Schedule_Remote_Calendar_Sync.render = function() {
     $(".gws-remote-schedule-calendar-sync").each(function() {
-      new Gws_Schedule_Remote_Calendar_Sync(this);
+      var instance = new Gws_Schedule_Remote_Calendar_Sync(this);
+      Gws_Schedule_Remote_Calendar_Sync.instances.push(instance);
+    });
+  };
+
+  Gws_Schedule_Remote_Calendar_Sync.syncAll = function() {
+    $.each(Gws_Schedule_Remote_Calendar_Sync.instances, function() {
+      this.onSync({ skipConfirmation: true });
     });
   };
 
@@ -25,9 +33,11 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
     });
   };
 
-  Gws_Schedule_Remote_Calendar_Sync.prototype.onSync = function() {
-    if (! confirm(Gws_Schedule_Remote_Calendar_Sync.confirmations.sync)) {
-      return;
+  Gws_Schedule_Remote_Calendar_Sync.prototype.onSync = function(options) {
+    if (!options || !options.skipConfirmation) {
+      if (!confirm(Gws_Schedule_Remote_Calendar_Sync.confirmations.sync)) {
+        return;
+      }
     }
 
     if (! this.innerHtml) {
@@ -45,7 +55,7 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
       SS.notice(data["data"]["notice"]);
       self.startJobCompletionLoop(data["data"]["job_id"]);
     }).fail(function(xhr, status, error) {
-      this.$el.html(status + ": " + error);
+      self.$el.html(error);
     });
   };
 

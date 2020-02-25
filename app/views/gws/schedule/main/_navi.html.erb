@@ -65,7 +65,7 @@
           <span>
             <%= calendar.name %>
           </span>
-          <span class="gws-remote-schedule-calendar-sync" data-href="<%= sync_gws_schedule_remote_account_calendar_path(account_id: account, id: calendar) %>" style="position: absolute; top: 0; right: 5px;">
+          <span class="gws-remote-schedule-calendar-sync" data-href="<%= sync_gws_schedule_remote_account_calendar_path(account_id: account, id: calendar, format: "json") %>" style="position: absolute; top: 0; right: 5px;">
             <button>
               <i class="material-icons md-dark"></i>
             </button>
@@ -77,8 +77,19 @@
     <%= jquery do %>
       Gws_Schedule_Remote_Calendar_Sync.confirmations.sync = <%== t("ss.confirm.sync").to_json %>;
       Gws_Schedule_Remote_Calendar_Sync.confirmations.reload = <%== t("gws/schedule.confirm.sync_completed_and_reload").to_json %>;
-      Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = <%== status_gws_job_apis_task_path(id: ":ID").to_json %>;
+      Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = <%== status_gws_job_apis_task_path(id: ":ID", format: "json").to_json %>;
       Gws_Schedule_Remote_Calendar_Sync.render();
+
+      var storage = window.sessionStorage;
+      var key = "ss.g<%= @cur_site.id %>.schedule.initialSync";
+      if (storage && !storage.getItem(key)) {
+        storage.setItem(key, "1");
+        setTimeout(function() {
+          if (confirm(<%== t("gws/schedule.confirm.sync_all_calendar").to_json %>)) {
+            Gws_Schedule_Remote_Calendar_Sync.syncAll();
+          }
+        }, 100);
+      }
     <% end %>
   <% end %>
 <% end %>

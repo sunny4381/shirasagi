@@ -66,5 +66,17 @@ class Gws::Schedule::Remote::CalendarsController < ApplicationController
         render json: { status: "ok", data: data }, status: :ok
       end
     end
+  rescue => e
+    logger.warn("#{e.class} (#{e.message}):\n  #{e.backtrace.join("\n  ")}")
+
+    respond_to do |format|
+      format.html do
+        @item.errors.add(:base, e.to_s)
+        render
+      end
+      format.json do
+        render json: { status: "bad request", error: e.to_s }, status: :bad_request
+      end
+    end
   end
 end
