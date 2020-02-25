@@ -75,7 +75,8 @@
     <% end %>
     </nav>
     <%= jquery do %>
-      Gws_Schedule_Remote_Calendar_Sync.message = <%== t("ss.confirm.sync").to_json %>;
+      Gws_Schedule_Remote_Calendar_Sync.confirmations.sync = <%== t("ss.confirm.sync").to_json %>;
+      Gws_Schedule_Remote_Calendar_Sync.confirmations.reload = <%== t("gws/schedule.confirm.sync_completed_and_reload").to_json %>;
       Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = <%== status_gws_job_apis_task_path(id: ":ID").to_json %>;
       Gws_Schedule_Remote_Calendar_Sync.render();
     <% end %>

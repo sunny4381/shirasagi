@@ -5,7 +5,10 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
     this.render();
   }
 
-  Gws_Schedule_Remote_Calendar_Sync.message = null;
+  Gws_Schedule_Remote_Calendar_Sync.confirmations = {
+    sync: null,
+    reload: null
+  };
   Gws_Schedule_Remote_Calendar_Sync.jobStatusPath = null;
   Gws_Schedule_Remote_Calendar_Sync.delay = 5000;
 
@@ -23,7 +26,7 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
   };
 
   Gws_Schedule_Remote_Calendar_Sync.prototype.onSync = function() {
-    if (! confirm(Gws_Schedule_Remote_Calendar_Sync.message)) {
+    if (! confirm(Gws_Schedule_Remote_Calendar_Sync.confirmations.sync)) {
       return;
     }
 
@@ -61,7 +64,12 @@ this.Gws_Schedule_Remote_Calendar_Sync = (function () {
 
       // use setTimeout to give browsers a chance to DOM rendering
       setTimeout(function() {
-        if (confirm("同期が完了しました。画面をリロードしてよろしいですか？")) {
+        if (confirm(Gws_Schedule_Remote_Calendar_Sync.confirmations.reload)) {
+          var buttons = $(document).find(".fc-reload-button");
+          if (buttons.length > 0) {
+            buttons[0].click();
+            return;
+          }
           location.reload();
         }
       }, 0);
