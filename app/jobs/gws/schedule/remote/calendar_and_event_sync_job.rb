@@ -64,7 +64,7 @@ class Gws::Schedule::Remote::CalendarAndEventSyncJob < Gws::ApplicationJob
         end
       end
 
-      job_class = Gws::Schedule::Remote::EventSyncJob.bind(site: site.id, user: user.id)
+      job_class = Gws::Schedule::Remote::EventSyncJob.bind(site_id: site, user_id: user)
       job_class.perform_now(calendar.id.to_s)
       @imported_calendars << calendar.id
     end
