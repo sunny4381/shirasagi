@@ -81,11 +81,11 @@ class Line::BotController < ApplicationController
         })
       elsif event.message['text'].eql?('近くの施設を探す')
         set_location(event)
-      elsif Facility::Node::Page.find_by({name: event.message['text']}).present?
+      elsif Facility::Node::Page.find_by(name: event.message['text']).present?
         client.reply_message(event['replyToken'], {
             "type": "location",
             "title": event.message['text'],
-            "address": Facility::Node::Page.find_by({name: event.message['text']}).address,
+            "address": Facility::Node::Page.find_by(name: event.message['text']).address,
             "latitude": Facility::Map.find_by(name: event.message['text']).map_points[0][:loc][0],
             "longitude": Facility::Map.find_by(name: event.message['text']).map_points[0][:loc][1]
         })
@@ -214,14 +214,15 @@ class Line::BotController < ApplicationController
   def links(event)
     labels = phrase(event).response.scan(/<a(?: .+?)?>.*?<\/a>/)
     actions = labels.each_slice(4).to_a
+    links = phrase(event).link.each_slice(4).to_a
     action_templates = []
     link_templates = []
-    actions.each do |action|
-      action.zip(phrase(event).link).each do |label, link|
+    actions.zip(links).each do |action, link|
+      action.zip(link).each do |label, url|
         link_templates << {
             "type": "uri",
             "label": label.gsub(%r{</?[^>]+?>},''),
-            "uri": link
+            "uri": url
         }
       end
       action_templates << link_templates
@@ -266,7 +267,7 @@ class Line::BotController < ApplicationController
   end
 
   def carousel
-    facilities =  Facility::Node::Page.order_by(id: "desc").to_a
+    facilities = Facility::Node::Page.order_by(id: "desc").to_a
     columns = []
     domain = Cms::Site.find_by_domain(request_host).domains[1]
     facilities.each do |facility|
@@ -278,7 +279,7 @@ class Line::BotController < ApplicationController
               "defaultAction": {
                   "type": "uri",
                   "label": "View detail",
-                  "uri": "http://example.com/page/123"
+                  "uri": "https://" + domain + facility_url
               },
               "actions": [
                   {
