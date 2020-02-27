@@ -82,12 +82,17 @@ class Line::BotController < ApplicationController
       elsif event.message['text'].eql?('近くの施設を探す')
         set_location(event)
       elsif Facility::Node::Page.find_by(name: event.message['text']).present?
+        map_points = []
+        Facility::Map.all.pluck(:map_points).each do |map_point|
+          map_points << map_point[0]
+        end
+        facility = map_points.find { |x| x[:name].include?(event.message['text']) }
         client.reply_message(event['replyToken'], {
             "type": "location",
             "title": event.message['text'],
             "address": Facility::Node::Page.find_by(name: event.message['text']).address,
-            "latitude": Facility::Map.find_by(name: event.message['text']).map_points[0][:loc][0],
-            "longitude": Facility::Map.find_by(name: event.message['text']).map_points[0][:loc][1]
+            "latitude": facility[:loc][0],
+            "longitude": facility[:loc][1]
         })
       end
     rescue
@@ -267,7 +272,7 @@ class Line::BotController < ApplicationController
   end
 
   def carousel
-    facilities = Facility::Node::Page.order_by(id: "desc").to_a
+    facilities = Facility::Node::Page.order_by(id: "desc").limit(10).to_a
     columns = []
     domain = Cms::Site.find_by_domain(request_host).domains[1]
     facilities.each do |facility|
