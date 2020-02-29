@@ -90,6 +90,15 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: /locales/,
+        loader: '@alienfast/i18next-loader',
+        options: {
+          relativePathAsNamespace: true
+        },
+        // options here
+        //query: { overrides: [ '../node_modules/lib/locales' ] }
       }
     ]
   },
