@@ -21,6 +21,12 @@ module.exports = {
   mode: isProd ? "production" : "development",
   devtool: "source-map",
   entry: entries,
+  optimization: {
+    splitChunks: {
+      name: "vendor",
+      chunks: "initial"
+    }
+  },
   output: {
     path: path.resolve(__dirname, "public/packs"),
     publicPath: isProd ? "/packs/" : "//localhost:8081/packs/",
