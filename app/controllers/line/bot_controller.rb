@@ -3,6 +3,8 @@ class Line::BotController < ApplicationController
 
   protect_from_forgery :except => [:callback]
 
+  EARTH_RADIUS_KM = 6378.137
+
   def client
     @client ||= Line::Bot::Client.new { |config|
       config.channel_secret = Cms::Site.find_by_domain(request_host).line_channel_secret
@@ -39,7 +41,7 @@ class Line::BotController < ApplicationController
             answer(event)
           end
         when Line::Bot::Event::MessageType::Location
-          client.reply_message(event['replyToken'], carousel)
+          client.reply_message(event['replyToken'], carousel(event))
         end
       end
     }
@@ -81,19 +83,6 @@ class Line::BotController < ApplicationController
         })
       elsif event.message['text'].eql?('近くの施設を探す')
         set_location(event)
-      elsif Facility::Node::Page.find_by(name: event.message['text']).present?
-        map_points = []
-        Facility::Map.all.pluck(:map_points).each do |map_point|
-          map_points << map_point[0]
-        end
-        facility = map_points.find { |x| x[:name].include?(event.message['text']) }
-        client.reply_message(event['replyToken'], {
-            "type": "location",
-            "title": event.message['text'],
-            "address": Facility::Node::Page.find_by(name: event.message['text']).address,
-            "latitude": facility[:loc][0],
-            "longitude": facility[:loc][1]
-        })
       end
     rescue
       template = []
@@ -271,31 +260,64 @@ class Line::BotController < ApplicationController
     })
   end
 
-  def carousel
-    facilities = Facility::Node::Page.order_by(id: "desc").limit(10).to_a
+  def center_sphere(loc, radius_km)
+    where(
+        map_points: {
+            "$elemMatch" => {
+                "loc" => {
+                    "$geoWithin" => { "$centerSphere" => [ loc, radius_km / EARTH_RADIUS_KM ] }
+                }
+            }
+        }
+    )
+  end
+
+  def carousel(event)
+    @lat = event["message"]["latitude"]
+    @lng = event["message"]["longitude"]
+    @radius = 3
+
+    @lat = @lat.to_f
+    @lng = @lng.to_f
+
+    if @lat >= -90 && @lat <= 90 && @lng >= -180 && @lng <= 180
+      @loc = [@lng, @lat]
+    end
+    facilities = Facility::Map.where(site_id: site_id, state: "public").where(
+        map_points: {
+            "$elemMatch" => {
+                "loc" => {
+                    "$geoWithin" => { "$centerSphere" => [ @loc, @radius / EARTH_RADIUS_KM ] }
+                }
+            }
+        }
+    ).limit(10).to_a
     columns = []
     domain = Cms::Site.find_by_domain(request_host).domains[1]
-    facilities.each do |facility|
-      facility_url = Facility::Node::Page.find_by(name: facility.name).url
+    facilities.each do |map|
+      parent_path = ::File.dirname(map.filename)
+      item = Facility::Node::Page.where(site_id: site_id, state: "public").in_path(parent_path).first
+      map_lat = map.map_points.first[:loc]["lat"]
+      map_lng = map.map_points.first[:loc]["lng"]
       column =
           {
-              "title": facility.name,
-              "text": facility.address,
+              "title": item.name,
+              "text": item.address,
               "defaultAction": {
                   "type": "uri",
                   "label": "View detail",
-                  "uri": "https://" + domain + facility_url
+                  "uri": "https://" + domain + item.url
               },
               "actions": [
                   {
-                      "type": "message",
+                      "type": "uri",
                       "label": "地図",
-                      "text": facility.name
+                      "uri": "https://www.google.com/maps/search/?api=1&query=#{map_lat},#{map_lng}"
                   },
                   {
                       "type": "uri",
                       "label": "詳細情報",
-                      "uri": "https://" + domain + facility_url
+                      "uri": "https://" + domain + item.url
                   }
               ]
           }
