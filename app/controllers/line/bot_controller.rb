@@ -1,4 +1,5 @@
 class Line::BotController < ApplicationController
+
   require 'line/bot'
 
   protect_from_forgery :except => [:callback]
@@ -260,29 +261,17 @@ class Line::BotController < ApplicationController
     })
   end
 
-  def center_sphere(loc, radius_km)
-    where(
-        map_points: {
-            "$elemMatch" => {
-                "loc" => {
-                    "$geoWithin" => { "$centerSphere" => [ loc, radius_km / EARTH_RADIUS_KM ] }
-                }
-            }
-        }
-    )
-  end
-
   def carousel(event)
     @lat = event["message"]["latitude"]
     @lng = event["message"]["longitude"]
     @radius = 3
-
     @lat = @lat.to_f
     @lng = @lng.to_f
 
     if @lat >= -90 && @lat <= 90 && @lng >= -180 && @lng <= 180
       @loc = [@lng, @lat]
     end
+
     facilities = Facility::Map.where(site_id: site_id, state: "public").where(
         map_points: {
             "$elemMatch" => {
@@ -291,48 +280,73 @@ class Line::BotController < ApplicationController
                 }
             }
         }
-    ).limit(10).to_a
-    columns = []
-    domain = Cms::Site.find_by_domain(request_host).domains[1]
-    facilities.each do |map|
-      parent_path = ::File.dirname(map.filename)
-      item = Facility::Node::Page.where(site_id: site_id, state: "public").in_path(parent_path).first
-      map_lat = map.map_points.first[:loc]["lat"]
-      map_lng = map.map_points.first[:loc]["lng"]
-      column =
-          {
-              "title": item.name,
-              "text": item.address,
-              "defaultAction": {
-                  "type": "uri",
-                  "label": "View detail",
-                  "uri": "https://" + domain + item.url
-              },
-              "actions": [
-                  {
-                      "type": "uri",
-                      "label": "地図",
-                      "uri": "https://www.google.com/maps/search/?api=1&query=#{map_lat},#{map_lng}"
-                  },
-                  {
-                      "type": "uri",
-                      "label": "詳細情報",
-                      "uri": "https://" + domain + item.url
-                  }
-              ]
+    ).to_a
+
+    if facilities.empty?
+      client.reply_message(event['replyToken'], {
+          "type": "text",
+          "text": "近くに施設はありませんでした。"
+      })
+    else
+      @markers = facilities.map do |item|
+        points = item.map_points.map do |point|
+          point[:facility_url] = item.url
+          point[:distance] = ::Geocoder::Calculations.distance_between([@lat,@lng], [point["loc"]["lat"], point["loc"]["lng"]], units: :km) rescue 0.0
+          point
+        end
+        points
+      end.flatten
+
+      @markers = @markers.sort_by { |point| point[:distance] }
+      @markers = @markers[0..9]
+
+      columns = []
+      domain = Cms::Site.find_by_domain(request_host).domains[1]
+      @markers.each do |map|
+        item = Facility::Node::Page.where(site_id: site_id, state: "public").in_path(map[:facility_url]).first
+        map_lat = map[:loc][:lat]
+        map_lng = map[:loc][:lng]
+        if map[:distance] > 1.0
+          distance = "約#{map[:distance].round(1)}km"
+        else
+          distance = "約#{(map[:distance] * 1000).round}m"
+        end
+        column =
+            {
+                "title": item.name,
+                "text": "#{item.address}\n #{distance}",
+                "defaultAction": {
+                    "type": "uri",
+                    "label": "View detail",
+                    "uri": "https://" + domain + item.url
+                },
+                "actions": [
+                    {
+                        "type": "uri",
+                        "label": "地図",
+                        "uri": "https://www.google.com/maps/search/?api=1&query=#{map_lat},#{map_lng}"
+                    },
+                    {
+                        "type": "uri",
+                        "label": "詳細情報",
+                        "uri": "https://" + domain + item.url
+                    }
+                ]
+            }
+        columns << column
+      end
+
+      template = {
+          "type": "template",
+          "altText": "this is a carousel template",
+          "template": {
+              "type": "carousel",
+              "columns": columns,
+              "imageAspectRatio": "rectangle",
+              "imageSize": "cover"
           }
-      columns << column
+      }
+      template
     end
-    template = {
-        "type": "template",
-        "altText": "this is a carousel template",
-        "template": {
-            "type": "carousel",
-            "columns": columns,
-            "imageAspectRatio": "rectangle",
-            "imageSize": "cover"
-        }
-    }
-    template
   end
 end
