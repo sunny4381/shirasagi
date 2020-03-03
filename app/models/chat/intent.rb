@@ -45,7 +45,7 @@ class Chat::Intent
 
     def csv_headers
       %w(
-          id name phrase suggest response site_search order category_ids
+          id name phrase suggest response link site_search order category_ids
         )
     end
 
@@ -59,6 +59,7 @@ class Chat::Intent
             item.phrase.join("\n"),
             item.suggest.join("\n"),
             item.response,
+            item.link,
             item.site_search,
             item.order,
             item.categories.pluck(:name).join("\n")
