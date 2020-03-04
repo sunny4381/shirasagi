@@ -1,8 +1,10 @@
-class Line::BotController < ApplicationController
+class Chat::LineBot::Service
+  include ActiveModel::Model
 
   require 'line/bot'
 
-  protect_from_forgery :except => [:callback]
+  attr_accessor  :cur_site, :cur_node
+  attr_accessor  :request
 
   EARTH_RADIUS_KM = 6378.137
 
@@ -13,7 +15,7 @@ class Line::BotController < ApplicationController
     }
   end
 
-  def callback
+  def call
     body = request.body.read
 
     signature = request.env['HTTP_X_LINE_SIGNATURE']
