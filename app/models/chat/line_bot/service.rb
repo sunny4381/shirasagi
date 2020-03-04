@@ -56,7 +56,7 @@ class Chat::LineBot::Service
   private
 
   def phrase(event)
-    Chat::Intent.site(@cur_site).find_by({phrase: event.message['text']})
+    Chat::Intent.site(@cur_site).where(node_id: @cur_node.id).find_by({phrase: event.message['text']})
   end
 
   def res(event)
@@ -75,12 +75,12 @@ class Chat::LineBot::Service
       if event.message['text'].eql?('yes')
         client.reply_message(event['replyToken'], {
             "type": "text",
-            "text": Chat::Node::Bot.site(@cur_site).first.chat_success.gsub(%r{</?[^>]+?>},'')
+            "text": @cur_node.chat_success.gsub(%r{</?[^>]+?>},'')
         })
       elsif event.message['text'].eql?('no')
         client.reply_message(event['replyToken'], {
             "type": "text",
-            "text": Chat::Node::Bot.site(@cur_site).first.chat_retry.gsub(%r{</?[^>]+?>},'')
+            "text": @cur_node.chat_retry.gsub(%r{</?[^>]+?>},'')
         })
       elsif event.message['text'].eql?('近くの施設を探す')
         set_location(event)
@@ -98,7 +98,7 @@ class Chat::LineBot::Service
         "altText": "this is a confirm template",
         "template": {
             "type": "confirm",
-            "text": Chat::Node::Bot.site(@cur_site).first.question.gsub(%r{</?[^>]+?>},''),
+            "text": @cur_node.question.gsub(%r{</?[^>]+?>},''),
             "actions": [
                 {
                     "type": "message",
@@ -141,7 +141,7 @@ class Chat::LineBot::Service
   def no_match
     {
         "type": "text",
-        "text": Chat::Node::Bot.site(@cur_site).first.exception_text.gsub(%r{</?[^>]+?>},'')
+        "text": @cur_node.exception_text.gsub(%r{</?[^>]+?>},'')
     }
   end
 
@@ -150,7 +150,7 @@ class Chat::LineBot::Service
       if phrase(event).suggest.present? && phrase(event).response.present?
         phrase(event).response.gsub(%r{</?[^>]+?>},'')
       else
-        Chat::Node::Bot.site(@cur_site).first.response_template.gsub(%r{</?[^>]+?>},'')
+        @cur_node.response_template.gsub(%r{</?[^>]+?>},'')
       end
     else
       "選択肢#{templates.length + 1}"
@@ -198,7 +198,7 @@ class Chat::LineBot::Service
       if phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/).present?
         phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/).join("").gsub(%r{</?[^>]+?>},'')
       else
-        Chat::Node::Bot.site(@cur_site).first.response_template.gsub(%r{</?[^>]+?>},'')
+        @cur_node.response_template.gsub(%r{</?[^>]+?>},'')
       end
     else
       "選択肢#{templates.length + 1}"
