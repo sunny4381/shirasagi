@@ -18,8 +18,8 @@ class Chat::LineBot::Service
 
   def client
     @client ||= Line::Bot::Client.new { |config|
-      config.channel_secret = Cms::Site.find_by_domain(request_host).line_channel_secret
-      config.channel_token = Cms::Site.find_by_domain(request_host).line_channel_access_token
+      config.channel_secret = @cur_site.line_channel_secret
+      config.channel_token = @cur_site.line_channel_access_token
     }
   end
 
@@ -55,12 +55,8 @@ class Chat::LineBot::Service
 
   private
 
-  def site_id
-    Cms::Site.find_by_domain(request_host).id
-  end
-
   def phrase(event)
-    Chat::Intent.find_by({phrase: event.message['text']})
+    Chat::Intent.site(@cur_site).find_by({phrase: event.message['text']})
   end
 
   def res(event)
@@ -79,12 +75,12 @@ class Chat::LineBot::Service
       if event.message['text'].eql?('yes')
         client.reply_message(event['replyToken'], {
             "type": "text",
-            "text": Chat::Node::Bot.find_by(site_id: site_id).chat_success.gsub(%r{</?[^>]+?>},'')
+            "text": Chat::Node::Bot.site(@cur_site).first.chat_success.gsub(%r{</?[^>]+?>},'')
         })
       elsif event.message['text'].eql?('no')
         client.reply_message(event['replyToken'], {
             "type": "text",
-            "text": Chat::Node::Bot.find_by(site_id: site_id).chat_retry.gsub(%r{</?[^>]+?>},'')
+            "text": Chat::Node::Bot.site(@cur_site).first.chat_retry.gsub(%r{</?[^>]+?>},'')
         })
       elsif event.message['text'].eql?('近くの施設を探す')
         set_location(event)
@@ -102,7 +98,7 @@ class Chat::LineBot::Service
         "altText": "this is a confirm template",
         "template": {
             "type": "confirm",
-            "text": Chat::Node::Bot.find_by(site_id: site_id).question.gsub(%r{</?[^>]+?>},''),
+            "text": Chat::Node::Bot.site(@cur_site).first.question.gsub(%r{</?[^>]+?>},''),
             "actions": [
                 {
                     "type": "message",
@@ -120,8 +116,7 @@ class Chat::LineBot::Service
   end
 
   def site_search(event)
-    site = Cms::Site.find_by_domain(request_host).id
-    site_search_node = Cms::Node::SiteSearch.find_by(site_id: site)
+    site_search_node = Cms::Node::SiteSearch.site(@cur_site).first
     uri = URI.parse(site_search_node.url)
     uri.query = { s: { keyword: event.message['text'] } }.to_query
     url = uri.try(:to_s)
@@ -135,7 +130,7 @@ class Chat::LineBot::Service
                 {
                     "type": "uri",
                     "label": "サイト内検索結果へ移動",
-                    "uri": "https://" + Cms::Site.find(site).domains[1] + url
+                    "uri": "https://" + @cur_site.domains[1] + url
                 }
             ]
         }
@@ -146,7 +141,7 @@ class Chat::LineBot::Service
   def no_match
     {
         "type": "text",
-        "text": Chat::Node::Bot.find_by(site_id: site_id).exception_text.gsub(%r{</?[^>]+?>},'')
+        "text": Chat::Node::Bot.site(@cur_site).first.exception_text.gsub(%r{</?[^>]+?>},'')
     }
   end
 
@@ -155,7 +150,7 @@ class Chat::LineBot::Service
       if phrase(event).suggest.present? && phrase(event).response.present?
         phrase(event).response.gsub(%r{</?[^>]+?>},'')
       else
-        Chat::Node::Bot.find_by(site_id: site_id).response_template.gsub(%r{</?[^>]+?>},'')
+        Chat::Node::Bot.site(@cur_site).first.response_template.gsub(%r{</?[^>]+?>},'')
       end
     else
       "選択肢#{templates.length + 1}"
@@ -203,7 +198,7 @@ class Chat::LineBot::Service
       if phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/).present?
         phrase(event).response.scan(/<p(?: .+?)?>.*?<\/p>/).join("").gsub(%r{</?[^>]+?>},'')
       else
-        Chat::Node::Bot.find_by(site_id: site_id).response_template.gsub(%r{</?[^>]+?>},'')
+        Chat::Node::Bot.site(@cur_site).first.response_template.gsub(%r{</?[^>]+?>},'')
       end
     else
       "選択肢#{templates.length + 1}"
@@ -276,7 +271,7 @@ class Chat::LineBot::Service
       @loc = [@lng, @lat]
     end
 
-    facilities = Facility::Map.where(site_id: site_id, state: "public").where(
+    facilities = Facility::Map.site(@cur_site).and_public.where(
         map_points: {
             "$elemMatch" => {
                 "loc" => {
@@ -305,9 +300,9 @@ class Chat::LineBot::Service
       @markers = @markers[0..9]
 
       columns = []
-      domain = Cms::Site.find_by_domain(request_host).domains[1]
+      domain = @cur_site.domains[1]
       @markers.each do |map|
-        item = Facility::Node::Page.where(site_id: site_id, state: "public").in_path(map[:facility_url]).first
+        item = Facility::Node::Page.site(@cur_site).and_public.in_path(map[:facility_url]).first
         map_lat = map[:loc][:lat]
         map_lng = map[:loc][:lng]
         if map[:distance] > 1.0
