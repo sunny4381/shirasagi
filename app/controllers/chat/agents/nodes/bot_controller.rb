@@ -60,6 +60,12 @@ class Chat::Agents::Nodes::BotController < ApplicationController
 
   def line
     service = Chat::LineBot::Service.new(cur_site: @cur_site, cur_node: @cur_node, request: request)
-    head service.call
+    unless service.valid?
+      head :bad_request
+      return
+    end
+
+    service.call
+    head :ok
   end
 end

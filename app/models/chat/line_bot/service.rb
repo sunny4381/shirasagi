@@ -1,5 +1,6 @@
 class Chat::LineBot::Service
   include ActiveModel::Model
+  include ActiveModel::Validations
 
   require 'line/bot'
 
@@ -7,6 +8,13 @@ class Chat::LineBot::Service
   attr_accessor  :request
 
   EARTH_RADIUS_KM = 6378.137
+
+  validate do
+    signature = request.env['HTTP_X_LINE_SIGNATURE']
+    unless client.validate_signature(body, signature)
+      errors.add(:request, :signature_mismatched)
+    end
+  end
 
   def client
     @client ||= Line::Bot::Client.new { |config|
@@ -17,11 +25,6 @@ class Chat::LineBot::Service
 
   def call
     body = request.body.read
-
-    signature = request.env['HTTP_X_LINE_SIGNATURE']
-    unless client.validate_signature(body, signature)
-      head :bad_request
-    end
 
     events = client.parse_events_from(body)
 
@@ -48,7 +51,6 @@ class Chat::LineBot::Service
         end
       end
     }
-    head :ok
   end
 
   private
