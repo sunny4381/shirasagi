@@ -1,3 +1,8 @@
 basic_info: 基本情報
 config: 設定
 management: 管理
+notice:
+  clipboard_copied: コピーしました。
+  clipboard_copy_failed: コピーできませんでした。クリップボードがサポートされていません。
+buttons:
+  copy: コピー

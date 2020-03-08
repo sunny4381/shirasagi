@@ -1,3 +1,8 @@
 basic_info: Basic Information
 config: Configuration
 management: Management
+notice:
+  clipboard_copied: Copied
+  clipboard_copy_failed: Unable to copy. Clipboard isn't supported.
+buttons:
+  copy: Copy
