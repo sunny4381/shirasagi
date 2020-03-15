@@ -9,10 +9,16 @@ export default class Clipboard {
     try {
       let style = 'position: absolute; overflow: hidden; width: 0; height: 0;';
       style += 'border: none; box-shadow: none; background: transparent; resize: none;';
-      const copy = $(`<textarea style='${style}'>${text}</textarea>`);
-      $('body').after(copy);
+
+      const copy = document.createElement("textarea");
+      copy.style.cssText = style;
+      copy.value = text;
+
+      document.body.appendChild(copy);
       copy.select();
+
       document.execCommand('copy');
+
       copy.remove();
       if (opts["success_alert"]) {
         alert(i18n.t("ss.notice.clipboard_copied"));
@@ -27,22 +33,39 @@ export default class Clipboard {
 
   static renderCopy() {
     const label = i18n.t("ss.buttons.copy");
-    $('.js-clipboard-copy').each(function () {
-      const text = $(this).text();
+    document.querySelectorAll('.js-clipboard-copy').forEach((element) => {
+      const text = element.textContent;
       if (!text) {
         return;
       }
 
-      $(this).append(`<a href="#" class="clipboard-copy-button" data-text="${text}">${label}</a>`);
+      const anchor = document.createElement("a");
+      anchor.href = "#";
+      anchor.classList.add("clipboard-copy-button");
+      anchor.dataset["text"] = text;
+      anchor.textContent = label;
+
+      element.appendChild(anchor);
     });
 
-    $('.clipboard-copy-button').on("click", function () {
-      $('.clipboard-copy-button').removeClass('copied');
-      if (Clipboard.copy($(this).data('text'))) {
-        $(this).addClass('copied');
-      }
+    document.querySelectorAll('.clipboard-copy-button').forEach(element => {
+      element.addEventListener("click", (ev) => {
+        Clipboard.onCopy(ev);
 
-      return false;
+        ev.preventDefault();
+        return false;
+      });
     });
   };
+
+  static onCopy(ev) {
+    document.querySelectorAll('.clipboard-copy-button.copied').forEach(element => {
+      element.classList.remove("copied")
+    });
+
+    ev.target.dataset['text'];
+    if (Clipboard.copy(ev.target.dataset['text'])) {
+      ev.target.classList.add('copied');
+    }
+  }
 }
