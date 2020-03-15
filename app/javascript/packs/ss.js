@@ -1,33 +1,13 @@
 import "./ss.scss";
-import i18n from 'i18next'
-import resources from '../locales'
+import SS from '../ss/ss'
 
-console.log(resources);
+const ss = new SS();
 
-i18n.init({
-  lng: 'ja',
-  fallbackLng: 'en',
-  debug: true,
-  // resources: {
-  //   en: {
-  //     translation: {
-  //       footer: {
-  //         aboutUs: "About us"
-  //       }
-  //     }
-  //   },
-  //   ja: {
-  //     translation: {
-  //       footer: {
-  //         aboutUs: "会社概要"
-  //       }
-  //     }
-  //   }
-  // }
-  resources: resources
-});
+window.ss = {};
+window.ss.ready = ss.ready.bind(ss);
+window.ss.t = ss.i18n.t.bind(ss.i18n);
 
 console.log("Welcome to SHIRASAGI");
 
-// export
-window.i18n = i18n;
+import Clipboard from '../ss/clipboard'
+window.ss.Clipboard = Clipboard;
