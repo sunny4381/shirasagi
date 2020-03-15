@@ -1,5 +1,3 @@
-import i18n from 'i18next'
-
 export default class Clipboard {
   static copy(text, opts = {}) {
     if (!document.queryCommandSupported('copy')) {
@@ -21,18 +19,18 @@ export default class Clipboard {
 
       copy.remove();
       if (opts["success_alert"]) {
-        alert(i18n.t("ss.notice.clipboard_copied"));
+        alert(ss.t("ss.notice.clipboard_copied"));
       }
       return true;
     } catch (error) {
       console.log(error);
-      alert(i18n.t("ss.notice.clipboard_copy_failed"));
+      alert(ss.t("ss.notice.clipboard_copy_failed"));
       return false;
     }
   }
 
   static renderCopy() {
-    const label = i18n.t("ss.buttons.copy");
+    const label = ss.t("ss.buttons.copy");
     document.querySelectorAll('.js-clipboard-copy').forEach((element) => {
       const text = element.textContent;
       if (!text) {
