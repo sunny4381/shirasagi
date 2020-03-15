@@ -1,6 +1,8 @@
 <%= jquery do %>
 Gws_Schedule_Multiple_Calendar.renderController('#calendar-controller');
-SS_Clipboard.renderCopy();
+ss.ready(function() {
+  ss.Clipboard.renderCopy();
+});
 Gws_Schedule_Integration.paths.newMemoMessage = <%== new_gws_memo_message_path(folder: "INBOX").to_json %>;
 Gws_Schedule_Integration.paths.newWebmail = <%== new_webmail_mail_path(webmail_mode: "account", account: 0, mailbox: "INBOX").to_json %>;
 Gws_Schedule_Integration.render();

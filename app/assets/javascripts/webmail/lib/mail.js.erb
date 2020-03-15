@@ -562,7 +562,7 @@ this.Webmail_Mail_Address = (function () {
         return false;
       });
       return $(this).find('.addr-copy').click(function () {
-        SS_Clipboard.copy(email);
+        ss.Clipboard.copy(email);
         $(".dropdown, .dropdown-menu").removeClass('active');
         return false;
       });

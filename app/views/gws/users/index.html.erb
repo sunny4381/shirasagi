@@ -1,5 +1,7 @@
-<%= jquery do %>
-SS_Clipboard.renderCopy();
+<%= javascript_tag do %>
+  ss.ready(function() {
+    ss.Clipboard.renderCopy();
+  });
 <% end %>
 
 <% @index_meta = proc do |item| %>

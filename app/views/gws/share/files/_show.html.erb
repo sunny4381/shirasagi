@@ -1,11 +1,13 @@
-<%= jquery do %>
+<%= javascript_tag do %>
   <% if @folder -%>
-    $(".clipboard-copy-button").attr("data-text", location.origin + "<%= gws_share_folder_file_path %>");
-    SS_Clipboard.renderCopy();
+    var path = "<%= gws_share_folder_file_path %>";
   <% else -%>
-    $(".clipboard-copy-button").attr("data-text", location.origin + "<%= gws_share_file_path %>");
-    SS_Clipboard.renderCopy();
+    var path = "<%= gws_share_file_path %>";
   <% end -%>
+  ss.ready(function() {
+    document.querySelector(".clipboard-copy-button").dataset["text"] = location.origin + path;
+    ss.Clipboard.renderCopy();
+  });
 <% end %>
 
 <dl class="see">
