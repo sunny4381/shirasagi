@@ -180,6 +180,12 @@ module Cms::Model::Page
   end
 
   module ClassMethods
+    def in_path(path)
+      paths = Cms::Node.split_path(path.sub(/^\//, ""))
+      paths.map! { |path| path.ends_with?(".html") ? path : path + ".html" }
+      where(:filename.in => paths)
+    end
+
     private
 
     def set_show_path(show_path)

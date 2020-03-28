@@ -5,7 +5,7 @@ module Cms::PublicFilter::Page
   private
 
   def find_page(path)
-    page = Cms::Page.site(@cur_site).filename(path).first
+    page = Cms::Page.site(@cur_site).in_path(path).order_by(depth: -1).first
     return unless page
     @preview || (page.public? && page.public_node?) ? page.becomes_with_route : nil
   end
@@ -33,7 +33,12 @@ module Cms::PublicFilter::Page
 
     env = request.env.dup
 
-    env[::Rack::PATH_INFO] = ""
+    path = @cur_main_path
+    path = path.sub(/^\/#{::Regexp.escape(::File.dirname(page.filename))}/, "")
+    path = path.sub(/^\/#{::Regexp.escape(::File.basename(page.filename, ".*"))}/, "")
+    path = path.sub(/^#{::Regexp.escape(::File.extname(page.filename))}/, "")
+
+    env[::Rack::PATH_INFO] = path
     env["ss.controller"] ||= self
     env["ss.site"] ||= @cur_site
     env["ss.page"] ||= page
