@@ -21,49 +21,55 @@ Rails.application.routes.draw do
       end
     end
   end
+end
 
-  node "opendata" do
-    get "app_category/" => "public#index", cell: "nodes/app/app_category"
-    get "app_category/rss.xml" => "public#index", cell: "nodes/app/app_category"
-    get "app_category/:name/" => "public#index", cell: "nodes/app/app_category"
-    get "app_category/:name/rss.xml" => "public#rss", cell: "nodes/app/app_category"
-    # get "app_category/:name/areas" => "public#index_areas", cell: "nodes/app/app_category"
-    # get "app_category/:name/tags" => "public#index_tags", cell: "nodes/app/app_category"
-    # get "app_category/:name/licenses" => "public#index_licenses", cell: "nodes/app/app_category"
-
-    get "app/(index.:format)" => "public#index", cell: "nodes/app/app"
-    get "app/rss.xml" => "public#rss", cell: "nodes/app/app"
-    get "app/areas" => "public#index_areas", cell: "nodes/app/app"
-    get "app/tags" => "public#index_tags", cell: "nodes/app/app"
-    get "app/licenses" => "public#index_licenses", cell: "nodes/app/app"
-    get "app/:app/point.:format" => "public#show_point", cell: "nodes/app/app", format: false
-    post "app/:app/point.:format" => "public#add_point", cell: "nodes/app/app", format: false
-    get "app/:app/point/members.html" => "public#point_members", cell: "nodes/app/app", format: false
-    get "app/:app/ideas/show.:format" => "public#show_ideas", cell: "nodes/app/app", format: false
-    get "app/:app/executed/show.:format" => "public#show_executed", cell: "nodes/app/app", format: false
-    post "app/:app/executed/add.:format" => "public#add_executed", cell: "nodes/app/app", format: false
-
-    get "app/:app/zip" => "public#download", cell: "nodes/app/app", format: false
-    get "app/:app/appfile/:id/" => "public#index", cell: "nodes/app/appfile"
-    get "app/:app/appfile/:id/content.html" => "public#content", cell: "nodes/app/appfile", format: false
-    get "app/:app/appfile/:id/json.html" => "public#json", cell: "nodes/app/appfile", format: false
-    get "app/:app/appfile/:id/*filename" => "public#download", filename: /.*/, cell: "nodes/app/appfile", format: false
-
-    get "app/:app/full" => "public#full", cell: "nodes/app/app", format: false
-    get "app/:app/file_index/(*filename)" => "public#app_index", filename: /.*/, cell: "nodes/app/app", format: false
-    get "app/:app/file_text/(*filename)" => "public#text", filename: /.*/, cell: "nodes/app/app", format: false
-
-    match "search_app/(index.:format)" => "public#index", cell: "nodes/app/search_app", via: [:get, :post]
-    get "search_app/tags" => "public#index_tags", cell: "nodes/app/search_app"
-    get "search_app/search" => "public#search", cell: "nodes/app/search_app"
-    get "search_app/rss.xml" => "public#rss", cell: "nodes/app/search_app"
+Cms.application.routes.tap do |routes|
+  routes.node "opendata/app_category" do
+    get "/" => "opendata/agents/nodes/app/app_category#index"
+    get "/rss.xml" => "opendata/agents/nodes/app/app_category#index"
+    get "/:name/" => "opendata/agents/nodes/app/app_category#index"
+    get "/:name/rss.xml" => "opendata/agents/nodes/app/app_category#rss"
+    # get "/:name/areas" => "opendata/agents/nodes/app/app_category#index_areas"
+    # get "/:name/tags" => "opendata/agents/nodes/app/app_category#index_tags"
+    # get "/:name/licenses" => "opendata/agents/nodes/app/app_category#index_licenses"
   end
 
-  part "opendata" do
-    get "app" => "public#index", cell: "parts/app/app"
+  routes.node "opendata/app" do
+    get "/(index.:format)" => "opendata/agents/nodes/app/app#index"
+    get "/rss.xml" => "opendata/agents/nodes/app/app#rss"
+    get "/areas" => "opendata/agents/nodes/app/app#index_areas"
+    get "/tags" => "opendata/agents/nodes/app/app#index_tags"
+    get "/licenses" => "opendata/agents/nodes/app/app#index_licenses"
+    get "/:app/point.:format" => "opendata/agents/nodes/app/app#show_point", format: false
+    post "/:app/point.:format" => "opendata/agents/nodes/app/app#add_point", format: false
+    get "/:app/point/members.html" => "opendata/agents/nodes/app/app#point_members", format: false
+    get "/:app/ideas/show.:format" => "opendata/agents/nodes/app/app#show_ideas", format: false
+    get "/:app/executed/show.:format" => "opendata/agents/nodes/app/app#show_executed", format: false
+    post "/:app/executed/add.:format" => "opendata/agents/nodes/app/app#add_executed", format: false
+
+    get "/:app/zip" => "opendata/agents/nodes/app/app#download", format: false
+    get "/:app/full" => "opendata/agents/nodes/app/app#full", format: false
+    get "/:app/file_index/(*filename)" => "opendata/agents/nodes/app/app#app_index", filename: /.*/, format: false
+    get "/:app/file_text/(*filename)" => "opendata/agents/nodes/app/app#text", filename: /.*/, format: false
+
+    get "/:app/appfile/:id/" => "opendata/agents/nodes/app/appfile#index"
+    get "/:app/appfile/:id/content.html" => "opendata/agents/nodes/app/appfile#content", format: false
+    get "/:app/appfile/:id/json.html" => "opendata/agents/nodes/app/appfile#json", format: false
+    get "/:app/appfile/:id/*filename" => "opendata/agents/nodes/app/appfile#download", filename: /.*/, format: false
   end
 
-  page "opendata" do
-    get "app/:filename.:format" => "public#index", cell: "pages/app/app"
+  routes.node "opendata/search_app" do
+    match "/(index.:format)" => "opendata/agents/nodes/app/search_app#index", via: [:get, :post]
+    get "/tags" => "opendata/agents/nodes/app/search_app#index_tags"
+    get "/search" => "opendata/agents/nodes/app/search_app#search"
+    get "/rss.xml" => "opendata/agents/nodes/app/search_app#rss"
+  end
+
+  routes.page "opendata/app" do
+    get "/" => "opendata/agents/pages/app/app#index"
+  end
+
+  routes.part "opendata/app" do
+    get "/" => "opendata/agents/parts/app/app#index"
   end
 end
