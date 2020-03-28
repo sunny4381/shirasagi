@@ -20,18 +20,42 @@ module Cms::PublicFilter::Node
   end
 
   def render_node(node)
+    @cur_node = node
+
+    resp = render_node2(node)
+    return resp if resp
+
     rest = @cur_main_path.sub(/^\/#{node.filename}/, "").sub(/\/index\.html$/, "")
     path = "/.s#{@cur_site.id}/nodes/#{node.route}#{rest}"
     spec = recognize_agent path
     return unless spec
 
-    @cur_node = node
     controller = node.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
 
     agent = new_agent controller
     agent.controller.request.path_parameters.merge! spec
     agent.controller.params.merge! spec
     agent.render spec[:action]
+  end
+
+  def render_node2(node)
+    route = Cms.application.find_node_route(node)
+    return unless route
+
+    env = request.env.dup
+
+    path = @cur_main_path.sub("/#{node.filename}", "")
+    path = path.sub(/\/index.html$/, "")
+
+    env[::Rack::PATH_INFO] = path
+    env["ss.controller"] ||= self
+    env["ss.site"] ||= @cur_site
+    env["ss.node"] ||= node
+
+    status, headers, body = route.call(env)
+    return if headers["X-Cascade"] == "pass"
+
+    ::ActionDispatch::Response.new(status, headers, body)
   end
 
   def render_layout_with_pagination_cache(layout, cache_key)

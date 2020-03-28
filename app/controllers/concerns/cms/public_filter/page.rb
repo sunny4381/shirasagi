@@ -11,16 +11,38 @@ module Cms::PublicFilter::Page
   end
 
   def render_page(page, env = {})
+    @cur_page = page
+
+    resp = render_page2(page, env)
+    return resp if resp
+
     path = "/.s#{@cur_site.id}/pages/#{page.route}/#{page.basename}"
     spec = recognize_agent path, env
     return unless spec
 
-    @cur_page = page
     controller = page.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
 
     agent = new_agent controller
     agent.controller.params.merge! spec
     agent.render spec[:action]
+  end
+
+  def render_page2(page, default_env = {})
+    route = Cms.application.find_page_route(page)
+    return unless route
+
+    env = request.env.dup
+
+    env[::Rack::PATH_INFO] = ""
+    env["ss.controller"] ||= self
+    env["ss.site"] ||= @cur_site
+    env["ss.page"] ||= page
+    env.merge(default_env)
+
+    status, headers, body = route.call(env)
+    return if headers["X-Cascade"] == "pass"
+
+    ::ActionDispatch::Response.new(status, headers, body)
   end
 
   public

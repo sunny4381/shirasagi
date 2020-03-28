@@ -159,4 +159,8 @@ module Cms
     end
     size
   end
+
+  def self.application
+    ::Cms::Application.instance
+  end
 end

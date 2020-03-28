@@ -35,20 +35,23 @@ module Cms::PublicFilter::Layout
     @preview || part.public? ? part.becomes_with_route : nil
   end
 
-  def render_part(part, opts = {})
+  def render_part(part, _opts = {})
     return part.html if part.route == "cms/free"
 
-    path = "/.s#{@cur_site.id}/parts/#{part.route}"
-    spec = recognize_agent path, method: "GET"
-    return unless spec
+    resp = render_part2(part)
+    unless resp
+      path = "/.s#{@cur_site.id}/parts/#{part.route}"
+      spec = recognize_agent path, method: "GET"
+      return unless spec
 
-    @cur_part = part
-    controller = part.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
+      @cur_part = part
+      controller = part.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
 
-    agent = new_agent controller
-    agent.controller.params.merge! spec
-    agent.controller.request = ActionDispatch::Request.new(request.env.merge("REQUEST_METHOD" => "GET"))
-    resp = agent.render spec[:action]
+      agent = new_agent controller
+      agent.controller.params.merge! spec
+      agent.controller.request = ActionDispatch::Request.new(request.env.merge("REQUEST_METHOD" => "GET"))
+      resp = agent.render spec[:action]
+    end
     body = resp.body
 
     body.gsub!('#{part_name}', ERB::Util.html_escape(part.name))
@@ -70,6 +73,23 @@ module Cms::PublicFilter::Layout
 
     @cur_part = nil
     body
+  end
+
+  def render_part2(part)
+    route = Cms.application.find_part_route(part)
+    return unless route
+
+    env = request.env.dup
+
+    env[::Rack::PATH_INFO] = ""
+    env["ss.controller"] ||= self
+    env["ss.site"] ||= @cur_site
+    env["ss.part"] ||= part
+
+    status, headers, body = route.call(env)
+    return if headers["X-Cascade"] == "pass"
+
+    ::ActionDispatch::Response.new(status, headers, body)
   end
 
   def render_layout(layout)

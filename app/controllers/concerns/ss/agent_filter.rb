@@ -8,7 +8,7 @@ module SS::AgentFilter
   private
 
   def controller
-    @controller
+    @controller ||= request.env["ss.controller"]
   end
 
   def inherit_variables
@@ -16,6 +16,13 @@ module SS::AgentFilter
       next if instance_variable_defined?(name)
       instance_variable_set name, controller.instance_variable_get(name)
     end
+
+    @filters ||= begin
+      request.env["ss.filters"] ||= []
+    end
+    @cur_node ||= request.env["ss.node"] if request.env.key?("ss.node")
+    @cur_page ||= request.env["ss.page"] if request.env.key?("ss.page")
+    @cur_part ||= request.env["ss.part"] if request.env.key?("ss.part")
   end
 
   public
