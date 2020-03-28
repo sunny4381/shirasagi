@@ -19,17 +19,19 @@ Rails.application.routes.draw do
     get "access_logs/download" => "access_logs#download", as: :access_logs_download
   end
 
-  node "ads" do
-    get "banner/" => "public#index", cell: "nodes/banner"
-    get "banner/:filename.:format.count" => "public#count", cell: "nodes/banner"
+end
+
+Cms.application.routes.tap do |routes|
+  routes.node "ads/banner" do
+    get "/" => "ads/agents/nodes/banner#index"
+    get "/:filename.:format.count" => "ads/agents/nodes/banner#count"
   end
 
-  part "ads" do
-    get "banner" => "public#index", cell: "parts/banner"
+  routes.part "ads/banner" do
+    get "/" => "ads/agents/parts/banner#index"
   end
 
-  page "ads" do
-    get "banner/:filename.:format" => "public#index", cell: "pages/banner"
+  routes.page "ads/banner" do
+    get "/" => "ads/agents/pages/banner#index"
   end
-
 end
