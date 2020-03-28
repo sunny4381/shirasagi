@@ -89,18 +89,6 @@ this.SS = (function () {
     });
   };
 
-  SS.renderClipboardCopy = function () {
-    $(".ss-clipboard-copy").click(function () {
-      var clip_attr = $(this).attr("data-clip-attr");
-      if (clip_attr) {
-        SS_Clipboard.copy($(this).attr(clip_attr), { "success_alert": true });
-      } else {
-        SS_Clipboard.copy($(this).text(), { "success_alert": true });
-      }
-      return false;
-    })
-  };
-
   SS.renderLayout = function (url) {
     var body, head;
     head = $("head");

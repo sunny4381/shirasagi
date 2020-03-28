@@ -12,6 +12,9 @@
 <% controller.javascripts.each do |path| %>
   <%= javascript_include_tag path %>
 <% end %>
+<%= stylesheet_pack_tag("ss", media: "all") %>
+<%= javascript_pack_tag("vendor") %>
+<%= javascript_pack_tag("ss") %>
 <%= javascript_tag do %>
   SS.config = <%= raw controller.javascript_configs.to_json %>;
 <% end %>

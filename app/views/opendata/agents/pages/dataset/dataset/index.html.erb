@@ -57,7 +57,9 @@ $("a.content").colorbox({
   }
 });
 
-SS.renderClipboardCopy();
+ss.ready(function() {
+  ss.Clipboard.renderClipboardCopy();
+});
 <% end %>
 
 <header>
@@ -143,7 +145,7 @@ categories = [
                 </div>
                 <div class="clipboard-wrap">
                   <% url = rs.source_url.present? ? rs.source_url : rs.download_full_url %>
-                  <%= link_to(t("opendata.links.copy_url"), rs.url, class: "ss-clipboard-copy", rel: @cur_site.anti_bot_set_nofollow? ? "nofollow" : nil, "data-clip-attr": "data-full-url", "data-full-url": url) %>
+                  <%= link_to(t("opendata.links.copy_url"), rs.url, class: "ss-clipboard-copy", rel: @cur_site.anti_bot_set_nofollow? ? "nofollow" : nil, "data-clip-text": url) %>
                 </div>
               </div>
 
@@ -204,8 +206,7 @@ categories = [
                 <div class="clipboard-wrap">
                   <%= link_to t("opendata.links.copy_url"), urs.download_url,
                     "class" => "ss-clipboard-copy",
-                    "data-clip-attr" => "data-full-url",
-                    "data-full-url" => ::File.join(@cur_site.full_url, urs.download_url),
+                    "data-clip-text" => ::File.join(@cur_site.full_url, urs.download_url),
                     "rel" => @cur_site.anti_bot_set_nofollow? ? "nofollow" : nil
                   %>
                 </div>

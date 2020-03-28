@@ -61,9 +61,22 @@ export default class Clipboard {
       element.classList.remove("copied")
     });
 
-    ev.target.dataset['text'];
     if (Clipboard.copy(ev.target.dataset['text'])) {
       ev.target.classList.add('copied');
     }
+  }
+
+  static renderClipboardCopy() {
+    document.querySelectorAll('.ss-clipboard-copy').forEach(element => {
+      element.addEventListener("click", (ev) => {
+        const text = element.dataset["clipText"];
+        if (text) {
+          Clipboard.copy(text, { "success_alert": true });
+        }
+
+        ev.preventDefault();
+        return false;
+      });
+    });
   }
 }
