@@ -25,15 +25,20 @@ Rails.application.routes.draw do
     post "conf/integrate" => "node/confs#integrate"
   end
 
-  node "category" do
-    get "node/(index.:format)" => "public#index", cell: "nodes/node"
-    get "node/rss.xml" => "public#rss", cell: "nodes/page", format: "xml"
-    get "page/(index.:format)" => "public#index", cell: "nodes/page"
-    get "page/rss.xml" => "public#rss", cell: "nodes/page", format: "xml"
+end
+
+Cms.application.routes.tap do |routes|
+  routes.node "category/node" do
+    get "/(index.:format)" => "category/agents/nodes/node#index"
+    get "/rss(.:format)" => "category/agents/nodes/node#rss", format: "xml"
   end
 
-  part "category" do
-    get "node" => "public#index", cell: "parts/node"
+  routes.node "category/page" do
+    get "/(index.:format)" => "category/agents/nodes/page#index"
+    get "/rss(.:format)" => "category/agents/nodes/page#rss", format: "xml"
   end
 
+  routes.part "category/node" do
+    get "/" => "category/agents/parts/node#index"
+  end
 end
