@@ -32,8 +32,8 @@ class Ads::Banner
     uri.to_s
   end
 
-  def count_url
-    url.sub(".html", ".html.count")
+  def count_url(format: "gif")
+    url.sub(".html", "/count.#{format}")
   end
 
   private

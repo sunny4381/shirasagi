@@ -24,7 +24,6 @@ end
 Cms.application.routes.tap do |routes|
   routes.node "ads/banner" do
     get "/" => "ads/agents/nodes/banner#index"
-    get "/:filename.:format.count" => "ads/agents/nodes/banner#count"
   end
 
   routes.part "ads/banner" do
@@ -33,5 +32,6 @@ Cms.application.routes.tap do |routes|
 
   routes.page "ads/banner" do
     get "/" => "ads/agents/pages/banner#index"
+    get "/count(.:format)" => "ads/agents/pages/banner#count"
   end
 end
