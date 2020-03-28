@@ -66,18 +66,23 @@ Rails.application.routes.draw do
     delete "index_:state" => "pages#destroy_all", state: /approve|request|ready|closed|wait_close/
   end
 
-  node "article" do
-    get "page/(index.:format)" => "public#index", cell: "nodes/page"
-    get "page/rss.xml" => "public#rss", cell: "nodes/page", format: "xml"
+end
+
+Cms.application.routes.tap do |routes|
+  routes.node "article/page" do
+    get "/(index.:format)" => "article/agents/nodes/page#index"
+    get "/rss(.:format)" => "article/agents/nodes/page#rss", format: "xml"
   end
 
-  part "article" do
-    get "page" => "public#index", cell: "parts/page"
-    get "page_navi" => "public#index", cell: "parts/page_navi"
+  routes.part "article/page" do
+    get "/" => "article/agents/parts/page#index"
   end
 
-  page "article" do
-    get "page/:filename.:format" => "public#index", cell: "pages/page"
+  routes.part "article/page_navi" do
+    get "/" => "article/agents/parts/page_navi#index"
   end
 
+  routes.page "article/page" do
+    get "/" => "article/agents/pages/page#index"
+  end
 end
