@@ -51,6 +51,10 @@ module Cms::PublicFilter::Node
     env["ss.controller"] ||= self
     env["ss.site"] ||= @cur_site
     env["ss.node"] ||= node
+    if params[:page]
+      env[ActionDispatch::Request::PARAMETERS_KEY] ||= {}
+      env[ActionDispatch::Request::PARAMETERS_KEY]["page"] = params[:page]
+    end
 
     status, headers, body = route.call(env)
     return if headers["X-Cascade"] == "pass"
