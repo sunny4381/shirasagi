@@ -126,6 +126,7 @@ GEM
     childprocess (1.0.1)
       rake (< 13.0)
     clam_scan (0.0.2)
+    cliver (0.3.2)
     coderay (1.1.2)
     coffee-rails (4.2.2)
       coffee-script (>= 2.2.0)
@@ -182,6 +183,11 @@ GEM
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
     fast_blank (1.0.0)
+    ferrum (0.8)
+      addressable (~> 2.6)
+      cliver (~> 0.3)
+      concurrent-ruby (~> 1.1)
+      websocket-driver (>= 0.6, < 0.8)
     ffi (1.9.25)
     formatador (0.2.5)
     fullcalendar.io-rails (2.6.1)
@@ -621,6 +627,7 @@ DEPENDENCIES
   factory_bot_rails
   faraday
   fast_blank
+  ferrum
   fullcalendar.io-rails (~> 2.6.0)
   fuubar
   guard

@@ -59,6 +59,7 @@ gem 'addressable', require: 'addressable/uri'
 gem 'roo'
 #gem 'roo-xls', git: "https://github.com/roo-rb/roo-xls.git"
 gem 'liquid'
+gem 'ferrum'
 
 # OAuth
 gem 'oauth2', git: 'https://github.com/oauth-xx/oauth2.git' #'~> 1.5.0'
