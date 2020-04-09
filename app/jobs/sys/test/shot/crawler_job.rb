@@ -63,6 +63,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     Rails.logger.info("done #{@visited_count.to_s(:delimited)} urls")
   ensure
     @browser.quit if @browser
+    @browser = nil
   end
 
   private
@@ -80,6 +81,18 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
       browser.headers.add("Authorization" => "Basic #{task.basic_auth_token}") if task.basic_auth?
       browser
     end
+  end
+
+  def goto_browser(url)
+    @goto_browser_count ||= 0
+    if @goto_browser_count >= 100
+      @browser.quit if @browser
+      @browser = nil
+    end
+
+    browser.goto(url)
+  ensure
+    @goto_browser_count += 1
   end
 
   def allowed?(url)
@@ -109,7 +122,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     end
 
     Rails.logger.debug("#{url}: visiting")
-    time = Benchmark.realtime { browser.goto(url) }
+    time = Benchmark.realtime { goto_browser(url) }
     Rails.logger.info("#{url}: visited (#{time * 1000} ms)")
 
     current_url = URI.parse(browser.current_url).to_s
