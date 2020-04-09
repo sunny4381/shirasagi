@@ -50,13 +50,15 @@ class Sys::Test::Shot::Page
   def image_path(width: nil)
     base = "#{path}/#{url_hash.to_s(16)}"
     base = "#{base}_w#{width}" if width.numeric?
-    "#{base}.png"
+    # "#{base}.png"
+    "#{base}.jpg"
   end
 
   def temp_path(width: nil)
     base = "#{path}/.#{url_hash.to_s(16)}"
     base = "#{base}_w#{width}" if width.numeric?
-    "#{base}.png"
+    # "#{base}.png"
+    "#{base}.jpg"
   end
 
   private

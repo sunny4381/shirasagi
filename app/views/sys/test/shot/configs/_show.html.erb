@@ -23,6 +23,15 @@
   <dt>Window Size</dt>
   <dd><%= @item.label :window_size %></dd>
 
+  <dt>Capture Size</dt>
+  <dd><%= @item.capture_size %></dd>
+
+  <dt>Image Quality</dt>
+  <dd><%= @item.image_quality %> (0 is poor, 100 is beautiful)</dd>
+
+  <dt>Basic 認証</dt>
+  <dd><%= @item.basic_auth_user %></dd>
+
   <% @model::MAX_FORM_COUNT.times do |i| %>
     <% if @item.send("form#{i}_check_css_selector").present? %>
       <dt>Form <%= i + 1 %></dt>

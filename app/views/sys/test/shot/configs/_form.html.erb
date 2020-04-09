@@ -23,6 +23,16 @@
   <dt>Window Size</dt>
   <dd><%= select_tag("item[in_window_size]", options_for_select(@item.window_size_options, @item.window_size)) %></dd>
 
+  <dt>Capture Size</dt>
+  <dd><%= f.select :capture_size, @item.capture_size_options %></dd>
+
+  <dt>Image Quality</dt>
+  <dd><%= f.number_field :image_quality %> 0 is poor, 100 is beautiful</dd>
+
+  <dt>Basic 認証</dt>
+  <dd><%= f.text_field :basic_auth_user, placeholder: "username" %></dd>
+  <dd><%= f.password_field :in_basic_auth_password, placeholder: "password" %></dd>
+
   <% @model::MAX_FORM_COUNT.times do |i| %>
     <dt>Form <%= i + 1 %></dt>
     <dd></dd>

@@ -1,6 +1,5 @@
-require "webdrivers"
-require "selenium-webdriver"
 require 'nokogiri'
+require 'ferrum'
 
 class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
   include Job::SS::TaskFilter
@@ -63,7 +62,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
 
     Rails.logger.info("done #{@visited_count.to_s(:delimited)} urls")
   ensure
-    @driver.quit if @driver
+    @browser.quit if @browser
   end
 
   private
@@ -72,19 +71,14 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     { id: arguments.first }
   end
 
-  def driver
-    @driver ||= begin
-      options = Selenium::WebDriver::Chrome::Options.new
-      options.add_preference('download.prompt_for_download', false)
-      options.add_preference('download.default_directory', Rails.root.join("tmp").to_s)
-      options.add_argument("window-size=#{task.window_size_width},#{task.window_size_height}")
-      options.add_argument('--headless')
-      options.add_argument('disable-gpu')
-      options.add_argument('no-sandbox')
-
-      driver = Selenium::WebDriver.for(:chrome, options: options)
-      driver.manage.timeouts.implicit_wait = @options["timeout"].presence || task.timeout || 60
-      driver
+  def browser
+    @browser ||= begin
+      browser = Ferrum::Browser.new(
+        headless: true, window_size: [ task.window_size_width, task.window_size_height ],
+        browser_options: { 'no-sandbox': nil }
+      )
+      browser.headers.add("Authorization" => "Basic #{task.basic_auth_token}") if task.basic_auth?
+      browser
     end
   end
 
@@ -115,17 +109,17 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     end
 
     Rails.logger.debug("#{url}: visiting")
-    time = Benchmark.realtime { driver.get(url) }
+    time = Benchmark.realtime { browser.goto(url) }
     Rails.logger.info("#{url}: visited (#{time * 1000} ms)")
 
-    current_url = URI.parse(driver.current_url).to_s
+    current_url = URI.parse(browser.current_url).to_s
     @page = Sys::Test::Shot::Page.where(
       config_id: task.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
     ).first_or_create
-    @page.update(title: driver.title)
+    @page.update(title: browser.current_title)
 
     # nokogiri を利用して高速化
-    @nokogiri_doc = Nokogiri::HTML.parse(driver.page_source.to_s) rescue nil
+    @nokogiri_doc = Nokogiri::HTML.parse(browser.body.to_s) rescue nil
 
     time = Benchmark.realtime { save_screen_shot }
     Rails.logger.info("#{url}: saved screen shot (#{time * 1000} ms)")
@@ -145,14 +139,14 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     task.inc(current_count: 1)
 
     if fill_form_if_available
-      current_url = URI.parse(driver.current_url).to_s
+      current_url = URI.parse(browser.current_url).to_s
       @page = Sys::Test::Shot::Page.where(
         config_id: task.id, url: current_url, url_hash: Sys::Test::Shot::Page.gen_url_hash(current_url)
       ).first_or_create
-      @page.update(title: driver.title)
+      @page.update(title: browser.current_title)
 
       # nokogiri を利用して高速化
-      @nokogiri_doc = Nokogiri::HTML.parse(driver.page_source.to_s) rescue nil
+      @nokogiri_doc = Nokogiri::HTML.parse(browser.body.to_s) rescue nil
 
       time = Benchmark.realtime do
         save_screen_shot
@@ -172,8 +166,10 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     dir = ::File.dirname(file_path)
 
     ::FileUtils.mkdir_p(dir) if !::Dir.exists?(dir)
-    driver.save_screenshot(tmp_path)
-    ::FileUtils.mv(tmp_path, file_path, force: true)
+    options = { path: tmp_path, format: "jpeg", quality: task.image_quality || 30 }
+    options[:full] = true if task.capture_full?
+    browser.screenshot(options)
+    ::FileUtils.move(tmp_path, file_path, force: true)
 
     tmp_path_thumb = @page.temp_path(width: Sys::Test::Shot::Page::THUMBNAIL_SIZE)
     file_path_thumb = @page.image_path(width: Sys::Test::Shot::Page::THUMBNAIL_SIZE)
@@ -182,7 +178,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
     pid = spawn({}, "convert", file_path, "-resize", "#{Sys::Test::Shot::Page::THUMBNAIL_SIZE}x", tmp_path_thumb, in: NULL_DEVICE, out: NULL_DEVICE, err: NULL_DEVICE)
     _, status = Process.waitpid2(pid)
     if status.exitstatus == 0 && ::File.exists?(tmp_path_thumb)
-      ::FileUtils.mv(tmp_path_thumb, file_path_thumb, force: true)
+      ::FileUtils.move(tmp_path_thumb, file_path_thumb, force: true)
     end
   end
 
@@ -212,7 +208,7 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
   def extract_urls
     return if @nokogiri_doc.blank?
 
-    current_url = URI.parse(driver.current_url)
+    current_url = URI.parse(browser.current_url)
     anchors = @nokogiri_doc.css('a')
     return if anchors.blank?
 
@@ -265,16 +261,16 @@ class Sys::Test::Shot::CrawlerJob < SS::ApplicationJob
           value = task.send("form#{i}_input#{j}_value")
 
           if input_css_selector.present? && @nokogiri_doc.css(input_css_selector).first
-            driver.find_element(:css, input_css_selector).send_keys(value)
+            browser.at_css(input_css_selector).focus.type(value)
           end
         end
 
         submit_css_selector = "#{form_css_selector} [type='submit']"
         submit = @nokogiri_doc.css(submit_css_selector).first
         if submit.present?
-          driver.find_element(:css, submit_css_selector).click
+          browser.at_css(submit_css_selector).focus.click
         else
-          driver.find_element(:css, form_css_selector).submit
+          browser.at_css(form_css_selector).submit
         end
 
         filled = true

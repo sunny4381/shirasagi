@@ -43,7 +43,8 @@ class Sys::Test::Shot::ArchiveJob < SS::ApplicationJob
       dir = @archived_items / 1_000
       dir = dir.to_s.rjust(4, "0")
       name = page.id.to_s
-      entry_name = "#{dir}/#{name}.png"
+      extname = ::File.extname(page.image_path)
+      entry_name = "#{dir}/#{name}#{extname}"
       @output_zip.create_entry(entry_name) do |f|
         ::File.open(page.image_path, "rb") do |data|
           ::FileUtils.copy_stream(data, f)

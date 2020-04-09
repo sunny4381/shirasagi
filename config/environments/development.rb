@@ -68,5 +68,6 @@ Rails.application.configure do
   config.log_level = ENV['DEVELOPMENT_LOG_LEVEL'] || :warn
 
   # ActiveJob Queue Adapter
-  config.active_job.queue_adapter = :shirasagi
+  # config.active_job.queue_adapter = :shirasagi
+  config.active_job.queue_adapter = :inline
 end
