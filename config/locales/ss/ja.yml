@@ -371,6 +371,10 @@ ja:
       gws_use:
         disabled: 使用しない
         enabled: 使用する
+      script_level:
+        "0": 低（互換モード）
+        100: 中
+        200: 高（安全）
 
     tasks:
       started: 開始しました。
@@ -478,6 +482,7 @@ ja:
         mypage_domain: マイページドメイン
         group_ids: グループ
         domains_with_subdir: サブディレクトリを含めたドメイン
+        script_level: スクリプト・レベル
       ss/model/user:
         name: 氏名
         kana: カナ
@@ -872,6 +877,17 @@ ja:
         - 編集を許可するグループを選択します。
       user_ids:
         - 編集を許可するユーザーを選択します。
+    ss/model/site:
+      mypage_scheme:
+        - マイページスキームを入力します。
+      mypage_domain:
+        - マイページドメインを入力します。
+      script_level:
+        - スクリプトレベルを選択します。
+        -
+        - "高: レイアウトにのみ &lt;script> タグを記述することができます。記述できる &lt;script> タグの形式は &lt;script src=\"...\"> のみで、&lt;script>gtag('config', 'UA-xxxxxxxx-x');&lt;/script> のような形式は記述できません。もっとも安全性の高いレベルです。"
+        - "中: レイアウトと自由記述パーツにのみ &lt;script> タグを記述することができます。記述できる &lt;script> タグの形式に制限はありません。"
+        - "低（互換モード）: どこにでも &lt;script> タグを記述することができます。"
     ss/model/file:
       in_file:
         - ファイルを選択します。

@@ -22,14 +22,16 @@ module SS::Model::Site
     field :mypage_domain, type: String
     embeds_ids :groups, class_name: "SS::Group"
     belongs_to :parent, class_name: "SS::Site"
+    field :script_level, type: Integer, default: 200
 
     attr_accessor :cur_domain
 
     permit_params :name, :host, :domains, :subdir, :parent_id, :https, :document_root, group_ids: []
-    permit_params :mypage_scheme, :mypage_domain
+    permit_params :mypage_scheme, :mypage_domain, :script_level
     validates :name, presence: true, length: { maximum: 40 }
     validates :host, uniqueness: true, presence: true, length: { minimum: 3, maximum: 16 }
     validates :domains, domain: true
+    validates :script_level, numericality: { greater_than_or_equal_to: 0 }
 
     validate :validate_domains, if: ->{ domains.present? }
 
@@ -111,6 +113,12 @@ module SS::Model::Site
         %w(http http),
         %w(https https),
       ]
+    end
+
+    def script_level_options
+      [0, 100, 200].map do |v|
+        [ I18n.t("ss.options.script_level.#{v}"), v ]
+      end
     end
 
     private

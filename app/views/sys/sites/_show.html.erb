@@ -1,15 +1,15 @@
 <dl class="see">
   <dt><%= @model.t :name %></dt>
-  <dd><%= @item.send :name %></dd>
+  <dd><%= @item.name %></dd>
 
   <dt><%= @model.t :host %></dt>
-  <dd><%= @item.send :host %></dd>
+  <dd><%= @item.host %></dd>
 
   <dt><%= @model.t :domains %></dt>
-  <dd><%= @item.send :domains %></dd>
+  <dd><%= @item.domains %></dd>
 
   <dt><%= @model.t :subdir %></dt>
-  <dd><%= @item.send :subdir %></dd>
+  <dd><%= @item.subdir %></dd>
 
   <dt><%= @model.t :parent_id %></dt>
   <dd><%= @item.parent.try(:name) %></dd>
@@ -20,9 +20,9 @@
   <dt><%= @model.t :mypage_scheme %></dt>
   <dd><%= @item.label :mypage_scheme %></dd>
 
-  <dt><%= @model.t :mypage_domain %></dt>
-  <dd><%= @item.send :mypage_domain %></dd>
+  <dt><%= @model.t :script_level %></dt>
+  <dd><%= @item.label :script_level %></dd>
 
   <dt><%= @model.t :group_ids %></dt>
-  <dd><%=br @item.groups.order_by(name: 1).map{|c| c.name } %></dd>
+  <dd><%= br @item.groups.order_by(name: 1).map{|c| c.name } %></dd>
 </dl>

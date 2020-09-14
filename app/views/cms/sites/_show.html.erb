@@ -1,15 +1,15 @@
 <dl class="see">
   <dt><%= @model.t :name %></dt>
-  <dd><%= @item.send :name %></dd>
+  <dd><%= @item.name %></dd>
 
   <dt><%= @model.t :host %></dt>
-  <dd><%= @item.send :host %></dd>
+  <dd><%= @item.host %></dd>
 
   <dt><%= @model.t :domains %></dt>
-  <dd><%= @item.send :domains %></dd>
+  <dd><%= @item.domains %></dd>
 
   <dt><%= @model.t :subdir %></dt>
-  <dd><%= @item.send :subdir %></dd>
+  <dd><%= @item.subdir %></dd>
 
   <dt><%= @model.t :https %></dt>
   <dd><%= @item.label :https %></dd>
@@ -18,8 +18,11 @@
   <dd><%= @item.label :mypage_scheme %></dd>
 
   <dt><%= @model.t :mypage_domain %></dt>
-  <dd><%= @item.send :mypage_domain %></dd>
+  <dd><%= @item.mypage_domain %></dd>
 
-  <dt><%= t("ss.login_url") %></dt>
-  <dd><%= link_to cms_login_url, cms_login_url %></dd>
+  <% url = cms_login_url(protocol: @item.mypage_scheme.presence || 'http', host: @item.mypage_domain.presence || @item.domain) %>
+  <dd><%= t("ss.login_url") %>: <%= link_to url, url %></dd>
+
+  <dt><%= @model.t :script_level %></dt>
+  <dd><%= @item.label :script_level %></dd>
 </dl>

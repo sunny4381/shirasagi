@@ -23,6 +23,9 @@
   <dt><%= @model.t :mypage_domain %><%= @model.tt :mypage_domain %></dt>
   <dd><%= f.text_field :mypage_domain %></dd>
 
+  <dt><%= @model.t :script_level %><%= @model.tt :script_level %></dt>
+  <dd><%= f.select :script_level, @item.script_level_options %></dd>
+
   <dt><%= @model.t :group_ids %><%= @model.tt :group_ids %></dt>
   <dd>
     <%= f.hidden_field "group_ids[]", value: "", class: "hidden-ids" %>
