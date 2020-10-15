@@ -1,6 +1,7 @@
 module ApplicationHelper
   include Category::CategoryHelper
   include SS::AutoLink
+  include SS::SanitizeHelper
 
   def tryb(&block)
     begin
