@@ -1,9 +1,11 @@
 require "rails/command"
+require_relative '../base/base_command'
 require_relative '../job/job_command'
+require_relative '../task/task_command'
 
 module SS
   module Command
-    class MainCommand < Rails::Command::Base
+    class MainCommand < SS::Command::BaseCommand
       namespace "ss"
       @command_name = "ss"
 

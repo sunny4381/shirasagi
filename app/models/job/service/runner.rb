@@ -11,14 +11,19 @@ class Job::Service::Runner
     name = Job::Service.config.name
     Job::Service.advertise(name)
 
+    Rails.logger.info("start Shirasagi Job Service \"#{name}\" in \"#{Job::Service.config.mode}\" mode")
+
     rescue_with(ensure_p: ->{ Job::Service.unadvertise(name) }) do
       service_loop
     end
+
+    Rails.logger.info("finish Shirasagi Job Service \"#{name}\"")
   end
 
   def shutdown
     @lock.synchronize do
       @stop = true
+      Rails.logger.info("shutdown is proceeding")
       @condition.signal
     end
   end
@@ -42,7 +47,10 @@ class Job::Service::Runner
   def execute_loop
     until @stop
       task = dequeue_task
-      break unless task
+      unless task
+        Rails.logger.info("there are no tasks to execute")
+        break
+      end
 
       rescue_with(ensure_p: -> { task.destroy }) do
         task.execute

@@ -1,7 +1,9 @@
 module SS
   module Command
-    class JobCommand < Rails::Command::Base
+    class JobCommand < SS::Command::BaseCommand
       hide_command!
+      namespace "ss"
+      @command_name = "ss:job"
 
       desc "status", "show status of the Shirasagi Job server and etc."
       def status(*args, **options, &block)
