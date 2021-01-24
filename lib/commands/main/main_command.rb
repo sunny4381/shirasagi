@@ -24,8 +24,7 @@ module SS
       # end
 
       subcommand "job", SS::Command::JobCommand
-      # タスクの一覧が表示でき、ロック中のものがあるかどうかを表示できれば便利かも。
-      # subcommand "task", SS::Command::TaskCommand
+      subcommand "task", SS::Command::TaskCommand
 
       # ファイルのアップロードができれば便利かも。
       # subcommand "file", SS::Command::FileCommand
