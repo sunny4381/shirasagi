@@ -1,4 +1,5 @@
 require "rails/command"
+
 module SS
   module Command
     class BaseCommand < Rails::Command::Base

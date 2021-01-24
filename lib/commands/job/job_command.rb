@@ -1,3 +1,5 @@
+require_relative '../base/base_command'
+
 module SS
   module Command
     class JobCommand < SS::Command::BaseCommand
