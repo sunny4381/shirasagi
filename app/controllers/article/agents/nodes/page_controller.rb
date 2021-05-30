@@ -15,7 +15,13 @@ class Article::Agents::Nodes::PageController < ApplicationController
       page(params[:page]).
       per(@cur_node.limit)
 
-    render_with_pagination @items
+    # render_with_pagination @items
+    raise "404" if params[:page].to_i > 1 && items.empty?
+
+    template = SS::Template.compile(@cur_node, target: :page)
+    renderer = template.renderer_for(view_context.liquid_registers, { "pages" => @items.to_a.map(&:becomes_with_route) })
+    self.response_body = renderer.render_in(self.view_context)
+    self.content_type = "text/html"
   end
 
   def rss

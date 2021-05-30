@@ -1,15 +1,26 @@
 module Cms::ListHelper
-  def default_node_loop_html
+  DEFAULT_NODE_LOOP_HTML = begin
     ih = []
     ih << '<article class="item-#{class} #{current}">'
     ih << '  <header>'
     ih << '     <h2><a href="#{url}">#{name}</a></h2>'
     ih << '  </header>'
     ih << '</article>'
-    ih.join("\n").freeze
-  end
+    ih.join("\n")
+  end.freeze
 
-  def default_node_loop_liquid
+  DEFAULT_PAGE_LOOP_HTML = begin
+    ih = []
+    ih << '<article class="item-#{class} #{new} #{current}">'
+    ih << '  <header>'
+    ih << '    <time datetime="#{date.iso}">#{date.long}</time>'
+    ih << '    <h2><a href="#{url}">#{index_name}</a></h2>'
+    ih << '  </header>'
+    ih << '</article>'
+    ih.join("\n")
+  end.freeze
+
+  DEFAULT_NODE_LOOP_LIQUID = begin
     ih = []
     ih << '{% for node in nodes %}'
     ih << '<article class="item-{{ node.css_class }} {% if node.current? %}current{% endif %}">'
@@ -18,21 +29,10 @@ module Cms::ListHelper
     ih << '  </header>'
     ih << '</article>'
     ih << '{% endfor %}'
-    ih.join("\n").freeze
-  end
+    ih.join("\n")
+  end.freeze
 
-  def default_page_loop_html
-    ih = []
-    ih << '<article class="item-#{class} #{new} #{current}">'
-    ih << '  <header>'
-    ih << '    <time datetime="#{date.iso}">#{date.long}</time>'
-    ih << '    <h2><a href="#{url}">#{index_name}</a></h2>'
-    ih << '  </header>'
-    ih << '</article>'
-    ih.join("\n").freeze
-  end
-
-  def default_page_loop_liquid
+  DEFAULT_PAGE_LOOP_LIQUID = begin
     ih = []
     ih << '{% for page in pages %}'
     ih << '<article class="item-{{ page.css_class }} {% if page.new? %}new{% endif %} {% if page.current? %}current{% endif %}">'
@@ -42,7 +42,23 @@ module Cms::ListHelper
     ih << '  </header>'
     ih << '</article>'
     ih << '{% endfor %}'
-    ih.join("\n").freeze
+    ih.join("\n")
+  end.freeze
+
+  def default_node_loop_html
+    DEFAULT_NODE_LOOP_HTML
+  end
+
+  def default_node_loop_liquid
+    DEFAULT_NODE_LOOP_LIQUID
+  end
+
+  def default_page_loop_html
+    DEFAULT_PAGE_LOOP_HTML
+  end
+
+  def default_page_loop_liquid
+    DEFAULT_PAGE_LOOP_LIQUID
   end
 
   def render_node_list(&block)
