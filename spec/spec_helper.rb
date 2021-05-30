@@ -17,6 +17,7 @@ require 'capybara/rspec'
 require 'capybara/rails'
 require 'factory_bot'
 require 'timecop'
+require 'view_component/test_helpers'
 require 'support/ss/capybara_support'
 
 # Checks for pending migrations before tests are run.
@@ -164,6 +165,8 @@ RSpec.configure do |config|
 
     puts "[RSpec] enabled rspec retry"
   end
+
+  config.include ViewComponent::TestHelpers, type: :component
 end
 
 ALPHABETS = ("a".."z").to_a.freeze
