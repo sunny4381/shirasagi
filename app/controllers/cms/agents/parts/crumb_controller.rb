@@ -15,6 +15,8 @@ class Cms::Agents::Parts::CrumbController < ApplicationController
 
     parent_crumb_urls = @cur_item.parent_crumb_urls.select(&:present?) rescue nil
     set_items(path, parent_crumb_urls)
+
+    render Cms::Part::CrumbComponent.new(@items)
   end
 
   private
