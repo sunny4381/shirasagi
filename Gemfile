@@ -65,6 +65,7 @@ gem 'roo'
 gem 'rubyzip'
 gem 'thinreports'
 gem 'ungarbled'
+gem 'view_component', require: 'view_component/engine'
 
 # OAuth
 gem 'oauth2'

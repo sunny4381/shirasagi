@@ -628,6 +628,8 @@ GEM
     unicorn-worker-killer (0.4.4)
       get_process_mem (~> 0)
       unicorn (>= 4, < 6)
+    view_component (2.32.0)
+      activesupport (>= 5.0.0, < 7.0)
     webdrivers (4.0.0)
       nokogiri (~> 1.6)
       rubyzip (~> 1.0)
@@ -759,6 +761,7 @@ DEPENDENCIES
   ungarbled
   unicorn
   unicorn-worker-killer
+  view_component
   webdrivers
   webmock
   yard
