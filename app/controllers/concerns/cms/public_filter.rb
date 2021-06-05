@@ -161,6 +161,8 @@ module Cms::PublicFilter
   end
 
   def render_and_send_part(part)
+    return true if Cms::Agent.dispatch_part(self, part)
+
     @cur_path = params[:ref] || "/"
     set_main_path
     resp = render_part(part)
@@ -172,6 +174,8 @@ module Cms::PublicFilter
   end
 
   def render_and_send_page(page)
+    return true if Cms::Agent.dispatch_page(self, page)
+
     resp = render_page(page)
     return false if !resp
 
@@ -186,6 +190,8 @@ module Cms::PublicFilter
       x_sendfile
       return true
     end
+
+    return true if Cms::Agent.dispatch_node(self, node)
 
     resp = render_node(node)
     return false if !resp

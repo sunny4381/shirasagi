@@ -73,7 +73,7 @@ module Cms::PublicFilter::Layout
   end
 
 
-  def render_layout(layout)
+  def render_layout(layout, content: nil)
     @cur_layout = layout
     @cur_item   = @cur_page || @cur_node
     @cur_item.window_name ||= @cur_item.name
@@ -89,6 +89,8 @@ module Cms::PublicFilter::Layout
 
     @parts = {}
 
+    content ||= response.body
+
     body = @cur_layout.body.to_s
 
     body = body.sub(/<body.*?>/) do |m|
@@ -103,7 +105,7 @@ module Cms::PublicFilter::Layout
 
     if notice
       notice_html   = %(<div id="ss-notice"><div class="wrap">#{notice}</div></div>)
-      response.body = %(#{notice_html}#{response.body})
+      content = %(#{notice_html}#{content})
     end
 
     html = render_kana_tool(html)
@@ -116,7 +118,7 @@ module Cms::PublicFilter::Layout
       end
 
       body << "<!-- layout_yield -->"
-      body << response.body
+      body << content
       body << "<!-- /layout_yield -->"
 
       if @preview && !html.include?("ss-preview-content-begin")

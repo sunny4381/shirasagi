@@ -345,6 +345,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # for debug purpose
+  mount Cms::Agent, at: 'agent' if Rails.env.development?
+
   match "*public_path" => "cms/public#index", public_path: /[^\.].*/,
         via: [:get, :post, :put, :patch, :delete], format: true
   match "*public_path" => "cms/public#index", public_path: /[^\.].*/,
