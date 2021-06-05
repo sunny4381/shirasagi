@@ -71,6 +71,32 @@ module Cms
         controller.set_response! new_response
         true
       end
+
+      def generate_node(site, node, task)
+        controller_class_name = node.route.sub("/", "/agents/nodes/") + "_controller"
+        controller_class_name = controller_class_name.camelize
+        controller_class = controller_class_name.constantize rescue nil
+        return if controller_class.blank?
+
+        controller = controller_class.new
+        return unless controller.respond_to?(:generate)
+
+        request = ActionDispatch::Request.new(
+          "rack.input" => "",
+          "REQUEST_METHOD" => "GET",
+          "ss.domain" => "agent",
+          "ss.site" => site,
+          "ss.node" => node,
+          "ss.task" => task
+        )
+        response = ActionDispatch::Response.new
+
+        controller.set_request! request
+        controller.set_response! response
+        controller.params[:controller] = "article/agents/nodes/page"
+        controller.params[:action] = "generate"
+        controller.process :generate
+      end
     end
   end
 end

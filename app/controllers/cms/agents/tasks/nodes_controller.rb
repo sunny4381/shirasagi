@@ -39,10 +39,13 @@ class Cms::Agents::Tasks::NodesController < ApplicationController
       rescue_with(rescue_p: rescue_p) do
         node = Cms::Node.site(@site).and_public.where(id: id).first
         next unless node
+
+        node = node.becomes_with_route
         next unless node.public?
         next unless node.public_node?
 
-        node = node.becomes_with_route
+        next if Cms::Agent.generate_node(@site, node, @task)
+
         cont = node.route.sub("/", "/agents/tasks/node/").camelize.pluralize
         cname = cont + "Controller"
 
