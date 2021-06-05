@@ -38,7 +38,7 @@ class Article::Agents::Nodes::PageController < ApplicationController
 
   def rss
     @items = pages.
-      order_by(released: -1).
+      order_by(@cur_node.sort_hash).
       limit(@cur_node.limit)
 
     render_rss @cur_node, @items
