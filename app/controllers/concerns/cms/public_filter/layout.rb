@@ -38,23 +38,38 @@ module Cms::PublicFilter::Layout
   def render_part(part, opts = {})
     return part.html if part.route == "cms/free"
 
-    path = "/.s#{@cur_site.id}/parts/#{part.route}"
+    @cur_part = part
+    body = get_part_html(opts)
+    if body.present?
+      body = render_part_template_variables(body)
+    end
+    @cur_part = nil
+
+    body
+  end
+
+  def get_part_html(opts = {})
+    body = Cms::Agent.render_part(self, @cur_part)
+    return body if body
+
+    path = "/.s#{@cur_site.id}/parts/#{@cur_part.route}"
     spec = recognize_agent path, method: "GET"
     return unless spec
 
-    @cur_part = part
-    controller = part.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
+    controller = @cur_part.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
 
     agent = new_agent controller
     agent.controller.params.merge! spec
     agent.controller.request = ActionDispatch::Request.new(request.env.merge("REQUEST_METHOD" => "GET"))
     resp = agent.render spec[:action]
-    body = resp.body
+    resp.body
+  end
 
-    body.gsub!('#{part_name}', ERB::Util.html_escape(part.name))
+  def render_part_template_variables(body)
+    body.gsub!('#{part_name}', ERB::Util.html_escape(@cur_part.name))
 
     if body =~ /\#\{part_parent[^}]*?_name\}/
-      part_parent = part.parent || part
+      part_parent = @cur_part.parent || @cur_part
       body.gsub!('#{part_parent_name}', ERB::Util.html_escape(part_parent.name))
       part_parent = part_parent.parent || part_parent
       body.gsub!('#{part_parent.parent_name}', ERB::Util.html_escape(part_parent.name))
@@ -68,10 +83,8 @@ module Cms::PublicFilter::Layout
       end
     end
 
-    @cur_part = nil
     body
   end
-
 
   def render_layout(layout, content: nil)
     @cur_layout = layout
