@@ -72,18 +72,22 @@ Rails.application.routes.draw do
     delete "index_:state" => "pages#destroy_all", state: /approve|request|ready|closed|wait_close/
   end
 
-  node "article" do
-    get "page/(index.:format)" => "public#index", cell: "nodes/page"
-    get "page/rss.xml" => "public#rss", cell: "nodes/page", format: "xml"
-  end
+end
 
-  part "article" do
-    get "page" => "public#index", cell: "parts/page"
-    get "page_navi" => "public#index", cell: "parts/page_navi"
-  end
+Cms::Agent.routes.draw do
+  constraints(Cms::AgentConstraint.new) do
+    scope "nodes/article", module: "article/agents/nodes" do
+      get "page/(index.:format)" => "page#index"
+      get "page/rss.xml" => "page#rss", format: "xml"
+    end
 
-  page "article" do
-    get "page/:filename.:format" => "public#index", cell: "pages/page"
-  end
+    scope "pages/article", module: "article/agents/pages" do
+      get "page/:filename.:format" => "page#index"
+    end
 
+    scope "parts/article", module: "article/agents/parts" do
+      get "page" => "page#index"
+      get "page_navi" => "page_navi#index"
+    end
+  end
 end

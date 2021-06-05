@@ -1,5 +1,5 @@
 class Article::Agents::Parts::PageController < ApplicationController
-  include Cms::PartFilter::View
+  include Cms::PartFilter::View2
   helper Cms::ListHelper
 
   def index

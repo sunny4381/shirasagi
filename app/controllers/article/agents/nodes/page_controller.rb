@@ -1,5 +1,5 @@
 class Article::Agents::Nodes::PageController < ApplicationController
-  include Cms::NodeFilter::View
+  include Cms::NodeFilter::View2
   include Cms::ForMemberFilter::Node
   helper Cms::ListHelper
 
