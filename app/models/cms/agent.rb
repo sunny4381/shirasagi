@@ -9,6 +9,12 @@ module Cms
         request = controller.request
         env = request.env.dup
         env[Rack::PATH_INFO] = path
+        env[Rack::SCRIPT_NAME] = ''
+        env.delete("action_dispatch.request.parameters")
+        env.delete("action_dispatch.request.path_parameters")
+        env.delete("action_dispatch.request.request_parameters")
+        env.delete("action_dispatch.request.query_parameters")
+        env.delete("action_dispatch.parameter_filter")
         env["ss.domain"] = "agent"
         env["ss.node"] = node
         env["ss.site"] = controller.instance_variable_get(:@cur_site)
@@ -17,6 +23,7 @@ module Cms
         env["ss.task"] = controller.instance_variable_get(:@task)
 
         status, headers, body = instance.call(env)
+
         return false if "pass" == headers["X-Cascade"]
 
         new_response = ActionDispatch::Response.create(status, headers, body)
