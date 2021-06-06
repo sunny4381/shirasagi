@@ -2,7 +2,7 @@ module Kana::PublicFilter
   extend ActiveSupport::Concern
 
   included do
-    after_action :render_kana, if: ->{ filters.include?(:kana) }
+    after_action :render_kana, if: ->{ filter_include?(:kana) }
   end
 
   def kana_path?
@@ -12,8 +12,8 @@ module Kana::PublicFilter
   private
 
   def set_request_path_with_kana
-    return unless @cur_main_path.match?(/^#{SS.config.kana.location}\//)
-    @cur_main_path.sub!(/^#{SS.config.kana.location}\//, "/")
+    return unless @cur_context.main_path.match?(/^#{SS.config.kana.location}\//)
+    @cur_context.main_path.sub!(/^#{SS.config.kana.location}\//, "/")
     filters << :kana
   end
 

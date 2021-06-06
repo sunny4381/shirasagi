@@ -1,6 +1,6 @@
 module Cms::PublicFilter::Crud
   extend ActiveSupport::Concern
-  include SS::AgentFilter
+  include Cms::AgentFilter
 
   included do
     helper SS::EditorHelper

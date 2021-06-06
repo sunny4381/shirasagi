@@ -1,37 +1,28 @@
 module Cms::PublicFilter::Agent
   extend ActiveSupport::Concern
-  include SS::ImplicitRenderFilter
+
+  included do
+    before_action :set_cur_context
+  end
 
   private
 
-  def recognize_path(path, env = {})
-    env[:method] ||= request.request_method rescue "GET"
-    Rails.application.routes.recognize_path(path, env) rescue {}
-  end
-
-  def recognize_agent(path, env = {})
-    spec = recognize_path path, env
-    spec[:cell] ? spec : nil
-  end
-
-  def write_file(item, data, opts = {})
-    file = opts[:file] || item.path
-
-    # data_md5 = Digest::MD5.hexdigest(data)
-    # if data_md5 != item.md5
-    #   item.class.where(id: item.id).update_all md5: data_md5
-    # end
-
-    # updated = true
-    # if Fs.exists?(file)
-    #   updated = false if data_md5 == Digest::MD5.hexdigest(Fs.read(file))
-    # end
-
-    updated = true
-    if Fs.exists?(file)
-      updated = false if data == Fs.read(file)
+  def set_cur_context
+    @cur_context ||= begin
+      context = request.env["ss"]
+      if context.blank?
+        context = Cms::Agent::Context.new
+        request.env["ss"] = context
+      end
+      context
     end
+  end
 
-    updated ? Fs.write(file, data) : nil
+  def filter_include?(key)
+    @cur_context.filter_include?(key)
+  end
+
+  def filter_options(key)
+    @cur_context.filter_options(key)
   end
 end

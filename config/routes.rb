@@ -28,21 +28,27 @@ class ActionDispatch::Routing::Mapper
   end
 
   def node(ns, &block)
-    name = ns.tr("/", "_")
-    path = ".s:site/nodes/#{ns}"
-    namespace(name, as: "#{name}_node", path: path, module: "cms") { yield }
+    constraints(Cms::Agent::Constraint) do
+      name = ns.tr("/", "_")
+      path = ".agent/nodes/#{ns}"
+      namespace(name, as: "agent_nodes_#{name}", path: path, module: "#{ns}/agents/nodes") { yield }
+    end
   end
 
   def page(ns, &block)
-    name = ns.tr("/", "_")
-    path = ".s:site/pages/#{ns}"
-    namespace(name, as: "#{name}_page", path: path, module: "cms") { yield }
+    constraints(Cms::Agent::Constraint) do
+      name = ns.tr("/", "_")
+      path = ".agent/pages/#{ns}"
+      namespace(name, as: "agent_pages_#{name}", path: path, module: "#{ns}/agents/pages") { yield }
+    end
   end
 
   def part(ns, &block)
-    name = ns.tr("/", "_")
-    path = ".s:site/parts/#{ns}"
-    namespace(name, as: "#{name}_part", path: path, module: "cms") { yield }
+    constraints(Cms::Agent::Constraint) do
+      name = ns.tr("/", "_")
+      path = ".agent/parts/#{ns}"
+      namespace(name, as: "agent_parts_#{name}", path: path, module: "#{ns}/agents/parts") { yield }
+    end
   end
 end
 

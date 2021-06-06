@@ -5,9 +5,13 @@ class Article::Agents::Nodes::PageController < ApplicationController
 
   before_action :accept_cors_request, only: [:rss]
 
+  private
+
   def pages
     Article::Page.public_list(site: @cur_site, node: @cur_node, date: @cur_date)
   end
+
+  public
 
   def index
     @items = pages.

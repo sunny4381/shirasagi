@@ -73,17 +73,17 @@ Rails.application.routes.draw do
   end
 
   node "article" do
-    get "page/(index.:format)" => "public#index", cell: "nodes/page"
-    get "page/rss.xml" => "public#rss", cell: "nodes/page", format: "xml"
+    get "page/(index.:format)", to:"page#index"
+    get "page/rss.xml", to: "page#rss", format: "xml"
   end
 
   part "article" do
-    get "page" => "public#index", cell: "parts/page"
-    get "page_navi" => "public#index", cell: "parts/page_navi"
+    get "page" => "page#index"
+    get "page_navi" => "page_navi#index"
   end
 
   page "article" do
-    get "page/:filename.:format" => "public#index", cell: "pages/page"
+    get "page/:filename.:format" => "page#index"
   end
 
 end

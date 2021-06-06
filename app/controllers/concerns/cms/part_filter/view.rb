@@ -1,6 +1,6 @@
 module Cms::PartFilter::View
   extend ActiveSupport::Concern
-  include SS::AgentFilter
+  include Cms::AgentFilter
 
   included do
     helper ApplicationHelper

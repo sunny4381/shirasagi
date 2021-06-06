@@ -2,21 +2,21 @@ module Translate::PublicFilter
   extend ActiveSupport::Concern
 
   included do
-    after_action :render_translate, if: ->{ filters.include?(:translate) }
+    after_action :render_translate, if: ->{ filter_include?(:translate) }
   end
 
   private
 
   def set_request_path_with_translate
     return if !@cur_site.translate_enabled?
-    return if @cur_main_path !~ /^#{@cur_site.translate_location}\/.+?\//
+    return if @cur_context.main_path !~ /^#{@cur_site.translate_location}\/.+?\//
 
     if browser.bot?
       Rails.logger.warn("translate denied : #{request.user_agent}")
       return
     end
 
-    main_path = @cur_main_path.sub(/^#{@cur_site.translate_location}\/(.+?)\//, "/")
+    main_path = @cur_context.main_path.sub(/^#{@cur_site.translate_location}\/(.+?)\//, "/")
 
     @translate_target = @cur_site.find_translate_target(::Regexp.last_match[1])
     @translate_source = @cur_site.translate_source
@@ -24,7 +24,7 @@ module Translate::PublicFilter
     if @translate_target
       filters << :translate
       request.env["ss.translate_target"] = @translate_target.code
-      @cur_main_path = main_path
+      @cur_context.main_path = main_path
     end
   end
 

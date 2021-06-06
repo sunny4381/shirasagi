@@ -12,23 +12,6 @@ module Cms::PublicFilter::Layout
 
   private
 
-  def filters
-    @filters ||= begin
-      request.env["ss.filters"] ||= []
-    end
-  end
-
-  def filter_include?(key)
-    filters.any? { |f| f == key || f.is_a?(Hash) && f.key?(key) }
-  end
-
-  def filter_options(key)
-    found = filters.find { |f| f == key || f.is_a?(Hash) && f.key?(key) }
-    return if found.nil?
-    return found[key] if found.is_a?(Hash)
-    true
-  end
-
   def find_part(path)
     part = Cms::Part.site(@cur_site).filename(path).first
     return unless part
@@ -38,18 +21,8 @@ module Cms::PublicFilter::Layout
   def render_part(part, opts = {})
     return part.html if part.route == "cms/free"
 
-    path = "/.s#{@cur_site.id}/parts/#{part.route}"
-    spec = recognize_agent path, method: "GET"
-    return unless spec
-
-    @cur_part = part
-    controller = part.route.sub(/\/.*/, "/agents/#{spec[:cell]}")
-
-    agent = new_agent controller
-    agent.controller.params.merge! spec
-    agent.controller.request = ActionDispatch::Request.new(request.env.merge("REQUEST_METHOD" => "GET"))
-    resp = agent.render spec[:action]
-    body = resp.body
+    body = Cms::Agent.render_part(self, part)
+    return if body.blank?
 
     body.gsub!('#{part_name}', ERB::Util.html_escape(part.name))
 
@@ -73,7 +46,7 @@ module Cms::PublicFilter::Layout
   end
 
 
-  def render_layout(layout)
+  def render_layout(layout, content: nil)
     @cur_layout = layout
     @cur_item   = @cur_page || @cur_node
     @cur_item.window_name ||= @cur_item.name
@@ -89,6 +62,8 @@ module Cms::PublicFilter::Layout
 
     @parts = {}
 
+    content ||= response.body
+
     body = @cur_layout.body.to_s
 
     body = body.sub(/<body.*?>/) do |m|
@@ -103,7 +78,7 @@ module Cms::PublicFilter::Layout
 
     if notice
       notice_html   = %(<div id="ss-notice"><div class="wrap">#{notice}</div></div>)
-      response.body = %(#{notice_html}#{response.body})
+      content = %(#{notice_html}#{content})
     end
 
     html = render_kana_tool(html)
@@ -116,7 +91,7 @@ module Cms::PublicFilter::Layout
       end
 
       body << "<!-- layout_yield -->"
-      body << response.body
+      body << content
       body << "<!-- /layout_yield -->"
 
       if @preview && !html.include?("ss-preview-content-begin")
@@ -198,7 +173,7 @@ module Cms::PublicFilter::Layout
     end
 
     criteria = Cms::Part.site(@cur_site).and_public.any_in(filename: @parts.keys)
-    criteria = criteria.where(mobile_view: "show") if filters.include?(:mobile)
+    criteria = criteria.where(mobile_view: "show") if filter_include?(:mobile)
     criteria.each { |part| @parts[part.filename] = part }
 
     return html.gsub(/\{\{ part "(.*?)" \}\}/) do
@@ -229,7 +204,7 @@ module Cms::PublicFilter::Layout
       data_attrs = part_info.map { |k, v| "data-part-#{k}=\"#{CGI.escapeHTML(v.to_s)}\"" }
       html << "<div class=\"ss-preview-part\" #{data_attrs.join(" ")}>"
     end
-    if part.ajax_view == "enabled" && !filters.include?(:mobile) && !@preview
+    if part.ajax_view == "enabled" && !filter_include?(:mobile) && !@preview
       html << part.ajax_html
     else
       html << render_part(part.becomes_with_route)

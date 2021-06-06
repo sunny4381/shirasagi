@@ -1,8 +1,7 @@
 module Cms::PublicFilter
   extend ActiveSupport::Concern
+  include Cms::PublicFilter::Agent
   include Cms::PublicFilter::Site
-  include Cms::PublicFilter::Node
-  include Cms::PublicFilter::Page
 
   included do
     rescue_from StandardError, with: :rescue_action
@@ -17,11 +16,11 @@ module Cms::PublicFilter
   end
 
   def index
-    if @cur_path.match?(/\.p[1-9]\d*\.html$/)
-      page = @cur_path.sub(/.*\.p(\d+)\.html$/, '\\1')
-      params[:page] = page.to_i
-      @cur_path.sub!(/\.p\d+\.html$/, ".html")
-      @cur_main_path.sub!(/\.p\d+\.html$/, ".html")
+    if @cur_context.path.match?(/\.p[1-9]\d*\.html$/)
+      # page = @cur_context.path.sub(/.*\.p(\d+)\.html$/, '\\1')
+      # params[:page] = page.to_i
+      @cur_context.path.sub!(/\.p\d+\.html$/, ".html")
+      @cur_context.main_path.sub!(/\.p\d+\.html$/, ".html")
     end
 
     sends = false
@@ -50,22 +49,22 @@ module Cms::PublicFilter
   end
 
   def set_request_path
-    @cur_path ||= request_path
+    @cur_context.path ||= request_path
     set_main_path
-    cur_main_path = @cur_main_path.dup
+    cur_main_path = @cur_context.main_path.dup
 
     filter_methods = self.class.private_instance_methods.select { |m| m =~ /^set_request_path_with_/ }
     filter_methods.each do |name|
       send(name)
-      break if cur_main_path != @cur_main_path
+      break if cur_main_path != @cur_context.main_path
     end
   end
 
   def set_main_path
     if @cur_site.subdir.present?
-      @cur_main_path = @cur_path.sub(/^\/#{@cur_site.subdir}/, "")
+      @cur_context.main_path = @cur_context.path.sub(/^\/#{@cur_site.subdir}/, "")
     else
-      @cur_main_path = @cur_path.dup
+      @cur_context.main_path = @cur_context.path.dup
     end
   end
 
@@ -75,14 +74,14 @@ module Cms::PublicFilter
   end
 
   def deny_path
-    raise "404" if @cur_path.match?(/^\/sites\/.\//)
+    raise "404" if @cur_context.path.match?(/^\/sites\/.\//)
   end
 
   def parse_path
-    @cur_path.sub!(/\/$/, "/index.html")
-    @cur_main_path.sub!(/\/$/, "/index.html")
-    @html = @cur_main_path.sub(/\.\w+$/, ".html")
-    @file = File.join(@cur_site.path, @cur_main_path)
+    @cur_context.path.sub!(/\/$/, "/index.html")
+    @cur_context.main_path.sub!(/\/$/, "/index.html")
+    @html = @cur_context.main_path.sub(/\.\w+$/, ".html")
+    @file = File.join(@cur_site.path, @cur_context.main_path)
   end
 
   def set_preview_params
@@ -96,8 +95,8 @@ module Cms::PublicFilter
   end
 
   def compile_scss
-    return unless @cur_path.match?(/\.css$/)
-    return if @cur_path.match?(/\/_[^\/]*$/)
+    return unless @cur_context.path.match?(/\.css$/)
+    return if @cur_context.path.match?(/\/_[^\/]*$/)
     return unless Fs.exists? @scss = @file.sub(/\.css$/, ".scss")
 
     css_mtime = Fs.exists?(@file) ? Fs.stat(@file).mtime : 0
@@ -140,78 +139,36 @@ module Cms::PublicFilter
       if @preview_page
         y << proc { render_and_send_page(@preview_page) }
       else
-        if @html =~ /\.part\.html$/ && part = find_part(@html)
-          y << proc { render_and_send_part(part) }
+        if @html.ends_with?(".part.html") && part = find_part(@html)
+          y << proc { Cms::Agent.dispatch_to_part(self, part) }
           next
         end
 
-        if page = find_page(@cur_main_path)
-          y << proc { render_and_send_page(page) }
+        if page = find_page(@cur_context.main_path)
+          y << proc { Cms::Agent.dispatch_to_page(self, page) }
         end
 
-        if !@cur_main_path.include?('.') && !@cur_main_path.end_with?('/') && page = find_page("#{@cur_main_path}/index.html")
-          y << proc { render_and_send_page(page) }
+        if !@cur_context.main_path.include?('.') && !@cur_context.main_path.end_with?('/') && page = find_page("#{@cur_context.main_path}/index.html")
+          y << proc { Cms::Agent.dispatch_to_page(self, page) }
         end
 
-        if node = find_node(@cur_main_path)
-          y << proc { render_and_send_node(node) }
+        if node = find_node(@cur_context.main_path)
+          y << proc { Cms::Agent.dispatch_to_node(self, node) }
         end
       end
     end
   end
 
-  def render_and_send_part(part)
-    @cur_path = params[:ref] || "/"
-    set_main_path
-    resp = render_part(part)
-    return false if !resp
-
-    send_part(resp)
-    request.env["ss.rendered"] = { type: :part, part: part }
-    true
+  def find_node(path)
+    node = Cms::Node.site(@cur_site).in_path(path).order_by(depth: -1).to_a.first
+    return unless node
+    @preview || node.public? ? node.becomes_with_route : nil
   end
 
-  def render_and_send_page(page)
-    resp = render_page(page)
-    return false if !resp
-
-    self.response = resp
-    send_page(page)
-    request.env["ss.rendered"] = { type: :page, page: page, layout: @cur_layout }
-    true
-  end
-
-  def render_and_send_node(node)
-    if node.route == 'uploader/file' && Fs.file?(@file)
-      x_sendfile
-      return true
-    end
-
-    resp = render_node(node)
-    return false if !resp
-
-    self.response = resp
-    send_page(node)
-    request.env["ss.rendered"] = { type: :node, node: node, layout: @cur_layout }
-    true
-  end
-
-  def send_part(body)
-    respond_to do |format|
-      format.html { render html: body.html_safe, layout: false }
-      format.json { render json: body.to_json }
-    end
-  end
-
-  def send_page(page)
-    if page.view_layout == "cms/redirect" && !mobile_path?
-      @redirect_link = trusted_url!(page.redirect_link)
-      render html: "", layout: "cms/redirect"
-    elsif response.content_type == "text/html" && page.layout
-      render html: render_layout(page.layout).html_safe, layout: (request.xhr? ? false : "cms/page")
-    else
-      @_response_body = response.body
-    end
+  def find_page(path)
+    page = Cms::Page.site(@cur_site).filename(path).first
+    return unless page
+    @preview || (page.public? && page.public_node?) ? page.becomes_with_route : nil
   end
 
   def page_not_found
