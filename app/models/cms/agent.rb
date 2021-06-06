@@ -1,19 +1,22 @@
 module Cms::Agent
   module_function
 
+  IGNORE_PARAM_KEYS = %w(
+    action_dispatch.request.parameters
+    action_dispatch.request.path_parameters
+    action_dispatch.request.query_parameters
+    action_dispatch.request.request_parameters
+  ).freeze
+
   def clone_env(env)
     ret = {}
 
+    # rack middleware をすっ飛ばせるように action_dispatch. パラメータのほとんどを保存する。
     env.each do |key, value|
-      if key.starts_with?("rack.")
-        ret[key] = value
-      elsif key == "ss" || key.starts_with?("ss.")
-        ret[key] = value
-      elsif key.include?(".")
-        next
-      else
-        ret[key] = value
-      end
+      next if key.starts_with?("action_controller.")
+      next if IGNORE_PARAM_KEYS.include?(key)
+
+      ret[key] = value
     end
 
     ret
@@ -100,7 +103,8 @@ module Cms::Agent
     env["ss"].domain = 'agent'
     env["ss"].part = part
 
-    status, headers, body = Rails.application.call(env)
+    # rack middleware をすっ飛ばしたいので Rails.application.routes.call を呼び出す
+    status, headers, body = Rails.application.routes.call(env)
     return if "pass" == headers["X-Cascade"]
     return if status != 200
 
@@ -115,7 +119,8 @@ module Cms::Agent
   end
 
   def _dispatch(controller, env)
-    status, headers, body = Rails.application.call(env)
+    # rack middleware をすっ飛ばしたいので Rails.application.routes.call を呼び出す
+    status, headers, body = Rails.application.routes.call(env)
 
     return false if "pass" == headers["X-Cascade"]
 
