@@ -38,6 +38,6 @@ module Cms::GeneratorFilter::Rss
     end
 
     file = opts[:file] || "#{node.path}/rss.xml"
-    write_file node, html, file: file
+    Fs.write_if_modified(file, html)
   end
 end
