@@ -22,13 +22,11 @@ Rails.application.routes.draw do
     get "similarity_scores" => "similarity_scores#index"
   end
 
-  part "recommend" do
-    get "history" => "public#index", cell: "parts/history"
-    get "similarity" => "public#index", cell: "parts/similarity"
-  end
+  part "recommend/history"
+  part "recommend/similarity"
 
-  node "recommend" do
-    get "receiver/index.json" => "public#index", cell: "nodes/receiver"
+  node "recommend/receiver" do
+    get "index.json", action: "index"
   end
 
 end

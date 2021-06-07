@@ -309,35 +309,29 @@ Rails.application.routes.draw do
     get "search_contents/:id/download" => "page_search_contents#download", as: "download_page_search_contents"
   end
 
-  node "cms" do
-    get "node/(index.:format)" => "public#index", cell: "nodes/node"
-    get "page/(index.:format)" => "public#index", cell: "nodes/page"
-    get "page/rss.xml" => "public#rss", cell: "nodes/page", format: "xml"
-    get "group_page/(index.:format)" => "public#index", cell: "nodes/group_page"
-    get "group_page/rss.xml" => "public#rss", cell: "nodes/group_page", format: "xml"
-    get "import_node/(index.:format)" => "public#index", cell: "nodes/import_node"
-    get "import_node/rss.xml" => "public#rss", cell: "nodes/import_node", format: "xml"
-    get "archive/:ymd/(index.:format)" => "public#index", cell: "nodes/archive", ymd: /\d+/
-    get "archive" => "public#redirect_to_archive_index", cell: "nodes/archive"
-    get "photo_album" => "public#index", cell: "nodes/photo_album"
-    get "site_search/(index.:format)" => "public#index", cell: "nodes/site_search"
+  node "cms/node", page: true
+  node "cms/page", page: true, rss: true
+  node "cms/group_page", page: true, rss: true
+  node "cms/import_node", page: true, rss: true
+  node "cms/archive" do
+    get ":ymd/index(.:format)", action: "index", ymd: /\d+/
+    get ":ymd/index.p:page(.:format)", action: "index", ymd: /\d+/
+    get "", action: "redirect_to_archive_index"
   end
+  node "cms/photo_album", page: true
+  node "cms/site_search", page: true
 
-  part "cms" do
-    get "free" => "public#index", cell: "parts/free"
-    get "node" => "public#index", cell: "parts/node"
-    get "page" => "public#index", cell: "parts/page"
-    get "tabs" => "public#index", cell: "parts/tabs"
-    get "crumb" => "public#index", cell: "parts/crumb"
-    get "sns_share" => "public#index", cell: "parts/sns_share"
-    get "calendar_nav" => "public#index", cell: "parts/calendar_nav"
-    get "monthly_nav" => "public#index", cell: "parts/monthly_nav"
-  end
+  part "cms/free"
+  part "cms/node"
+  part "cms/page"
+  part "cms/tabs"
+  part "cms/crumb"
+  part "cms/sns_share"
+  part "cms/calendar_nav"
+  part "cms/monthly_nav"
 
-  page "cms" do
-    get "page/:filename.:format" => "public#index", cell: "pages/page"
-    get "import_page/:filename.:format" => "public#index", cell: "pages/import_page"
-  end
+  page "cms/page"
+  page "cms/import_page"
 
   unless Rails.env.development?
     namespace "cms", path: ".s:site" do
