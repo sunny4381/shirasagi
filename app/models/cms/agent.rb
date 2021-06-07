@@ -26,7 +26,9 @@ module Cms::Agent
     request = controller.request
     context = request.env["ss"]
     main_path = context.main_path
-    rest = main_path.sub(/^\/#{::Regexp.escape(node.filename)}/, "").sub(/\/index\.html$/, "")
+    if main_path.start_with?("/" + node.filename)
+      rest = main_path[(node.filename.length + 1)..-1]
+    end
     path = ".agent/nodes/#{node.route}#{rest}"
 
     env = clone_env(request.env)
@@ -37,12 +39,13 @@ module Cms::Agent
     save_node = env["ss"].node
     env["ss"].domain = 'agent'
     env["ss"].node = node
-    env["action_dispatch.show_exceptions"] = false
 
     _dispatch(controller, env)
   ensure
-    env["ss"].domain = save_domain
-    env["ss"].node = save_node
+    if env
+      env["ss"].domain = save_domain
+      env["ss"].node = save_node
+    end
   end
 
   def dispatch_to_page(controller, page)
@@ -56,7 +59,6 @@ module Cms::Agent
     save_page = env["ss"].page
     env["ss"].domain = 'agent'
     env["ss"].page = page
-    env["action_dispatch.show_exceptions"] = false
 
     _dispatch(controller, env)
   ensure
@@ -75,7 +77,6 @@ module Cms::Agent
     env = clone_env(controller.request.env)
     env[Rack::PATH_INFO] = path
     env[Rack::SCRIPT_NAME] = ''
-    env["action_dispatch.show_exceptions"] = false
 
     save_domain = env["ss"].domain
     save_part = env["ss"].part
@@ -96,7 +97,6 @@ module Cms::Agent
     env = clone_env(controller.request.env)
     env[Rack::PATH_INFO] = path
     env[Rack::SCRIPT_NAME] = ''
-    env["action_dispatch.show_exceptions"] = false
 
     save_domain = env["ss"].domain
     save_part = env["ss"].part

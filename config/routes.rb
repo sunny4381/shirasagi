@@ -27,27 +27,48 @@ class ActionDispatch::Routing::Mapper
     namespace(name, path: ".s:site/#{ns}:cid", module: mod, cid: /\w+/) { yield }
   end
 
-  def node(ns, &block)
+  def agent(content_type, route, &block)
+    content_type = content_type.pluralize
+    name = route.tr("/", "_")
+    module_part, type_part = route.split("/", 2)
+
+    as = "agent_#{content_type}_#{name}"
+    path = ".agent/#{content_type}/#{route}"
+    module_path = "#{module_part}/agents/#{content_type}/#{type_part}"
     constraints(Cms::Agent::Constraint) do
-      name = ns.tr("/", "_")
-      path = ".agent/nodes/#{ns}"
-      namespace(name, as: "agent_nodes_#{name}", path: path, module: "#{ns}/agents/nodes") { yield }
+      namespace(name, as: as, path: path, module: module_path, &block)
     end
   end
 
-  def page(ns, &block)
-    constraints(Cms::Agent::Constraint) do
-      name = ns.tr("/", "_")
-      path = ".agent/pages/#{ns}"
-      namespace(name, as: "agent_pages_#{name}", path: path, module: "#{ns}/agents/pages") { yield }
+  def node(route, options = nil, &block)
+    if block_given?
+      agent("node", route, &block)
+    else
+      agent("node", route) do
+        get "index(.:format)", action: "index"
+        if options && options[:page]
+          get "index.p:page(.:format)", action: "index"
+        end
+        if options && options[:rss]
+          get "rss.xml", action: "rss", format: "xml"
+        end
+      end
     end
   end
 
-  def part(ns, &block)
-    constraints(Cms::Agent::Constraint) do
-      name = ns.tr("/", "_")
-      path = ".agent/parts/#{ns}"
-      namespace(name, as: "agent_parts_#{name}", path: path, module: "#{ns}/agents/parts") { yield }
+  def page(route, &block)
+    if block_given?
+      agent("page", route, &block)
+    else
+      agent("page", route) { get ":filename.:format", action: "index" }
+    end
+  end
+
+  def part(route, &block)
+    if block_given?
+      agent("part", route, &block)
+    else
+      agent("part", route) { get "", action: "index" }
     end
   end
 end

@@ -16,13 +16,6 @@ module Cms::PublicFilter
   end
 
   def index
-    if @cur_context.path.match?(/\.p[1-9]\d*\.html$/)
-      # page = @cur_context.path.sub(/.*\.p(\d+)\.html$/, '\\1')
-      # params[:page] = page.to_i
-      @cur_context.path.sub!(/\.p\d+\.html$/, ".html")
-      @cur_context.main_path.sub!(/\.p\d+\.html$/, ".html")
-    end
-
     sends = false
     enum_contents.each do |renderer|
       if instance_exec(&renderer)

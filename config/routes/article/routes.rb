@@ -72,18 +72,11 @@ Rails.application.routes.draw do
     delete "index_:state" => "pages#destroy_all", state: /approve|request|ready|closed|wait_close/
   end
 
-  node "article" do
-    get "page/(index.:format)", to:"page#index"
-    get "page/rss.xml", to: "page#rss", format: "xml"
-  end
+  node "article/page", page: true, rss: true
 
-  part "article" do
-    get "page" => "page#index"
-    get "page_navi" => "page_navi#index"
-  end
+  part "article/page"
+  part "article/page_navi"
 
-  page "article" do
-    get "page/:filename.:format" => "page#index"
-  end
+  page "article/page"
 
 end
