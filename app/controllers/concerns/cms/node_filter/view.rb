@@ -27,12 +27,13 @@ module Cms::NodeFilter::View
     save_items = @items
     @items = items
     body = render_to_string(file: "index")
+    mime = rendered_format
     @items = save_items
 
     if @cur_node.view_layout == "cms/redirect" && !mobile_path?
       @redirect_link = trusted_url!(@cur_node.redirect_link)
       body = render_to_string(html: "", layout: "cms/redirect")
-    elsif @cur_node.layout
+    elsif mime.html? && @cur_node.layout
       @last_rendered_layout = nil if @last_rendered_node_filename != @cur_node.filename
       @last_rendered_layout ||= begin
         rendered_layout = render_layout(@cur_node.layout, content: "<!-- layout_yield --><!-- /layout_yield -->")
