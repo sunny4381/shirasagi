@@ -171,6 +171,12 @@ module Cms::PublicFilter
     @preview || (page.public? && page.public_node?) ? page.becomes_with_route : nil
   end
 
+  def find_part(path)
+    part = Cms::Part.site(@cur_site).filename(path).first
+    return unless part
+    @preview || part.public? ? part.becomes_with_route : nil
+  end
+
   def page_not_found
     request.env["action_dispatch.show_exceptions"] = false if @preview
     raise "404"
