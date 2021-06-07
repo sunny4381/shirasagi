@@ -23,9 +23,7 @@ module Cms::NodeFilter::View
     @model = self.class.model_class
   end
 
-  def render_with_pagination(items)
-    raise "404" if params[:page].to_i > 1 && items.empty?
-
+  def _render_with_pagination(items)
     save_items = @items
     @items = items
     body = render_to_string(file: "index")
@@ -35,9 +33,24 @@ module Cms::NodeFilter::View
       @redirect_link = trusted_url!(@cur_node.redirect_link)
       body = render_to_string(html: "", layout: "cms/redirect")
     elsif @cur_node.layout
-      body = render_layout(@cur_node.layout, content: body)
-      body = render_to_string(html: body.html_safe, layout: "cms/page")
+      @last_rendered_layout = nil if @last_rendered_node_filename != @cur_node.filename
+      @last_rendered_layout ||= begin
+        rendered_layout = render_layout(@cur_node.layout, content: "<!-- layout_yield --><!-- /layout_yield -->")
+        rendered_layout = render_to_string(html: rendered_layout.html_safe, layout: request.xhr? ? false : "cms/page")
+        @last_rendered_node_filename = @cur_node.filename
+        rendered_layout
+      end
+
+      body = @last_rendered_layout.sub("<!-- layout_yield --><!-- /layout_yield -->", body)
     end
+
+    body
+  end
+
+  def render_with_pagination(items)
+    raise "404" if params[:page].to_i > 1 && items.empty?
+
+    body = _render_with_pagination(items)
 
     _set_rendered_content_type rendered_format
     self.response_body = body

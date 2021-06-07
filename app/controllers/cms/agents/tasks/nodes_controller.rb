@@ -29,6 +29,8 @@ class Cms::Agents::Tasks::NodesController < ApplicationController
       return
     end
 
+    @cur_context.site = @site
+
     generate_root_pages unless @node
 
     nodes = Cms::Node.site(@site).and_public
@@ -39,15 +41,22 @@ class Cms::Agents::Tasks::NodesController < ApplicationController
       rescue_with(rescue_p: rescue_p) do
         node = Cms::Node.site(@site).and_public.where(id: id).first
         next unless node
+
+        node = node.becomes_with_route
         next unless node.public?
         next unless node.public_node?
 
-        node = node.becomes_with_route
+        @cur_context.node = node
+        @cur_context.path = "#{node.url}index.html"
+        @cur_context.main_path = @cur_context.path.sub(@site.url, "/")
+        next if Cms::Agent.generate_node(self, node)
+
         cont = node.route.sub("/", "/agents/tasks/node/").camelize.pluralize
         cname = cont + "Controller"
 
         agent = SS::Agent.new cont rescue nil
         next if agent.blank? || agent.controller.class.to_s != cname
+        agent.controller.request.env["ss"] = @cur_context
         agent.controller.instance_variable_set :@task, @task
         agent.controller.instance_variable_set :@site, @site
         agent.controller.instance_variable_set :@node, node
@@ -56,6 +65,8 @@ class Cms::Agents::Tasks::NodesController < ApplicationController
         #generate_node_pages node
       end
     end
+
+    head :no_content
   end
 
   def generate_root_pages
