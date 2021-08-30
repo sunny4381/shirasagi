@@ -125,6 +125,7 @@ group :development, :test do
   gem 'rspec-rails', require: false
   gem 'rubocop', '0.71.0', require: false
   gem 'rubocop-performance', require: false
+  gem 'rubocop-rspec', require: false
   gem 'ruby-debug-ide', require: false
   gem 'scss_lint', require: false
   gem 'selenium-webdriver', require: false
