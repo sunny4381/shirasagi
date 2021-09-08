@@ -19,14 +19,19 @@ module Opendata::IdeaSearchable
     end
 
     def search(params)
-      criteria = self.all
-      return criteria if params.blank?
+      return all if params.blank?
 
-      SEARCH_HANDLERS.each do |handler|
-        criteria = criteria.send(handler, params)
+      criterions = SEARCH_HANDLERS.map { |handler| self.unscoped.send(handler, params) }
+      criterions = criterions.select { |criteria| criteria.selector.present? }
+      return all if criterions.blank?
+      return all.and(criterions.first) if criterions.length == 1
+
+      case params[:option]
+      when 'any_conditions'
+        all.and(self.unscoped.or(*criterions))
+      else # nil, all_keywords, any_keywords
+        all.and(*criterions)
       end
-
-      criteria
     end
 
     SEARCH_HANDLERS = [ :search_keyword, :search_tag, :search_area_id, :search_category_id, :search_poster ].freeze
@@ -35,7 +40,7 @@ module Opendata::IdeaSearchable
       return all if params.blank? || params[:keyword].blank?
 
       option = params[:option].presence || 'all_keywords'
-      method = option == 'all_keywords' ? 'and' : 'any'
+      method = option == 'any_keywords' ? 'any' : 'and'
       all.keyword_in params[:keyword], :name, :text, :issue, :data, :note, method: method
     end
 
