@@ -35,14 +35,19 @@ class Gws::User
   # reset default order
   self.default_scoping = nil if default_scopable?
 
-  scope :site, ->(site) { self.in(group_ids: Gws::Group.site(site).pluck(:id)) }
+  class << self
+    def site(site)
+      all.in(group_ids: Gws::Group.site(site).pluck(:id))
+    end
 
-  scope :readable_users, ->(user, opts = {}) {
-    return all if self.allowed?(:read, user, opts)
-    or_conds = readable_conditions(user, opts)
-    or_conds.unshift({ id: user.id })
-    where("$and" => [{ "$or" => or_conds }])
-  }
+    def readable_users(user, opts = {})
+      return all if self.allowed?(:read, user, opts)
+
+      or_conds = readable_conditions(user, opts)
+      or_conds.unshift({ id: user.id })
+      all.where("$and" => [{ "$or" => or_conds }])
+    end
+  end
 
   def readable_user?(user, opts = {})
     return true if id == user.id
