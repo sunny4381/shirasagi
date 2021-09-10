@@ -39,9 +39,9 @@ module Gws::Model::Folder
 
     scope :sub_folder, ->(key, folder) {
       if key.start_with?('root_folder')
-        where("$and" => [ {name: /^(?!.*\/).*$/} ] )
+        where(name: /^(?!.*\/).*$/)
       else
-        where("$and" => [ {name: /^#{::Regexp.escape(folder)}\/(?!.*\/).*$/} ] )
+        where(name: /^#{::Regexp.escape(folder)}\/(?!.*\/).*$/)
       end
     }
   end

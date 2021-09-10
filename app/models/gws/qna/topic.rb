@@ -55,7 +55,7 @@ class Gws::Qna::Topic
       conds << { id: { '$in' => custom_gropus.pluck(:member_ids).flatten } }
     end
 
-    Gws::User.where('$and' => [ { '$or' => conds } ])
+    Gws::User.where('$or' => conds)
   end
 
   def sort_options

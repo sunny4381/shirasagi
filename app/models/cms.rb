@@ -113,7 +113,7 @@ module Cms
     organization_group_names = Cms::Group.all.unscoped.in(id: organization_group_ids).pluck(:name)
     conditions = organization_group_names.map { |name| { name: /^#{::Regexp.escape(name)}(\/|$)/ } }
     if conditions.present?
-      groups = Cms::Group.all.unscoped.where("$and" => [{ "$or" => conditions }])
+      groups = Cms::Group.all.unscoped.where("$or" => conditions)
     else
       groups = Cms::Group.none
     end

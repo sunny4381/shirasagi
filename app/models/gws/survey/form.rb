@@ -43,11 +43,11 @@ class Gws::Survey::Form
 
   scope :and_public, ->(date = Time.zone.now) {
     date = date.dup
-    where("$and" => [
+    all.and(
       { state: "public" },
       { "$or" => [ { release_date: nil }, { :release_date.lte => date } ] },
       { "$or" => [ { close_date: nil }, { :close_date.gt => date } ] },
-    ])
+    )
   }
 
   class << self

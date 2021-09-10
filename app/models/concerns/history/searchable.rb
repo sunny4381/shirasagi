@@ -46,7 +46,7 @@ module History::Searchable
 
           { "$or" => inner_cond }
         end
-        criteria = criteria.where("$and" => cond)
+        criteria = criteria.and(cond)
       end
       if params[:ref_coll] == 'all'
         criteria

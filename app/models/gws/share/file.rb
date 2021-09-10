@@ -25,9 +25,7 @@ class Gws::Share::File
   default_scope ->{ where(model: "share/file") }
 
   scope :active, ->(date = Time.zone.now) {
-    where('$and' => [
-        { '$or' => [{ deleted: nil }, { :deleted.gt => date }] }
-    ])
+    where('$or' => [{ deleted: nil }, { :deleted.gt => date }])
   }
 
   scope :custom_order, ->(key) {

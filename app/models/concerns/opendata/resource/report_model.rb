@@ -198,7 +198,7 @@ module Opendata::Resource::ReportModel
       }
 
       pipes = []
-      pipes << { "$match" => self.criteria.where("$and" => [{ :year_month.gte => min_year * 100 + 1 }]).selector }
+      pipes << { "$match" => self.criteria.where(:year_month.gte => min_year * 100 + 1).selector }
       pipes << { "$project" => project_pipeline }
       pipes << { "$group" => group_pipeline }
       pipes << { "$sort" => sort_pipeline }

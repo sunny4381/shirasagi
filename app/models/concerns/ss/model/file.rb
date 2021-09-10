@@ -330,7 +330,7 @@ module SS::Model::File
     return if type.blank?
 
     conds = (type.fields.keys & %w(file_id file_ids)).map { |f| { f => id} }
-    type.where("$and" => [{ "$or" => conds }]).first
+    type.where("$or" => conds).first
   end
 
   def set_filename

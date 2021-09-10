@@ -169,7 +169,7 @@ module Cms::Addon::List
       end
       conditions += bind_to_category(category_key, category_ids) if category_key
 
-      return { "$and" => [{ id: -1 }] } if conditions.blank?
+      return { id: -1 } if conditions.blank?
 
       { '$or' => conditions }
     end

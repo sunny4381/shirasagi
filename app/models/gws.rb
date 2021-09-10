@@ -104,7 +104,7 @@ module Gws
     org_ids, org_names = organizations_criteria.pluck(:id, :name).transpose
     org_ids ||= []
     conditions = org_names.try { org_names.map { |name| { name: /^#{::Regexp.escape(name)}(\/|$)/ } } }
-    groups = conditions.try { Gws::Group.all.where("$and" => [{ "$or" => conditions }]) } || Gws::Group.none
+    groups = conditions.try { Gws::Group.all.where("$or" => conditions) } || Gws::Group.none
     group_ids = groups.pluck(:id)
 
     filter = proc { |array| array }

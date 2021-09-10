@@ -65,10 +65,10 @@ module Cms::Content
         all.where(state: "public")
       else
         date = date.dup
-        all.where("$and" => [
+        all.and(
           { "$or" => [ { state: "public", :released.lte => date }, { :release_date.lte => date } ] },
-          { "$or" => [ { close_date: nil }, { :close_date.gt => date } ] },
-        ])
+          { "$or" => [ { close_date: nil }, { :close_date.gt => date } ] }
+        )
       end
     end
 

@@ -15,10 +15,10 @@ module MailPage::Addon
 
       scope :and_arrival, ->(date = nil) {
         date = Time.zone.now if date.nil?
-        where("$and" => [
+        self.and(
           { "$or" => [{ arrival_start_date: nil }, { :arrival_start_date.lte => date }] },
-          { "$or" => [{ arrival_close_date: nil }, { :arrival_close_date.gt => date }] },
-        ])
+          { "$or" => [{ arrival_close_date: nil }, { :arrival_close_date.gt => date }] }
+        )
       }
     end
 

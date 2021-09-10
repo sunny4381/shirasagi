@@ -8,7 +8,7 @@ class SS::Migration20190320000000
     ::Rails.application.eager_load!
 
     conds = [{ :owner_item_id.exists => false }, { owner_item_id: 0 }]
-    all_ids = SS::File.unscoped.where("$and" => [{ "$or" =>  conds}]).pluck(:id).sort
+    all_ids = SS::File.unscoped.where("$or" => conds).pluck(:id).sort
     all_ids.each_slice(20) do |ids|
       SS::File.unscoped.in(id: ids).to_a.each do |file|
         file = file.becomes_with_model
@@ -112,7 +112,7 @@ class SS::Migration20190320000000
       { build_criteria_key(prefixes, field_name, "file_ids") => file.id },
       { build_criteria_key(prefixes, field_name, "file_id") => file.id }
     ]
-    model.all.where("$and" => [{ "$or" => conds }]).first
+    model.all.where("$or" => conds).first
   end
 
   def normalize_item(item)

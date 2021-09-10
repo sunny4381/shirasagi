@@ -100,13 +100,12 @@ describe Cms::Addon::List::Model do
       context "when \#{request_dir} is given with non-existing cur_main_path" do
         let!(:part) { create :cms_part_page, cur_site: site, conditions: [ "\#{request_dir}" ] }
         subject do
-          part.condition_hash(request_dir: "/node-#{unique_id}/index.html")["$and"]
+          part.condition_hash(request_dir: "/node-#{unique_id}/index.html")
         end
 
         it do
-          expect(subject).to be_a(Array)
-          expect(subject.length).to eq 1
-          expect(subject[0]).to eq(id: -1)
+          expect(subject).to be_a(Hash)
+          expect(subject).to eq(id: -1)
         end
       end
 

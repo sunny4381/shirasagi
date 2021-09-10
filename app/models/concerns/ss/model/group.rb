@@ -45,7 +45,7 @@ module SS::Model::Group
         { :gws_use.exists => false },
         { :gws_use.ne => "disabled" },
       ]
-      where("$and" => [{ "$or" => conditions }])
+      where("$or" => conditions)
     }
   end
 

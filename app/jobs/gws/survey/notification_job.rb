@@ -107,7 +107,7 @@ class Gws::Survey::NotificationJob < Gws::ApplicationJob
 
     if @options[:unanswered_only]
       answered_user_ids = item.answered_users.pluck(:id)
-      criteria = criteria.where("$and" => [{ id: { "$nin" => answered_user_ids } }])
+      criteria = criteria.where(id: { "$nin" => answered_user_ids })
     end
 
     criteria.active

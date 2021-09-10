@@ -11,6 +11,6 @@ class Webmail::User
 
   # override SS::Model::User#groups
   def groups
-    Webmail::Group.where("$and" => [{ :_id.in => group_ids }])
+    Webmail::Group.where(:_id.in => group_ids)
   end
 end

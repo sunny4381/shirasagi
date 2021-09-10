@@ -63,7 +63,7 @@ class Gws::Notice::Apis::FolderListController < ApplicationController
         end
       end
 
-      @folders.where('$and' =>[{'$or' => conds}]).tree_sort
+      @folders.where('$or' => conds).tree_sort
     end
   end
 

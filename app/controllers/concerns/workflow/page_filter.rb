@@ -22,21 +22,17 @@ module Workflow::PageFilter
 
   def index_approve
     cond = {
-      '$and' => [
+      workflow_state: "request",
+      '$or' => [
         {
-          workflow_state: "request",
-          '$or' => [
-            {
-              workflow_approvers: {
-                "$elemMatch" => { "user_id" => @cur_user._id, "state" => "request" }
-              }
-            }, {
-              workflow_approvers: {
-                "$elemMatch" => { "user_id" => @cur_user._id, "state" => "pending" }
-              },
-              workflow_pull_up: 'enabled'
-            }
-          ]
+          workflow_approvers: {
+            "$elemMatch" => { "user_id" => @cur_user._id, "state" => "request" }
+          }
+        }, {
+          workflow_approvers: {
+            "$elemMatch" => { "user_id" => @cur_user._id, "state" => "pending" }
+          },
+          workflow_pull_up: 'enabled'
         }
       ]
     }

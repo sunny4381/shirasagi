@@ -140,12 +140,12 @@ class Gws::Schedule::PlanCsv::Importer
   def define_importer_member(drawer)
     drawer.simple_column :member_custom_group_ids do |row, item, head, value|
       names = to_array(value)
-      criteria = readable_custom_groups.where("$and" => [{ name: { "$in" => names } }])
+      criteria = readable_custom_groups.where(name: { "$in" => names })
       item.member_custom_group_ids = criteria.pluck(:id)
     end
     drawer.simple_column :member_group_ids do |row, item, head, value|
       names = to_array(value)
-      criteria = readable_groups.where("$and" => [{ name: { "$in" => names } }])
+      criteria = readable_groups.where(name: { "$in" => names })
       item.member_group_ids = criteria.pluck(:id)
     end
     drawer.simple_column :member_ids do |row, item, head, value|
@@ -154,7 +154,7 @@ class Gws::Schedule::PlanCsv::Importer
       conds = []
       conds << { uid: { "$in" => uid_or_emails } }
       conds << { email: { "$in" => uid_or_emails } }
-      criteria = readable_users.where("$and" => [{ "$or" => conds }])
+      criteria = readable_users.where("$or" => conds)
 
       item.member_ids = criteria.pluck(:id)
     end
@@ -167,7 +167,7 @@ class Gws::Schedule::PlanCsv::Importer
   def define_importer_schedule_facility(drawer)
     drawer.simple_column :facility_ids do |row, item, head, value|
       names = to_array(value)
-      item.facility_ids = readable_facilities.where("$and" => [{ name: { "$in" => names } }]).pluck(:id)
+      item.facility_ids = readable_facilities.where(name: { "$in" => names }).pluck(:id)
     end
     drawer.simple_column :main_facility_id do |row, item, head, value|
       all_facilities = readable_facilities
@@ -205,7 +205,7 @@ class Gws::Schedule::PlanCsv::Importer
       conds = []
       conds << { uid: { "$in" => uid_or_emails } }
       conds << { email: { "$in" => uid_or_emails } }
-      criteria = readable_users.where("$and" => [{ "$or" => conds }])
+      criteria = readable_users.where("$or" => conds)
 
       item.approval_member_ids = criteria.pluck(:id)
     end
@@ -215,12 +215,12 @@ class Gws::Schedule::PlanCsv::Importer
     drawer.label_column :readable_setting_range
     drawer.simple_column :readable_custom_group_ids do |row, item, head, value|
       names = to_array(value)
-      criteria = readable_custom_groups.where("$and" => [{ name: { "$in" => names } }])
+      criteria = readable_custom_groups.where(name: { "$in" => names })
       item.readable_custom_group_ids = criteria.pluck(:id)
     end
     drawer.simple_column :readable_group_ids do |row, item, head, value|
       names = to_array(value)
-      criteria = readable_groups.where("$and" => [{ name: { "$in" => names } }])
+      criteria = readable_groups.where(name: { "$in" => names })
       item.readable_group_ids = criteria.pluck(:id)
     end
     drawer.simple_column :readable_member_ids do |row, item, head, value|
@@ -229,7 +229,7 @@ class Gws::Schedule::PlanCsv::Importer
       conds = []
       conds << { uid: { "$in" => uid_or_emails } }
       conds << { email: { "$in" => uid_or_emails } }
-      criteria = readable_users.where("$and" => [{ "$or" => conds }])
+      criteria = readable_users.where("$or" => conds)
 
       item.readable_member_ids = criteria.pluck(:id)
     end
@@ -238,12 +238,12 @@ class Gws::Schedule::PlanCsv::Importer
   def define_importer_group_permission(drawer)
     drawer.simple_column :custom_group_ids do |row, item, head, value|
       names = to_array(value)
-      criteria = readable_custom_groups.where("$and" => [{ name: { "$in" => names } }])
+      criteria = readable_custom_groups.where(name: { "$in" => names })
       item.custom_group_ids = criteria.pluck(:id)
     end
     drawer.simple_column :group_ids do |row, item, head, value|
       names = to_array(value)
-      criteria = readable_groups.where("$and" => [{ name: { "$in" => names } }])
+      criteria = readable_groups.where(name: { "$in" => names })
       item.group_ids = criteria.pluck(:id)
     end
     drawer.simple_column :user_ids do |row, item, head, value|
@@ -252,7 +252,7 @@ class Gws::Schedule::PlanCsv::Importer
       conds = []
       conds << { uid: { "$in" => uid_or_emails } }
       conds << { email: { "$in" => uid_or_emails } }
-      criteria = readable_users.where("$and" => [{ "$or" => conds }])
+      criteria = readable_users.where("$or" => conds)
 
       item.user_ids = criteria.pluck(:id)
     end

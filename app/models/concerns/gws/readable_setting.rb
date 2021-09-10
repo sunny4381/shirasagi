@@ -28,7 +28,7 @@ module Gws::ReadableSetting
         return none unless self.allowed?(:read, user, opts)
       end
       or_conds = readable_conditions(user, opts)
-      where("$and" => [{ "$or" => or_conds }])
+      where("$or" => or_conds)
     }
   end
 

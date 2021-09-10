@@ -47,15 +47,21 @@ module Opendata::IdeaSearchable
     def search_tag(params)
       return all if params.blank? || params[:tag].blank?
 
-      operator = params[:option].presence == 'any_conditions' ? "$or" : "$and"
-      all.where(operator => [ tags: params[:tag] ])
+      if params[:option].presence == 'any_conditions'
+        all.where("$or" => [{ tags: params[:tag] }])
+      else
+        all.where(tags: params[:tag])
+      end
     end
 
     def search_area_id(params)
       return all if params.blank? || params[:area_id].blank?
 
-      operator = params[:option].presence == 'any_conditions' ? "$or" : "$and"
-      all.where(operator => [ area_ids: params[:area_id].to_i ])
+      if params[:option].presence == 'any_conditions'
+        all.where("$or" => [{ area_ids: params[:area_id].to_i }])
+      else
+        all.where(area_ids: params[:area_id].to_i)
+      end
     end
 
     def search_category_id(params)
@@ -70,8 +76,11 @@ module Opendata::IdeaSearchable
         category_ids << child.id
       end
 
-      operator = params[:option].presence == 'any_conditions' ? "$or" : "$and"
-      all.where(operator => [ category_ids: { "$in" => category_ids } ])
+      if params[:option].presence == 'any_conditions'
+        all.where("$or" => [{ category_ids: { "$in" => category_ids } }])
+      else
+        all.where(category_ids: { "$in" => category_ids })
+      end
     end
 
     def search_poster(params)
@@ -86,8 +95,11 @@ module Opendata::IdeaSearchable
              end
       return all if cond.blank?
 
-      operator = params[:option].presence == 'any_conditions' ? "$or" : "$and"
-      all.where(operator => [ cond ])
+      if params[:option].presence == 'any_conditions'
+        all.where("$or" => [ cond ])
+      else
+        all.where(cond)
+      end
     end
   end
 end

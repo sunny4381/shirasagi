@@ -27,14 +27,13 @@ module SS::Document
     scope :keyword_in, ->(words, *fields) {
       options = fields.extract_options!
       method = options[:method].presence || 'and'
-      operator = method == 'and' ? "$and" : "$or"
 
       words = words.split(/[\s　]+/).uniq.compact.map { |w| /#{::Regexp.escape(w)}/i } if words.is_a?(String)
       words = words[0..4]
       cond  = words.map do |word|
         { "$or" => fields.map { |field| { field => word } } }
       end
-      where(operator => cond)
+      method == 'and' ? all.and(cond) : all.where("$or" => cond)
     }
     scope :search_text, ->(words) {
       words = words.split(/[\s　]+/).uniq.compact.map { |w| /#{::Regexp.escape(w)}/i } if words.is_a?(String)
@@ -45,9 +44,7 @@ module SS::Document
       end
     }
     scope :without_deleted, ->(date = Time.zone.now) {
-      where('$and' => [
-        { '$or' => [{ deleted: nil }, { :deleted.gt => date }] }
-      ])
+      where('$or' => [{ deleted: nil }, { :deleted.gt => date }])
     }
     scope :only_deleted, ->(date = Time.zone.now) {
       where(:deleted.lt => date)
@@ -93,7 +90,7 @@ module SS::Document
       store = opts[:store_as] || "#{name.to_s.singularize}_ids"
       field store, type: SS::Extensions::ObjectIds, default: [],
             overwrite: true, metadata: { elem_class: opts[:class_name] }.merge(opts[:metadata] || {})
-      define_method(name) { opts[:class_name].constantize.where("$and" => [{ :_id.in => send(store) }]) }
+      define_method(name) { opts[:class_name].constantize.where(:_id.in => send(store)) }
     end
 
     def addon(path)

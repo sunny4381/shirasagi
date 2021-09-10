@@ -42,7 +42,7 @@ class SS::Migration20200918000000
   def each_item(&block)
     criteria = SS::Notification.all
     criteria = criteria.where(
-      "$and" => [{ "$or" => [{ "deleted" => { "$exists" => true } }, { "seen" => { "$exists" => true } }] }]
+      "$or" => [{ "deleted" => { "$exists" => true } }, { "seen" => { "$exists" => true } }]
     )
     all_ids = criteria.pluck(:id)
     all_ids.each_slice(20) do |ids|

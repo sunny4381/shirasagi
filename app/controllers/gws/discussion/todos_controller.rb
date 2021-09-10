@@ -63,7 +63,7 @@ class Gws::Discussion::TodosController < ApplicationController
 
     @items = @model.site(@cur_site).
       discussion_forum(@forum).
-      where("$and" =>[ "$or" => or_conds ]).
+      where("$or" => or_conds).
       without_deleted.
       search(params[:s])
   end

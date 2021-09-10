@@ -45,7 +45,7 @@ class Gws::User
 
       or_conds = readable_conditions(user, opts)
       or_conds.unshift({ id: user.id })
-      all.where("$and" => [{ "$or" => or_conds }])
+      all.where("$or" => or_conds)
     end
   end
 

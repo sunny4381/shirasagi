@@ -8,10 +8,10 @@ module SS::Reference::UserExpiration
       return where({})
     }
     scope :active, ->(date = Time.zone.now) {
-      where('$and' => [
+      all.and(
         { '$or' => [{ account_start_date: nil }, { :account_start_date.lte => date }] },
         { '$or' => [{ account_expiration_date: nil }, { :account_expiration_date.gt => date }] }
-      ])
+      )
     }
     scope :expired, ->(date = Time.zone.now) {
       where('$or' => [

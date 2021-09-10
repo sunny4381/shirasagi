@@ -15,11 +15,11 @@ module Gws::Addon::Facility::ReservableSetting
     before_validation :set_reservable_members_hash
 
     scope :reservable, ->(user) {
-      where("$and" => [{ "$or" => [
+      where("$or" => [
         { "reservable_group_ids.0" => { "$exists" => false }, "reservable_member_ids.0" => { "$exists" => false } },
         { :reservable_group_ids.in => user.group_ids },
         { reservable_member_ids: user.id }
-      ]}])
+      ])
     }
   end
 

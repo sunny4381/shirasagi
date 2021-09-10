@@ -66,7 +66,7 @@ class Gws::Workflow::File
       readable_selector = unscoped do
         all.in(state: %w(approve public)).readable(cur_user, site: cur_site).selector
       end
-      base_criteria = base_criteria.where('$and' => [{ '$or' => [ allow_selector, readable_selector ] }])
+      base_criteria = base_criteria.where('$or' => [ allow_selector, readable_selector ])
 
       case params[:state]
       when 'all'

@@ -33,7 +33,7 @@ module Gws::Addon::Board::NotifySetting
       conds = []
       conds << { id: { '$in' => ids } }
       conds << { gws_role_ids: { '$in' => role_ids } }
-      Gws::User.where('$and' => [ { '$or' => conds } ]).pluck(:id).include?(user.id)
+      Gws::User.where('$or' => conds).pluck(:id).include?(user.id)
     end
   end
 end

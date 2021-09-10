@@ -546,7 +546,7 @@ module Gws::Model
 
       def unseens(user, site)
         self.site(site).unseen(user).and_public
-        #self.where('$and' => [
+        #self.and(
         #  { "to.#{user.id}".to_sym.exists => true },
         #  { "seen.#{user.id}".to_sym.exists => false },
         #  { "$where" => "function(){
@@ -556,7 +556,7 @@ module Gws::Model
         #      if (self.from[key] !== 'INBOX.Draft') { result = true; }
         #    })
         #    return result;
-        #  }"}]
+        #  }"}
         #)
       end
     end

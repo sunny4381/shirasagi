@@ -22,15 +22,14 @@ module SS::Addon
       after_validation :set_released, if: -> { state == "public" }
 
       scope :and_public, ->(date = Time.zone.now) {
-        where(state: "public", "$and" => [
+        all.and(
+          { state: "public" },
           { "$or" => [{ release_date: nil }, { :release_date.lte => date }] },
           { "$or" => [{ close_date: nil }, { :close_date.gt => date }] },
-        ])
+        )
       }
       scope :and_closed, ->(date = Time.zone.now) {
-        where("$and" => [
-          { "$or" => [{ state: "closed" }, { :release_date.gt => date }, { :close_date.lte => date }] }
-        ])
+        where("$or" => [{ state: "closed" }, { :release_date.gt => date }, { :close_date.lte => date }])
       }
     end
 

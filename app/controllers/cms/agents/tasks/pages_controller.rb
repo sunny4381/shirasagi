@@ -154,7 +154,7 @@ class Cms::Agents::Tasks::PagesController < ApplicationController
     }
 
     [Cms::Page, Cms::Part, Cms::Layout].each do |klass|
-      criteria = klass.site(@site).where("$and" => [{ "$or" => or_conds }])
+      criteria = klass.site(@site).where("$or" => or_conds)
       all_ids = criteria.distinct(:id)
 
       @task.log "## #{klass.model_name.human}"

@@ -20,10 +20,11 @@ module Gws::Addon::Monitor
       after_validation :set_released, if: -> { state == 'public' }
 
       scope :and_public, ->(date = Time.zone.now) {
-        where(state: "public", "$and" => [
+        all.and(
+          { state: "public" },
           { "$or" => [{ release_date: nil }, { :release_date.lte => date }] },
-          { "$or" => [{ close_date: nil }, { :close_date.gt => date }] },
-        ])
+          { "$or" => [{ close_date: nil }, { :close_date.gt => date }] }
+        )
       }
     end
 

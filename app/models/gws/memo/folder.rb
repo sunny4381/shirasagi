@@ -28,9 +28,9 @@ class Gws::Memo::Folder
 
   scope :children, ->(name) do
     if name == I18n.t('gws/memo/folder.inbox')
-      where('$and' => [ {name: /^(?!.*\/).*$/} ] )
+      where(name: /^(?!.*\/).*$/)
     else
-      where('$and' => [ {name: /#{name}\/(?!.*\/).*$/} ] )
+      where(name: /#{name}\/(?!.*\/).*$/)
     end
   end
 

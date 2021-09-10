@@ -119,7 +119,7 @@ class Cms::AllContentsImportJob < Cms::ApplicationJob
     group_names = group_names.split(/[, 　、\r\n]+/) if group_names
     group_names ||= []
 
-    item.group_ids = Cms::Group.site(site).where("$and" =>[{ name: { "$in" => group_names } }]).pluck(:id)
+    item.group_ids = Cms::Group.site(site).where(name: { "$in" => group_names }).pluck(:id)
   end
 
   def set_close_date(item, row)

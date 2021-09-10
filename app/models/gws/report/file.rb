@@ -37,7 +37,7 @@ class Gws::Report::File
       conds = self.readable_conditions(user, opts)
       conds += self.member_conditions(user, opts)
       conds << self.allow_condition(:read, user, opts)
-      self.all.where("$and" => [{ "$or" => conds }])
+      self.all.where("$or" => conds)
     end
 
     def search(params)
@@ -74,12 +74,12 @@ class Gws::Report::File
       when 'readable'
         member_selector = unscoped.member(cur_user).selector
         readable_selector = unscoped.readable(cur_user, site: cur_site).selector
-        base_criteria.and_public.ne(user_id: cur_user.id).where('$and' => [{ '$or' => [ member_selector, readable_selector ] }])
+        base_criteria.and_public.ne(user_id: cur_user.id).where('$or' => [ member_selector, readable_selector ])
       when 'redirect'
         member_selector = unscoped.member(cur_user).selector
         readable_selector = unscoped.readable(cur_user, site: cur_site).selector
         allow_selector = unscoped.allow(:read, cur_user, site: cur_site).selector
-        base_criteria.where('$and' => [{ '$or' => [ member_selector, readable_selector, allow_selector ] }])
+        base_criteria.where('$or' => [ member_selector, readable_selector, allow_selector ])
       else
         none
       end

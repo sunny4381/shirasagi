@@ -33,17 +33,23 @@ class Opendata::Dataset
   scope :formast_is, ->(word, *fields) {
     options = fields.extract_options!
     method = options[:method].presence || 'and'
-    operator = method == 'and' ? "$and" : "$or"
 
-    where(operator => [{ "$or" => fields.map { |field| { field => word.to_s } } } ])
+    if method == 'and'
+      where("$or" => fields.map { |field| { field => word.to_s } })
+    else
+      where("$or" => [{ "$or" => fields.map { |field| { field => word.to_s } } } ])
+    end
   }
 
   scope :license_is, ->(id, *fields) {
     options = fields.extract_options!
     method = options[:method].presence || 'and'
-    operator = method == 'and' ? "$and" : "$or"
 
-    where(operator => [{ "$or" => fields.map { |field| { field => id.to_i } } } ])
+    if method == 'and'
+      where("$or" => fields.map { |field| { field => id.to_i } })
+    else
+      where("$or" => [{ "$or" => fields.map { |field| { field => id.to_i } } } ])
+    end
   }
 
   set_permission_name "opendata_datasets"

@@ -76,38 +76,38 @@ describe Opendata::Dataset, dbscope: :example do
         include("_id" => include("$in" => include(11).and(include(31))))
       end
       let(:normal_keyword_matcher) do
-        include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
+        include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i)))
       end
       let(:normal_name_keyword_matcher) do
-        include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
+        include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i)))
       end
       let(:normal_name_modal_matcher) do
         include("name" => include("$all" => include(/名前/i)))
       end
       let(:meta_name_keyword_matcher) do
-        include("$and" => include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i).
-          and(include("text" => /\(\)\[\]\{\}\.\?\+\*\|\\/i))))
+        include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i).
+          and(include("text" => /\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       end
       let(:meta_name_modal_matcher) do
         include("name" => include("$all" => include(/\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       end
       let(:category_id_matcher) do
-        include("$and" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:dataset_group_matcher) do
-        include("$and" => include("dataset_group_ids" => include("$in" => include(-1))))
+        include("dataset_group_ids" => include("$in" => include(-1)))
       end
       let(:format_matcher) do
-        include("$and" => include("$or" => include("resources.format" => "CSV").and(include("url_resources.format" => "CSV"))))
+        include("$or" => include("resources.format" => "CSV").and(include("url_resources.format" => "CSV")))
       end
       let(:license_id_matcher) do
-        include("$and" => include("$or" => include("resources.license_id" => 28).and(include("url_resources.license_id" => 28))))
+        include("$or" => include("resources.license_id" => 28).and(include("url_resources.license_id" => 28)))
       end
       let(:poster_admin_matcher) do
-        include("$and" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$and" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({}).selector.to_h).to include("route" => "opendata/dataset") }
       it { expect(described_class.search(keyword: "キーワード").selector.to_h).to normal_keyword_matcher }
@@ -116,8 +116,8 @@ describe Opendata::Dataset, dbscope: :example do
       it { expect(described_class.search(name: "名前", modal: true).selector.to_h).to normal_name_modal_matcher }
       it { expect(described_class.search(name: "名前", keyword: "()[]{}.?+*|\\").selector.to_h).to meta_name_keyword_matcher }
       it { expect(described_class.search(name: "()[]{}.?+*|\\", modal: true).selector.to_h).to meta_name_modal_matcher }
-      it { expect(described_class.search(tag: "タグ").selector.to_h).to include("$and" => include("tags" => "タグ")) }
-      it { expect(described_class.search(area_id: "43").selector.to_h).to include("$and" => include("area_ids" => 43)) }
+      it { expect(described_class.search(tag: "タグ").selector.to_h).to include("tags" => "タグ") }
+      it { expect(described_class.search(area_id: "43").selector.to_h).to include("area_ids" => 43) }
       it { expect(described_class.search(category_id_params).selector.to_h).to category_id_matcher }
       it { expect(described_class.search(dataset_group: "データセット", site: cms_site).selector.to_h).to dataset_group_matcher }
       it { expect(described_class.search(format: "csv").selector.to_h).to format_matcher }
@@ -134,7 +134,7 @@ describe Opendata::Dataset, dbscope: :example do
         include("_id" => include("$in" => include(11).and(include(31))))
       end
       let(:normal_keyword_matcher) do
-        include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
+        include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i)))
       end
       # let(:normal_name_keyword_matcher) do
       #   include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
@@ -150,27 +150,27 @@ describe Opendata::Dataset, dbscope: :example do
       #   include("name" => include("$all" => include(/\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       # end
       let(:category_id_matcher) do
-        include("$and" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:tag_params) { { tag: "タグ", option: 'all_keywords' } }
-      let(:tag_matcher) { include("$and" => include("tags" => "タグ")) }
+      let(:tag_matcher) { include("tags" => "タグ") }
       let(:area_id_params) { { area_id: "43", option: 'all_keywords' } }
-      let(:area_id_matcher) { include("$and" => include("area_ids" => 43)) }
+      let(:area_id_matcher) { include("area_ids" => 43) }
       let(:dataset_group_params) { { dataset_group: "データセット", site: cms_site, option: 'all_keywords' } }
       let(:dataset_group_matcher) do
-        include("$and" => include("dataset_group_ids" => include("$in" => include(-1))))
+        include("dataset_group_ids" => include("$in" => include(-1)))
       end
       let(:format_matcher) do
-        include("$and" => include("$or" => include("resources.format" => "CSV").and(include("url_resources.format" => "CSV"))))
+        include("$or" => include("resources.format" => "CSV").and(include("url_resources.format" => "CSV")))
       end
       let(:license_id_matcher) do
-        include("$and" => include("$or" => include("resources.license_id" => 28).and(include("url_resources.license_id" => 28))))
+        include("$or" => include("resources.license_id" => 28).and(include("url_resources.license_id" => 28)))
       end
       let(:poster_admin_matcher) do
-        include("$and" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$and" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({}).selector.to_h).to include("route" => "opendata/dataset") }
       it { expect(described_class.search(keyword: "キーワード", option: 'all_keywords').selector.to_h).to normal_keyword_matcher }
@@ -213,27 +213,27 @@ describe Opendata::Dataset, dbscope: :example do
       #   include("name" => include("$all" => include(/\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       # end
       let(:category_id_matcher) do
-        include("$and" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:tag_params) { { tag: "タグ", option: 'any_keywords' } }
-      let(:tag_matcher) { include("$and" => include("tags" => "タグ")) }
+      let(:tag_matcher) { include("tags" => "タグ") }
       let(:area_id_params) { { area_id: "43", option: 'any_keywords' } }
-      let(:area_id_matcher) { include("$and" => include("area_ids" => 43)) }
+      let(:area_id_matcher) { include("area_ids" => 43) }
       let(:dataset_group_params) { { dataset_group: "データセット", site: cms_site, option: 'any_keywords' } }
       let(:dataset_group_matcher) do
-        include("$and" => include("dataset_group_ids" => include("$in" => include(-1))))
+        include("dataset_group_ids" => include("$in" => include(-1)))
       end
       let(:format_matcher) do
-        include("$and" => include("$or" => include("resources.format" => "CSV").and(include("url_resources.format" => "CSV"))))
+        include("$or" => include("resources.format" => "CSV").and(include("url_resources.format" => "CSV")))
       end
       let(:license_id_matcher) do
-        include("$and" => include("$or" => include("resources.license_id" => 28).and(include("url_resources.license_id" => 28))))
+        include("$or" => include("resources.license_id" => 28).and(include("url_resources.license_id" => 28)))
       end
       let(:poster_admin_matcher) do
-        include("$and" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$and" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({}).selector.to_h).to include("route" => "opendata/dataset") }
       it { expect(described_class.search(keyword: "キーワード", option: 'any_keywords').selector.to_h).to normal_keyword_matcher }

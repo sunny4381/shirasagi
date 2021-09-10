@@ -8,10 +8,10 @@ module SS::Scope::ActivationDate
       return where({})
     }
     scope :active, ->(date = Time.zone.now) {
-      where('$and' => [
+      all.and(
         { '$or' => [{ activation_date: nil }, { :activation_date.lte => date }] },
         { '$or' => [{ expiration_date: nil }, { :expiration_date.gt => date }] }
-      ])
+      )
     }
     scope :expired, ->(date = Time.zone.now) {
       where('$or' => [

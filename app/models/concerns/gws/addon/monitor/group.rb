@@ -10,7 +10,7 @@ module Gws::Addon::Monitor::Group
 
     scope :and_attended, ->(user, opts = {}) {
       or_conds = attended_conditions(user, opts)
-      where("$and" => [{ "$or" => or_conds }])
+      where("$or" => or_conds)
     }
   end
 

@@ -79,7 +79,7 @@ class Cms::Apis::PagesController < ApplicationController
         end
       end
 
-      @items = @items.where("$and" => [{ "$or" => conds }])
+      @items = @items.where("$or" => conds)
     end
 
     @items = @items.search(@s).

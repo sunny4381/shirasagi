@@ -32,7 +32,7 @@ class Gws::Notice::Folder
           conds = []
           conds << { name: full_name }
           conds << { name: /#{::Regexp.escape(full_name)}\// }
-          descendants_group_ids = Gws::Group.all.active.where('$and' => [{ '$or' => conds }]).pluck(:id)
+          descendants_group_ids = Gws::Group.all.active.where('$or' => conds).pluck(:id)
 
           folder.member_group_ids = group_ids
           folder.readable_setting_range = 'select'
@@ -53,12 +53,12 @@ class Gws::Notice::Folder
     def for_post_editor(site, user)
       or_conds = self.member_conditions(user)
       or_conds += self.readable_conditions(user, site: site)
-      self.site(site).where('$and' => [{ '$or' => or_conds }])
+      self.site(site).where('$or' => or_conds)
     end
 
     def for_post_reader(site, user)
       or_conds = self.readable_conditions(user, site: site)
-      self.site(site).where('$and' => [{ '$or' => or_conds }])
+      self.site(site).where('$or' => or_conds)
     end
 
     private

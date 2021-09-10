@@ -22,7 +22,7 @@ module SS::Addon::SiteUsage
 
     group_names = self.root_groups.pluck(:name)
     conditions = group_names.map { |name| { name: /^#{Regexp.escape(name)}(\/|$)/ } }
-    groups = Cms::Group.all.unscoped.where("$and" => [{ "$or" => conditions }]).active
+    groups = Cms::Group.all.unscoped.where("$or" => conditions).active
     self.usage_group_count = groups.count
 
     users = Cms::User.all.unscoped.in(group_ids: groups.pluck(:id)).active

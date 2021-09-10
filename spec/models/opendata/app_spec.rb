@@ -68,28 +68,28 @@ describe Opendata::App, dbscope: :example do
         { site: node_category.site, category_id: node_category.id.to_s }
       end
       let(:name_keyword_matcher) do
-        include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
+        include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i)))
       end
       let(:meta_chars_matcher) do
         include("$and" => include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       end
       let(:category_id_matcher) do
-        include("$and" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:poster_admin_matcher) do
-        include("$and" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$and" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({}).selector.to_h).to include("route" => "opendata/app") }
-      it { expect(described_class.search(keyword: "キーワード").selector.to_h).to include("$and") }
+      it { expect(described_class.search(keyword: "キーワード").selector.to_h).to include("$or") }
       it { expect(described_class.search(name: true, keyword: "キーワード").selector.to_h).to name_keyword_matcher }
       it { expect(described_class.search(name: true, keyword: "()[]{}.?+*|\\").selector.to_h).to meta_chars_matcher }
-      it { expect(described_class.search(tag: "タグ").selector.to_h).to include("$and" => include("tags" => "タグ")) }
-      it { expect(described_class.search(area_id: "43").selector.to_h).to include("$and" => include("area_ids" => 43)) }
+      it { expect(described_class.search(tag: "タグ").selector.to_h).to include("tags" => "タグ") }
+      it { expect(described_class.search(area_id: "43").selector.to_h).to include("area_ids" => 43) }
       it { expect(described_class.search(category_id_params).selector.to_h).to category_id_matcher }
-      it { expect(described_class.search(license: "ライセンス").selector.to_h).to include("$and" => include("license" => "ライセンス")) }
+      it { expect(described_class.search(license: "ライセンス").selector.to_h).to include("license" => "ライセンス") }
       it { expect(described_class.search(poster: "admin").selector.to_h).to poster_admin_matcher }
       it { expect(described_class.search(poster: "member").selector.to_h).to poster_member_matcher }
     end
@@ -98,7 +98,7 @@ describe Opendata::App, dbscope: :example do
       let!(:node_category) { create(:opendata_node_category) }
 
       let(:keyword_matcher) do
-        include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
+        include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i)))
       end
       # let(:name_keyword_matcher) do
       #   include("$and" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
@@ -107,22 +107,22 @@ describe Opendata::App, dbscope: :example do
       #   include("$and" => include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       # end
       let(:tag_params) { { tag: "タグ", option: 'all_keywords' } }
-      let(:tag_matcher) { include("$and" => include("tags" => "タグ")) }
+      let(:tag_matcher) { include("tags" => "タグ") }
       let(:area_id_params) { { area_id: "43", option: 'all_keywords' } }
-      let(:area_id_matcher) { include("$and" => include("area_ids" => 43)) }
+      let(:area_id_matcher) { include("area_ids" => 43) }
       let(:category_id_params) do
         { site: node_category.site, category_id: node_category.id.to_s, option: 'all_keywords' }
       end
       let(:category_id_matcher) do
-        include("$and" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:license_params) { { license: "ライセンス", option: 'all_keywords' } }
-      let(:license_matcher) { include("$and" => include("license" => "ライセンス")) }
+      let(:license_matcher) { include("license" => "ライセンス") }
       let(:poster_admin_matcher) do
-        include("$and" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$and" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({ option: 'all_keywords' }).selector.to_h).to include("route" => "opendata/app") }
       it { expect(described_class.search(keyword: "キーワード", option: 'all_keywords').selector.to_h).to keyword_matcher }
@@ -149,22 +149,22 @@ describe Opendata::App, dbscope: :example do
       #   include("$and" => include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       # end
       let(:tag_params) { { tag: "タグ", option: 'any_keywords' } }
-      let(:tag_matcher) { include("$and" => include("tags" => "タグ")) }
+      let(:tag_matcher) { include("tags" => "タグ") }
       let(:area_id_params) { { area_id: "43", option: 'any_keywords' } }
-      let(:area_id_matcher) { include("$and" => include("area_ids" => 43)) }
+      let(:area_id_matcher) { include("area_ids" => 43) }
       let(:category_id_params) do
         { site: node_category.site, category_id: node_category.id.to_s, option: 'any_keywords' }
       end
       let(:category_id_matcher) do
-        include("$and" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:license_params) { { license: "ライセンス", option: 'any_keywords' } }
-      let(:license_matcher) { include("$and" => include("license" => "ライセンス")) }
+      let(:license_matcher) { include("license" => "ライセンス") }
       let(:poster_admin_matcher) do
-        include("$and" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$and" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({ option: 'any_keywords' }).selector.to_h).to include("route" => "opendata/app") }
       it { expect(described_class.search(keyword: "キーワード", option: 'any_keywords').selector.to_h).to keyword_matcher }

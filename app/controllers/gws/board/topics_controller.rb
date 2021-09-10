@@ -33,7 +33,7 @@ class Gws::Board::TopicsController < ApplicationController
       conditions = @model.member_conditions(@cur_user)
       conditions += @model.readable_conditions(@cur_user, site: @cur_site)
       conditions << @model.allow_condition(:read, @cur_user, site: @cur_site)
-      base_criteria.and_public.without_deleted.where("$and" => [{ "$or" => conditions }])
+      base_criteria.and_public.without_deleted.where("$or" => conditions)
     end
   end
 

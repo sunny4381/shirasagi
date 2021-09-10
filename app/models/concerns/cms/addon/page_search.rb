@@ -264,7 +264,7 @@ module Cms::Addon
             }
           }
         }
-        @criteria = @criteria.where("$and" => [{ "$or" => conds }])
+        @criteria = @criteria.where("$or" => conds)
       end
 
       def search_categories
@@ -298,7 +298,7 @@ module Cms::Addon
         return if @item.search_state.blank?
 
         if @item.search_state == "closing"
-          @criteria = @criteria.where("$and" => [ { :state => "public" }, { :close_date.ne => nil } ])
+          @criteria = @criteria.and({ state: "public" }, { :close_date.ne => nil })
         else
           @criteria = @criteria.where(state: @item.search_state)
         end
@@ -316,7 +316,7 @@ module Cms::Addon
         end
         return if released.blank?
 
-        @criteria = @criteria.where("$and" => released)
+        @criteria = @criteria.and(released)
       end
 
       def search_updated
@@ -331,7 +331,7 @@ module Cms::Addon
         end
         return if updated.blank?
 
-        @criteria = @criteria.where("$and" => updated)
+        @criteria = @criteria.and(updated)
       end
 
       def search_approved
@@ -346,7 +346,7 @@ module Cms::Addon
         end
         return if approved.blank?
 
-        @criteria = @criteria.where("$and" => approved)
+        @criteria = @criteria.and(approved)
       end
 
       def search_approver

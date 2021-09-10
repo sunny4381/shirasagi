@@ -50,7 +50,7 @@ class Gws::Board::Topic
     end
     return Gws::User.none if conds.blank?
 
-    Gws::User.where('$and' => [ { '$or' => conds } ])
+    Gws::User.where('$or' => conds)
   end
 
   private

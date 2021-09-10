@@ -187,7 +187,7 @@ class Gws::Schedule::Todo
         end
       end
 
-      where("$and" => [{ "$or" => or_cond }])
+      where("$or" => or_cond)
     end
 
     def search_category(params)
@@ -201,7 +201,7 @@ class Gws::Schedule::Todo
           { :category_ids.exists => false },
           { category_ids: [] }
         ]
-        where("$and" => [{ "$or" => conditions }])
+        where("$or" => conditions)
       else
         cur_site = params[:cur_site]
         cur_user = params[:cur_user]
@@ -223,7 +223,7 @@ class Gws::Schedule::Todo
     def readable_or_manageable(user, opts = {})
       or_cond = Array[readable_conditions(user, opts)].flatten.compact
       or_cond << allow_condition(:read, user, site: opts[:site])
-      where("$and" => [{ "$or" => or_cond }])
+      where("$or" => or_cond)
     end
 
     def todo_state_filter_options
