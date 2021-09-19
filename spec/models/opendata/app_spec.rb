@@ -191,22 +191,22 @@ describe Opendata::App, dbscope: :example do
       #   include("$and" => include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i)))
       # end
       let(:tag_params) { { tag: "タグ", option: 'any_conditions' } }
-      let(:tag_matcher) { include("$or" => include("tags" => "タグ")) }
+      let(:tag_matcher) { include("tags" => "タグ") }
       let(:area_id_params) { { area_id: "43", option: 'any_conditions' } }
-      let(:area_id_matcher) { include("$or" => include("area_ids" => 43)) }
+      let(:area_id_matcher) { include("area_ids" => 43) }
       let(:category_id_params) do
         { site: node_category.site, category_id: node_category.id.to_s, option: 'any_conditions' }
       end
       let(:category_id_matcher) do
-        include("$or" => include("category_ids" => include("$in" => include(node_category.id))))
+        include("category_ids" => include("$in" => include(node_category.id)))
       end
       let(:license_params) { { license: "ライセンス", option: 'any_conditions' } }
       let(:license_matcher) { include("$or" => include("license" => "ライセンス")) }
       let(:poster_admin_matcher) do
-        include("$or" => include("workflow_member_id" => nil))
+        include("workflow_member_id" => nil)
       end
       let(:poster_member_matcher) do
-        include("$or" => include("workflow_member_id" => include("$exists" => true)))
+        include("workflow_member_id" => include("$exists" => true))
       end
       it { expect(described_class.search({ option: 'any_conditions' }).selector.to_h).to include("route" => "opendata/app") }
       it { expect(described_class.search(keyword: "キーワード", option: 'any_conditions').selector.to_h).to keyword_matcher }

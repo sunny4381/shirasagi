@@ -175,11 +175,11 @@ describe Opendata::Idea, dbscope: :example do
       end
       let(:normal_keyword_params) { { keyword: "キーワード", option: 'any_conditions' } }
       let(:normal_keyword_matcher) do
-        include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i)))
+        include("$or" => include("$or" => include("name" => /キーワード/i).and(include("text" => /キーワード/i))))
       end
       let(:meta_keyword_params) { { keyword: "()[]{}.?+*|\\", option: 'any_conditions' } }
       let(:meta_keyword_matcher) do
-        include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i).and(include("text" => /\(\)\[\]\{\}\.\?\+\*\|\\/i)))
+        include("$or" => include("$or" => include("name" => /\(\)\[\]\{\}\.\?\+\*\|\\/i).and(include("text" => /\(\)\[\]\{\}\.\?\+\*\|\\/i))))
       end
       let(:tag_params) { { tag: "タグ", option: 'any_conditions' } }
       let(:tag_matcher) { include("$or" => include("tags" => "タグ")) }

@@ -20,14 +20,19 @@ module Opendata::AppSearchable
     end
 
     def search(params)
-      criteria = self.all
-      return criteria if params.blank?
+      return all if params.blank?
 
-      SEARCH_HANDLERS.each do |handler|
-        criteria = criteria.send(handler, params)
+      criterions = SEARCH_HANDLERS.map { |m| new_scope_without_default { |criteria| criteria.send(m, params) } }
+      criterions = criterions.select { |criteria| criteria.selector.present? }
+      return all if criterions.blank?
+      return all.and(criterions.first) if criterions.length == 1
+
+      case params[:option]
+      when 'any_conditions'
+        all.and(new_scope_without_default { |criteria| criteria.or(*criterions) })
+      else # nil, all_keywords, any_keywords
+        all.and(*criterions)
       end
-
-      criteria
     end
 
     SEARCH_HANDLERS = [
@@ -57,22 +62,12 @@ module Opendata::AppSearchable
 
     def search_tag(params)
       return all if params.blank? || params[:tag].blank?
-
-      if params[:option].presence == 'any_conditions'
-        all.where("$or" => [{ tags: params[:tag] }])
-      else
-        all.where(tags: params[:tag])
-      end
+      all.where(tags: params[:tag])
     end
 
     def search_area_id(params)
       return all if params.blank? || params[:area_id].blank?
-
-      if params[:option].presence == 'any_conditions'
-        all.where("$or" => [{ area_ids: params[:area_id].to_i }])
-      else
-        all.where(area_ids: params[:area_id].to_i)
-      end
+      all.where(area_ids: params[:area_id].to_i)
     end
 
     def search_category_id(params)
@@ -87,11 +82,7 @@ module Opendata::AppSearchable
         category_ids << child.id
       end
 
-      if params[:option].presence == 'any_conditions'
-        all.where("$or" => [{ category_ids: { "$in" => category_ids } }])
-      else
-        all.where(category_ids: { "$in" => category_ids })
-      end
+      all.where(category_ids: { "$in" => category_ids })
     end
 
     def search_license(params)
@@ -116,11 +107,7 @@ module Opendata::AppSearchable
              end
       return all if cond.blank?
 
-      if params[:option].presence == 'any_conditions'
-        all.where("$or" => [ cond ])
-      else
-        all.where(cond)
-      end
+      all.where(cond)
     end
   end
 end

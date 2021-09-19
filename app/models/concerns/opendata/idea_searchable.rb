@@ -21,14 +21,14 @@ module Opendata::IdeaSearchable
     def search(params)
       return all if params.blank?
 
-      criterions = SEARCH_HANDLERS.map { |handler| self.unscoped.send(handler, params) }
+      criterions = SEARCH_HANDLERS.map { |m| new_scope_without_default { |criteria| criteria.send(m, params) } }
       criterions = criterions.select { |criteria| criteria.selector.present? }
       return all if criterions.blank?
       return all.and(criterions.first) if criterions.length == 1
 
       case params[:option]
       when 'any_conditions'
-        all.and(self.unscoped.or(*criterions))
+        all.and(new_scope_without_default { |criteria| criteria.or(*criterions) })
       else # nil, all_keywords, any_keywords
         all.and(*criterions)
       end
@@ -40,7 +40,7 @@ module Opendata::IdeaSearchable
       return all if params.blank? || params[:keyword].blank?
 
       option = params[:option].presence || 'all_keywords'
-      method = option == 'any_keywords' ? 'any' : 'and'
+      method = option == 'all_keywords' ? 'and' : 'any'
       all.keyword_in params[:keyword], :name, :text, :issue, :data, :note, method: method
     end
 
