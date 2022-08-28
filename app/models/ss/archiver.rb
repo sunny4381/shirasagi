@@ -92,8 +92,8 @@ class SS::Archiver
         end
       end
 
-      relations = object.relations[key]
-      case relations
+      relation = object.relations[key]
+      case relation
       when Mongoid::Association::Embedded::EmbedsMany
         embedded_values = object.send(key)
         if embedded_values.present?
@@ -102,9 +102,9 @@ class SS::Archiver
           end
         end
       else
-        # unknown relations
-        if relations.present?
-          puts relations.class.name
+        # unknown relation
+        if relation.present?
+          puts relation.class.name
         end
       end
     end
