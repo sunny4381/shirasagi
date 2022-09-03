@@ -274,6 +274,10 @@ Rails.application.routes.draw do
       resources :ignore_urls, concerns: :deletion
     end
 
+    namespace 'v2' do
+      resources :nodes
+    end
+
     namespace "apis" do
       get "groups" => "groups#index"
       get "nodes" => "nodes#index"

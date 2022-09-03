@@ -1,0 +1,7 @@
+<div class="index">
+  <%= ss_stimulus_tag "cms--nodes" => { end_point: cms_v2_nodes_path(format: :json) } do %>
+    <div class="cms--nodes-table">
+      <%= loading %>
+    </div>
+  <% end %>
+</div>
