@@ -355,6 +355,10 @@ module SS::Model::File
     true
   end
 
+  def same_item_selector
+    nil
+  end
+
   private
 
   def effective_owner_item

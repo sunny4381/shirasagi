@@ -117,4 +117,17 @@ module SS::Scope::Base
       end
     end
   end
+
+  def same_item_selector
+    if respond_to?(:filename)
+      selector = { filename: filename }
+    elsif respond_to?(:name)
+      selector = { name: name }
+    end
+    return if selector.blank?
+
+    selector[:site_id] = site_id if respond_to?(:site_id)
+
+    selector
+  end
 end

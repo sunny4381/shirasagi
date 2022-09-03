@@ -19,10 +19,10 @@ module Cms::Content
     self.default_released_type = "fixed"
 
     seqid :id
-    field :state, type: String, default: "public"
+    field :state, type: String, default: "public", metadata: { on_copy: { value: "closed" } }
     field :name, type: String
     field :index_name, type: String
-    field :filename, type: String
+    field :filename, type: String, metadata: { on_copy: :cms_content_filename }
     field :depth, type: Integer
     field :order, type: Integer, default: 0
     field :released, type: DateTime
