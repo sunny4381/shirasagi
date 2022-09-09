@@ -1,6 +1,68 @@
 @import 'ag-grid-community/styles//ag-grid.css';
 @import 'ag-grid-community/styles//ag-theme-alpine.css';
 
+//font-size
+$px10:72%;
+$px11:79%;
+$px12:86%;
+$px13:93%;
+$px14:100%;
+$px15:108%;
+$px16:115%;
+$px17:122%;
+$px18:129%;
+$px19:136%;
+$px20:143%;
+$px21:150%;
+$px22:158%;
+$px23:165%;
+$px24:172%;
+$px25:179%;
+$px26:186%;
+$px27:193%;
+$px28:200%;
+$px29:208%;
+$px30:215%;
+$px31:222%;
+$px32:229%;
+
+// color
+$white: #fff;
+$black: #000;
+$black2: #2b2b2b;
+$black3: #333;
+$gray1: #f2f2f2;
+$gray2: #999;
+$gray3: #424242;
+$gray4: #d0d0d0;
+$gray5: #dcdcdc;
+$orange: #f25a38;
+$orange2: #fbeee8;
+$orange3: #a0522d;
+$blue: #06c;
+
+$pink: #ea4c89;
+
+//border
+$border-black: 1px solid $black;
+$border-black2: 1px solid $black2;
+$border-gray1: 1px solid $gray1;
+$border-gray2: 1px solid $gray2;
+$border-gray4: 1px solid $gray4;
+$border-gray5: 1px solid $gray5;
+$border-white: 1px solid $white;
+
+.cms--nodes {
+  .footer {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    justify-content: center;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, .85);
+  }
+}
+
 //.d-flex {
 //  display: flex
 //}

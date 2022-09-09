@@ -966,6 +966,7 @@ ja:
         editor_css_path: スタイルシートパス
         syntax_check: アクセシビリティチェック
       cms/addon/release:
+        state: ステータス
         released_type: 公開日時種別
         released: 公開日時
       cms/addon/release_plan:
@@ -991,6 +992,8 @@ ja:
         conditions: 検索条件(URL)
         condition_forms: 検索条件(定型フォーム)
         condition_form_ids: 検索条件(定型フォーム)
+        sort: 並び順
+        limit: 表示件数
         loop_html: ループHTML
         upper_html: 上部HTML
         lower_html: 下部HTML
