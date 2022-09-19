@@ -1,4 +1,5 @@
 import Initializer from "./ss/initializer"
+import ejs from "ejs/ejs"
 import moment from "moment/moment"
 
 Initializer.load(require.context("./initializers", true, /\.js$/i))
@@ -12,3 +13,4 @@ if (SS.readyTimeout) {
 }
 
 window.moment = moment
+window.ejs = ejs
