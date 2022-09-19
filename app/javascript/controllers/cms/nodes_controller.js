@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import axios from 'axios'
 import { Grid } from 'ag-grid-community'
+import ejs from 'ejs/ejs'
+import tippy from 'tippy.js';
 
 function getCsrfToken() {
   const csrfTokenEl = document.querySelector("[name='csrf-token']")
@@ -15,6 +17,41 @@ function dateTimeFormatter(params) {
   }
 
   return SS.formatTime(params.value, "picker")
+}
+
+const TAP_MENU_CELL_TEMPLATE = `
+  <span>
+    <button name="btn-tap-menu" type="button" data-id="<%= value %>"><i class="material-icons md-13">more_vert</i></button>
+    <span><%= value %></span>
+  </span>
+`
+
+const TAP_MENU_DROPDOWN_TEMPLATE = `
+  <ul class="ss-dropdown-menu2">
+    <li><a href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=open">開く</a></li>
+    <li><a href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=conf">設定</a></li>
+  </ul>
+`
+
+function tapMenuRenderer(controller) {
+  class TapMenuRenderer {
+    init(params) {
+      const div = document.createElement("div")
+      div.innerHTML = ejs.render(TAP_MENU_CELL_TEMPLATE, { value: params.value, endPoint: controller.endPointValue })
+
+      this.eGui = div
+    }
+
+    getGui() {
+      return this.eGui
+    }
+
+    refresh(_params) {
+      return false;
+    }
+  }
+
+  return TapMenuRenderer
 }
 
 export default class extends Controller {
@@ -36,6 +73,16 @@ export default class extends Controller {
       this.autoSizeBtn.addEventListener("click", () => this.autoSize())
       this.autoSizeBtn.disabled = true
     }
+
+    this.element.addEventListener("click", (ev) => {
+      if (ev.target.name === "btn-tap-menu") {
+        this.openTapMenu(ev.target)
+      }
+      const tapMenuBtn = ev.target.closest("[name='btn-tap-menu']")
+      if (tapMenuBtn) {
+        this.openTapMenu(tapMenuBtn)
+      }
+    })
 
     axios.get(this.endPointValue)
       .then((response) => this.load(response))
@@ -64,6 +111,7 @@ export default class extends Controller {
   }
 
   decorateValueFormatters(gridOptions) {
+    gridOptions.columnDefs[0].cellRenderer = tapMenuRenderer(this)
     gridOptions.columnDefs.forEach((columnDef) => {
       if (columnDef.valueFormatter === "dateTimeFormatter") {
         columnDef.valueFormatter = dateTimeFormatter
@@ -113,6 +161,17 @@ export default class extends Controller {
     if (footerEl) {
       footerEl.classList.remove("hide")
     }
+  }
+
+  openTapMenu(tapMenuBtn) {
+    // const dropDownMenuEl = tapMenuBtn.parentElement.querySelector(".ss-dropdown-menu2")
+    const content = ejs.render(TAP_MENU_DROPDOWN_TEMPLATE, { value: tapMenuBtn.dataset.id, endPoint: this.endPointValue })
+
+    let instance = tapMenuBtn._tippy
+    if (!instance) {
+      instance = tippy(tapMenuBtn, { content: content, allowHTML: true, interactive: true, trigger: 'click', appendTo: this.element, arrow: false })
+    }
+    instance.show()
   }
 
   save(ev) {
