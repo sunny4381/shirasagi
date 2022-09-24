@@ -277,6 +277,7 @@ Rails.application.routes.draw do
     namespace 'v2' do
       resources :nodes, only: %i[index] do
         post :create, action: :update_all, on: :collection
+        get :redirect, on: :collection
       end
     end
 

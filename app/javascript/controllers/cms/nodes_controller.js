@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Grid } from 'ag-grid-community'
 import ejs from 'ejs/ejs'
 import tippy from 'tippy.js';
+import i18next from 'i18next'
 
 function getCsrfToken() {
   const csrfTokenEl = document.querySelector("[name='csrf-token']")
@@ -27,9 +28,16 @@ const TAP_MENU_CELL_TEMPLATE = `
 `
 
 const TAP_MENU_DROPDOWN_TEMPLATE = `
-  <ul class="ss-dropdown-menu2">
-    <li><a href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=open">開く</a></li>
-    <li><a href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=conf">設定</a></li>
+  <ul class="node-menu">
+    <li><a class="node-menu-item" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=open"><%= i18next.t("ss.links.open") %></a></li>
+    <li><a class="node-menu-item" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=conf"><%= i18next.t("ss.config") %></a></li>
+    <li><hr class="node-menu-divider"></li>
+    <li><a class="node-menu-item" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=view_public"><%= i18next.t("ss.links.view_site") %></a></li>
+    <li><a class="node-menu-item" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=pc_preview"><%= i18next.t("ss.links.pc_preview") %></a></li>
+    <li><a class="node-menu-item cms-preview-sp" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=sp_preview"><%= i18next.t("ss.links.sp_preview") %></a></li>
+    <% if (mobileEnabled) { %>
+    <li><a class="node-menu-item cms-preview-mb" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=mobile_preview"><%= i18next.t("ss.links.mobile_preview") %></a></li>
+    <% } %>
   </ul>
 `
 
@@ -56,7 +64,8 @@ function tapMenuRenderer(controller) {
 
 export default class extends Controller {
   static values = {
-    endPoint: String
+    endPoint: String,
+    mobileEnabled: Boolean
   }
 
   initialize() {
@@ -164,12 +173,11 @@ export default class extends Controller {
   }
 
   openTapMenu(tapMenuBtn) {
-    // const dropDownMenuEl = tapMenuBtn.parentElement.querySelector(".ss-dropdown-menu2")
-    const content = ejs.render(TAP_MENU_DROPDOWN_TEMPLATE, { value: tapMenuBtn.dataset.id, endPoint: this.endPointValue })
+    const content = ejs.render(TAP_MENU_DROPDOWN_TEMPLATE, { value: tapMenuBtn.dataset.id, endPoint: this.endPointValue, mobileEnabled: this.mobileEnabledValue })
 
     let instance = tapMenuBtn._tippy
     if (!instance) {
-      instance = tippy(tapMenuBtn, { content: content, allowHTML: true, interactive: true, trigger: 'click', appendTo: this.element, arrow: false })
+      instance = tippy(tapMenuBtn, { content: content, allowHTML: true, interactive: true, trigger: 'click', appendTo: this.element, arrow: false, theme: 'light-border ss-popup' })
     }
     instance.show()
   }

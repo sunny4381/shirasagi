@@ -67,4 +67,31 @@ class Cms::V2::NodesController < ApplicationController
 
     render json: reports, content_type: json_content_type
   end
+
+  def redirect
+    safe_params = params.permit(:to, :mode)
+    node = Cms::Node.site(@cur_site).find(safe_params[:to])
+    raise "403" unless node.allowed?(:read, @cur_user, site: @cur_site)
+
+    case params[:mode].to_sym
+    when :open
+      redirect_to node.respond_to?(:view_route) ? view_context.contents_path(node) : cms_node_path(id: node)
+    when :conf
+      parent = node.parent
+      if parent
+        redirect_to view_context.contents_path(parent) + "/#{node.id}"
+      else
+        redirect_to cms_node_path(id: node)
+      end
+    when :view_public
+      redirect_to node.full_url
+    when :pc_preview
+      redirect_to cms_preview_path(path: node.preview_path)
+    when :sp_preview
+      redirect_to cms_preview_path(path: node.preview_path)
+    when :mobile_preview
+      raise "404" unless @cur_site.mobile_enabled?
+      redirect_to cms_preview_path(path: node.mobile_preview_path)
+    end
+  end
 end

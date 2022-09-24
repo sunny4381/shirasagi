@@ -1,5 +1,5 @@
 <div class="index">
-  <%= ss_stimulus_tag({ "cms--nodes" => { end_point: cms_v2_nodes_path(format: :json) } }, { class: "cms--nodes" })do %>
+  <%= ss_stimulus_tag({ "cms--nodes" => { end_point: cms_v2_nodes_path(format: :json), mobile_enabled: @cur_site.mobile_enabled? } }, { class: "cms--nodes" }) do %>
     <%= button_tag "Auto-Size", name: "auto-size", type: "button", class: "btn", disabled: true %>
     <div class="cms--nodes-table ag-theme-alpine" style="height: 500px">
       <%= loading %>

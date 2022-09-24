@@ -89,4 +89,25 @@ $border-white: 1px solid $white;
     padding: 10px;
     background-color: rgba(255, 255, 255, .85);
   }
+
+  .node-menu {
+    margin: 0;
+    padding: 0;
+  }
+
+  .node-menu-item {
+    display: block;
+    width: 100%;
+    padding: .25rem 1rem;
+  }
+
+  .node-menu-divider {
+    height: 1px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    border-top: 1px solid rgba(0, 0, 0, .35);
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+  }
 }
