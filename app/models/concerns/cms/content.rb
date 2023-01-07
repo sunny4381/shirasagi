@@ -238,16 +238,19 @@ module Cms::Content
     end
   end
 
-  def becomes_with_route(name = nil)
-    return self if name.blank?
+  def becomes_with_route(route_name = nil, klass_name = nil)
+    return self if route_name.blank?
 
     # be careful, Cms::Layout does not respond to route
-    return self if respond_to?(:route) && name == route
+    return self if respond_to?(:route) && route_name == route
 
-    klass = name.camelize.constantize rescue nil
+    klass_name ||= route_name
+    klass = klass_name.camelize.constantize rescue nil
     return self unless klass
 
-    becomes_with(klass)
+    ret = becomes_with(klass)
+    ret.route = route_name
+    ret
   end
 
   def serve_static_file?

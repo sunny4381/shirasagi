@@ -73,6 +73,16 @@ $border-white: 1px solid $white;
       white-space: pre-wrap;
     }
   }
+
+  //&[data-theme~=ss-popup] {
+  //  text-decoration-line: underline;
+  //  text-decoration-color: $gray3;
+  //  text-decoration-style: dotted;
+  //
+  //  &:hover {
+  //    cursor: help;
+  //  }
+  //}
 }
 
 .ss-dialog {
@@ -110,4 +120,9 @@ $border-white: 1px solid $white;
     border-bottom: none;
     border-left: none;
   }
+}
+
+#node-routes {
+  height: 400px;
+  overflow-y: scroll;
 }

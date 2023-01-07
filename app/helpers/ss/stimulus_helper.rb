@@ -70,9 +70,9 @@ module SS::StimulusHelper
     end
   end
 
-  def ss_stimulus_tag(controllers, type: :div, **options, &block)
+  def ss_stimulus_tag(controllers, tag_name: :div, **options, &block)
     data = Utils.convert_to_data_params(controllers)
     options = Utils.merge_data_params(options, data)
-    tag.send(type, options, &block)
+    tag.send(tag_name, options, &block)
   end
 end

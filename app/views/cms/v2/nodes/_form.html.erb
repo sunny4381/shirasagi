@@ -1,0 +1,34 @@
+<dl class="see">
+  <% if @parent_node %>
+    <dt><%= "親フォルダー" %></dt>
+    <dd><%= @parent_node.name %> (<%= @parent_node.filename %>)</dd>
+  <% end %>
+
+  <dt><%= @model.t :route %><%= @model.tt :route %></dt>
+  <dd><%= f.hidden_field :route %>
+    <%= @item.label :route %> &nbsp;
+    <%= ss_stimulus_tag({ "ss--popup" => { placement: "bottom", ref: "#node-routes" } }, { tag_name: :button, type: "button", class: "btn" }) { t('ss.links.change') } %>
+    <div class="hide">
+      <div id="node-routes">
+        <%= render Cms::Node::RoutesComponent.new(cur_site: @cur_site) %>
+      </div>
+    </div>
+  </dd>
+
+  <dt><%= @model.t :name %><%= @model.tt :title %></dt>
+  <dd><%= f.text_field :name %></dd>
+
+  <dt><%= @model.t :index_name %><%= @model.tt :title_for_index %></dt>
+  <dd><%= f.text_field :index_name %></dd>
+
+  <% if @item.persisted? && SS.config.cms.replace_urls_after_move %>
+    <dt><%= @model.t :basename %></dt>
+    <dd><%= @item.basename %> <%= f.hidden_field :basename, class: "filename" %></dd>
+  <% else %>
+    <dt><%= @model.t :basename %><%= @model.tt :foldername %></dt>
+    <dd><%= f.text_field :basename, class: "filename" %></dd>
+  <% end %>
+
+  <dt><%= @model.t :layout_id %><%= @model.tt :layout_id %></dt>
+  <dd><%= f.select :layout_id, ancestral_layouts(@item, @item.layout), include_blank: " " %></dd>
+</dl>

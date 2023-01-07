@@ -32,6 +32,9 @@ const TAP_MENU_DROPDOWN_TEMPLATE = `
     <li><a class="node-menu-item" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=open"><%= i18next.t("ss.links.open") %></a></li>
     <li><a class="node-menu-item" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=conf"><%= i18next.t("ss.config") %></a></li>
     <li><hr class="node-menu-divider"></li>
+    <li><a class="node-menu-item" href="<%= endPoint.replace(".json", "") %>/new?to=<%= value %>&mode=child" data-controller="ss--dialog">子フォルダーを追加</a></li>
+    <li><a class="node-menu-item" href="<%= endPoint.replace(".json", "") %>/new?to=<%= value %>&mode=sibling" data-controller="ss--dialog">兄弟フォルダーを追加</a></li>
+    <li><hr class="node-menu-divider"></li>
     <li><a class="node-menu-item" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=view_public"><%= i18next.t("ss.links.view_site") %></a></li>
     <li><a class="node-menu-item" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=pc_preview"><%= i18next.t("ss.links.pc_preview") %></a></li>
     <li><a class="node-menu-item cms-preview-sp" target="_blank", rel="noopener" href="<%= endPoint.replace(".json", "") %>/redirect?to=<%= value %>&mode=sp_preview"><%= i18next.t("ss.links.sp_preview") %></a></li>
@@ -203,7 +206,7 @@ export default class extends Controller {
       data.push(modifiedRecord)
     })
 
-    axios.post(this.endPointValue, { item: data }, { headers: { 'X-CSRF-Token': token } })
+    axios.post(`${this.endPointValue.replace(".json", "")}/update_all.json`, { item: data }, { headers: { 'X-CSRF-Token': token } })
       .then((_response) => { console.log("success"); ev.target.disabled = false })
       .catch((_error) => { console.log("error"); ev.target.disabled = false })
   }

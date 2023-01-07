@@ -11,23 +11,42 @@ class Cms::V2::NodesController < ApplicationController
   PERMITTED_FIELDS = begin
     permitted_fields = %i[_id]
     # basic_info
-    permitted_fields += %i[name index_name]
+    permitted_fields += %i[name basename index_name route layout_id]
     # node_setting
-    permitted_fields += %i[order]
+    permitted_fields += %i[order page_layout_id shortcut view_route]
     # cms/meta
     permitted_fields += %i[keywords description summary_html]
     # cms/node_list
     permitted_fields += %i[
-      conditions limit new_days loop_liquid upper_html loop_html lower_html no_items_display_state substitute_html
+      conditions sort limit loop_format upper_html loop_setting_id loop_html lower_html loop_liquid
+      new_days no_items_display_state substitute_html
     ]
+    # cms/release
+    permitted_fields += %i[state released_type released]
 
     permitted_fields
   end.freeze
 
   private
 
+  def set_ss_assets
+    super
+    stylesheet "/assets/css/codemirror/codemirror.css"
+    javascript "/assets/js/codemirror/codemirror.js"
+  end
+
   def editable?(field_name)
     PERMITTED_FIELDS.include?(field_name.to_sym)
+  end
+
+  SUPPORTED_ADDON_LIST = [ Cms::Addon::NodeSetting, Cms::Addon::Meta, Cms::Addon::NodeList, Event::Addon::PageList, Cms::Addon::Release ].freeze
+
+  def set_addons
+    @addons ||= begin
+      addons = @item.addons
+      addons = addons.select { |addon| SUPPORTED_ADDON_LIST.include?(addon.klass) }
+      addons
+    end
   end
 
   public
@@ -87,11 +106,52 @@ class Cms::V2::NodesController < ApplicationController
       redirect_to node.full_url
     when :pc_preview
       redirect_to cms_preview_path(path: node.preview_path)
-    when :sp_preview
-      redirect_to cms_preview_path(path: node.preview_path)
     when :mobile_preview
       raise "404" unless @cur_site.mobile_enabled?
       redirect_to cms_preview_path(path: node.mobile_preview_path)
+    end
+  end
+
+  def new
+    safe_params = params.permit(:to, :mode)
+    node = Cms::Node.site(@cur_site).find(safe_params[:to])
+    raise "403" unless node.allowed?(:edit, @cur_user, site: @cur_site)
+
+    case params[:mode].to_sym
+    when :child
+      @parent_node = node
+      route = @parent_node.view_route.presence || @parent_node.route.presence || "cms/node"
+    when :sibling
+      @parent_node = node.parent
+      @parent_node = nil if @parent_node == false
+      route = @parent_node ? @parent_node.view_route.presence || @parent_node.route.presence || "cms/node" : "cms/node"
+    end
+
+    klass = route.sub("/", "/node/").camelize.constantize rescue Cms::Node::Node
+
+    @item = klass.new(
+      site: @cur_site, cur_site: @cur_site, cur_user: @cur_user, cur_node: @parent_node,
+      route: @parent_node.view_route.presence || @parent_node.route)
+    @model = klass
+
+    set_addons
+    render
+  end
+
+  def create
+    safe_params = params.require(:item).permit(*PERMITTED_FIELDS)
+    @item = ::Mongoid::Factory.build(@model, safe_params)
+    @item.attributes = fix_params
+    raise "403" unless @item.allowed?(:edit, @cur_user, site: @cur_site, node: @cur_node)
+
+    new_route = params[:new_route].to_s
+    if new_route.present? && @item.route_options.any? { |_label, route| route == new_route }
+      @item = @item.becomes_with_route(new_route)
+      @model = @item.class
+      set_addons
+      render action: :new
+    else
+      render_create @item.save
     end
   end
 end

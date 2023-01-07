@@ -43,13 +43,12 @@ module Cms::Model::Part
     Cms::Part.plugins.select { |name, path, enabled| enabled }.map { |name, path, enabled| [name, path] }
   end
 
-  def becomes_with_route(name = nil)
-    return self if name.blank?
+  def becomes_with_route(route_name = nil)
+    return self if route_name.blank?
+    return self if route == route_name
 
-    name = name.sub("/", "/part/")
-    return self if route == name
-
-    super name
+    klass_name = route_name.sub("/", "/part/")
+    super route_name, klass_name
   end
 
   def mobile_view_options

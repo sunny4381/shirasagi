@@ -3,7 +3,7 @@
     <%= link_to(t('ss.links.new'), { action: :new }, class: :new) if @model.allowed?(:edit, @cur_user) %>
     <% download_url = url_for(action: :download_all) rescue nil %>
     <% if download_url %>
-      <%= ss_stimulus_tag({ "ss/dialog" => { through_by_modifier: 'shift' } }, { type: :a, href: download_url, class: "download" }) do %><%= t('ss.links.download') %><% end %>
+      <%= ss_stimulus_tag({ "ss/dialog" => { through_by_modifier: 'shift' } }, { tag_name: :a, href: download_url, class: "download" }) do %><%= t('ss.links.download') %><% end %>
     <% end %>
     <%= link_to t('ss.links.import'), action: :import rescue nil %>
   <% elsif params[:action] =~ /new|create|download_all|import|destroy_all/ %>

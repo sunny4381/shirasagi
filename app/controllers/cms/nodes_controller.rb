@@ -36,14 +36,14 @@ class Cms::NodesController < ApplicationController
   end
 
   def routes
-    @items = {}
+    # @items = {}
+    #
+    # Cms::Node.new.route_options.each do |name, path|
+    #   mod = path.sub(/\/.*/, '')
+    #   @items[mod] = { name: t("modules.#{mod}"), items: [] } if !@items[mod]
+    #   @items[mod][:items] << [ name.sub(/.*\//, ""), path ]
+    # end
 
-    Cms::Node.new.route_options.each do |name, path|
-      mod = path.sub(/\/.*/, '')
-      @items[mod] = { name: t("modules.#{mod}"), items: [] } if !@items[mod]
-      @items[mod][:items] << [ name.sub(/.*\//, ""), path ]
-    end
-
-    render layout: "ss/ajax"
+    render Cms::Node::RoutesComponent.new(cur_site: @cur_site), layout: "ss/ajax"
   end
 end
