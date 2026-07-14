@@ -299,12 +299,15 @@ done
 echo "セットアップが完了しました。"
 
 # ふりがな(MeCab Ruby拡張): 同梱 vendor から構築。MeCab本体/辞書はパッケージ導入済み。
-sudo chmod 777 /usr/local/src
-cd /usr/local/src
-cp -arp ${SS_DIR}/vendor/mecab/mecab-ruby-0.996.tar.gz ./
-tar xvzf mecab-ruby-0.996.tar.gz && cd mecab-ruby-0.996
+# 共有ディレクトリ(/usr/local/src)を777にせず、専用の一時ディレクトリでビルドする。
+MECAB_BUILD_DIR=$(mktemp -d)
+cp -arp ${SS_DIR}/vendor/mecab/mecab-ruby-0.996.tar.gz "${MECAB_BUILD_DIR}/"
+cd "${MECAB_BUILD_DIR}" || exit 1
+tar xvzf mecab-ruby-0.996.tar.gz
+cd mecab-ruby-0.996 || exit 1
 $(asdf which ruby) extconf.rb && make && make install
 cd ${SS_DIR}
+rm -rf "${MECAB_BUILD_DIR}"
 cp config/defaults/kana.yml config/
 sed -i "s#/usr/local/libexec/mecab/mecab-dict-index#/usr/libexec/mecab/mecab-dict-index#" config/kana.yml
 sed -i "s#/usr/local/lib/mecab/dic/ipadic#/usr/lib64/mecab/dic/ipadic#" config/kana.yml
@@ -333,7 +336,12 @@ export SS_SECRET_KEY_BASE
 CRED_EDITOR=$(mktemp)
 cat > "${CRED_EDITOR}" <<'CRED_EOF'
 #!/usr/bin/env bash
-printf 'secret_key_base: %s\n' "${SS_SECRET_KEY_BASE}" > "$1"
+# 既存の credentials 内容を保持し、secret_key_base のみ設定/更新する。
+# ($1 は credentials:edit が渡す復号済み YAML の一時ファイルパス)
+cred_tmp="$1.new"
+grep -v '^secret_key_base:' "$1" > "${cred_tmp}" 2>/dev/null || true
+printf 'secret_key_base: %s\n' "${SS_SECRET_KEY_BASE}" >> "${cred_tmp}"
+mv "${cred_tmp}" "$1"
 CRED_EOF
 chmod +x "${CRED_EDITOR}"
 EDITOR="${CRED_EDITOR}" $(asdf which rails) credentials:edit --environment=production
