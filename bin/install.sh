@@ -301,12 +301,12 @@ echo "セットアップが完了しました。"
 # ふりがな(MeCab Ruby拡張): 同梱 vendor から構築。MeCab本体/辞書はパッケージ導入済み。
 # 共有ディレクトリ(/usr/local/src)を777にせず、専用の一時ディレクトリでビルドする。
 MECAB_BUILD_DIR=$(mktemp -d)
-cp -arp ${SS_DIR}/vendor/mecab/mecab-ruby-0.996.tar.gz "${MECAB_BUILD_DIR}/"
+cp -arp "${SS_DIR}/vendor/mecab/mecab-ruby-0.996.tar.gz" "${MECAB_BUILD_DIR}/"
 cd "${MECAB_BUILD_DIR}" || exit 1
 tar xvzf mecab-ruby-0.996.tar.gz
 cd mecab-ruby-0.996 || exit 1
-$(asdf which ruby) extconf.rb && make && make install
-cd ${SS_DIR}
+$(asdf which ruby) extconf.rb && make && make install || exit 1
+cd "${SS_DIR}" || exit 1
 rm -rf "${MECAB_BUILD_DIR}"
 cp config/defaults/kana.yml config/
 sed -i "s#/usr/local/libexec/mecab/mecab-dict-index#/usr/libexec/mecab/mecab-dict-index#" config/kana.yml
