@@ -29,7 +29,7 @@ fi
 # (AL8 は glibc 2.28 のためプリコンパイル gem の GLIBC_2.29 要求を満たせない)。AL9+ では無害。
 sudo dnf -y --enablerepo=epel,${CRB_REPO} install ImageMagick ImageMagick-devel git wget libyaml-devel mecab mecab-devel mecab-ipadic libxml2-devel libxslt-devel zlib-devel
 
-cat <<EOS | sudo tee -a /etc/yum.repos.d/mongodb-org-8.0.repo
+cat <<EOS | sudo tee /etc/yum.repos.d/mongodb-org-8.0.repo > /dev/null
 [mongodb-org-8.0]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/\$releasever/mongodb-org/8.0/x86_64/
