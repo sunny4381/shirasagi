@@ -323,14 +323,15 @@ else
   echo "エラー: asdf reshim の実行に失敗しました。"
   exit 1
 fi
-# change secret
-# 資格情報の編集
-echo "Editing Rails credentials using cat <<EOF"
-
-# 資格情報ファイルの暗号化（非対話）
-# credentials:edit は対話エディタを起動するため、一時 EDITOR スクリプトで
-# secret_key_base を書き込み、nohup/ワンライナー実行でも失敗しないようにする。
-echo "Encrypting the credentials file"
+# secret_key_base の credentials 化
+# 開発ドキュメントに準拠: config 直下のデフォルト credentials
+# （config/master.key + config/credentials.yml.enc）へ格納する。
+# --environment は指定しない（指定すると config/credentials/production.* が作られてしまうため）。
+# secret_key_base の値は rails secret でランダム生成する（secrets.yml のサンプル固定値は使わない）。
+# ref: https://shirasagi.github.io/trouble-shootings/secret_key_base.html
+# credentials:edit は対話エディタを起動するため、非対話の一時 EDITOR で
+# secret_key_base のみを設定/更新し、無人実行でも失敗しないようにする。
+echo "Configuring Rails credentials (secret_key_base)"
 SS_SECRET_KEY_BASE=$($(asdf which rails) secret)
 export SS_SECRET_KEY_BASE
 CRED_EDITOR=$(mktemp)
@@ -344,7 +345,7 @@ printf 'secret_key_base: %s\n' "${SS_SECRET_KEY_BASE}" >> "${cred_tmp}"
 mv "${cred_tmp}" "$1"
 CRED_EOF
 chmod +x "${CRED_EDITOR}"
-EDITOR="${CRED_EDITOR}" $(asdf which rails) credentials:edit --environment=production
+EDITOR="${CRED_EDITOR}" $(asdf which rails) credentials:edit
 CRED_STATUS=$?
 rm -f "${CRED_EDITOR}"
 
@@ -403,6 +404,7 @@ sudo mkdir -p /var/cache/nginx/proxy_cache
 
 cat <<EOF | sudo tee /etc/nginx/conf.d/http.conf
 server_tokens off;
+charset utf-8;
 server_name_in_redirect off;
 etag on;
 client_max_body_size 100m;
@@ -614,27 +616,19 @@ cd /etc/ImageMagick-6 && cat <<EOF | sudo patch
  </policymap>
 EOF
 
-cat <<EOF | sudo tee /etc/systemd/system/shirasagi-unicorn.service
-[Unit]
-Description=Shirasagi Unicorn Server
-After=mongod.service
-[Service]
-User=${SS_USER}
-WorkingDirectory=${SS_DIR}
-Environment=RAILS_ENV=production
-SyslogIdentifier=unicorn
-PIDFile=${SS_DIR}/tmp/pids/unicorn.pid
-Type=forking
-TimeoutSec=300
-ExecStart=/bin/bash -lc 'bundle exec unicorn_rails -c config/unicorn.rb -D'
-ExecStop=/usr/bin/kill -QUIT $MAINPID
-ExecReload=/usr/bin/kill -USR2 $MAINPID
-[Install]
-WantedBy=multi-user.target
-EOF
-sudo chown root: /etc/systemd/system/shirasagi-unicorn.service
-sudo chmod 644 /etc/systemd/system/shirasagi-unicorn.service
+# Puma を SHIRASAGI 標準の方法で自動起動設定する（開発マニュアル installation/puma.html 準拠）。
+# 公式同梱の bin/puma.service をそのまま /etc/systemd/system/puma.service へ配置し、
+# User のみ実行ユーザに調整する。WorkingDirectory/PIDFile は /var/www/shirasagi 前提で一致。
+# WEB_CONCURRENCY / RAILS_MAX_THREADS / PUMA_RAM / PUMA_ROLLING_RESTART_FREQUENCY 等の
+# チューニング用 Environment（一部コメントアウト）は公式ユニットのまま保持し、マニュアルの
+# 性能調整手順（コメント解除で調整）がそのまま使えるようにする。
+sudo cp -n "${SS_DIR}/bin/puma.service" /etc/systemd/system/puma.service
+sudo sed -i "s/^User=.*/User=${SS_USER}/" /etc/systemd/system/puma.service
+# 公式サンプルの ExecStop シグナル名の誤字 TERN を TERM に修正（systemctl stop を有効にする）
+sudo sed -i "s/kill -TERN /kill -TERM /" /etc/systemd/system/puma.service
+sudo chown root: /etc/systemd/system/puma.service
+sudo chmod 644 /etc/systemd/system/puma.service
 sudo systemctl daemon-reload
-sudo systemctl enable shirasagi-unicorn.service --now
+sudo systemctl enable puma --now
 
 exit
