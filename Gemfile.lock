@@ -91,6 +91,7 @@ GEM
     ast (2.4.3)
     auth-sanitizer (0.2.3)
       version_gem (~> 1.1, >= 1.1.14)
+    baran (0.1.12)
     base64 (0.3.0)
     bcp47_spec (0.2.1)
     benchmark (0.5.0)
@@ -315,6 +316,9 @@ GEM
       aes_key_wrap
       bindata
       httpclient
+    json-schema (5.2.2)
+      addressable (~> 2.8)
+      bigdecimal (~> 3.1)
     jwt (3.2.0)
       base64
     kaminari (1.2.2)
@@ -337,6 +341,13 @@ GEM
       rexml (>= 3.4.4)
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
+    langchainrb (0.19.5)
+      baran (~> 0.1.9)
+      csv
+      json-schema (>= 4, < 6)
+      matrix
+      pragmatic_segmenter (~> 0.3.0)
+      zeitwerk (~> 2.5)
     language_server-protocol (3.17.0.6)
     levenshtein (0.2.2)
     line-bot-api (1.30.0)
@@ -499,6 +510,7 @@ GEM
     pdf-core (0.10.0)
     pp (0.6.4)
       prettyprint
+    pragmatic_segmenter (0.3.24)
     prawn (2.5.0)
       matrix (~> 0.4)
       pdf-core (~> 0.10.0)
@@ -860,6 +872,7 @@ DEPENDENCIES
   kintone!
   kramdown
   kramdown-parser-gfm
+  langchainrb
   levenshtein
   line-bot-api (~> 1.29)
   liquid
