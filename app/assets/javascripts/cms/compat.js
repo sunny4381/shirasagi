@@ -4,6 +4,12 @@
 //= require_self
 
 (function () {
+  if (window.moment) {
+    // application.js がロードされている場合（プレビューの場合）、application.js に任せる
+    console.info("stop applying compact because application.js is loading.");
+    return
+  }
+
   var isDocumentReady = function() {
     return document.readyState === "interactive" || document.readyState === "complete"
   };

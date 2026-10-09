@@ -5,6 +5,9 @@
 <% head_for(self) do %>
   <%= stylesheet_link_tag("application", media: "all") %>
   <%= stylesheet_link_tag("cms/preview/main", media: "all") %>
+  <%= javascript_include_tag("application") %>
+
+  <% if false %>
   <%= javascript_include_tag("cms/preview/main") %>
   <script>
     <% if rendered %>
@@ -85,9 +88,10 @@
       SS_Preview.userInplaceEdit = <%== inplace_editable?.to_json %>;
     <% end %>
   </script>
+  <% end %>
 <% end %>
 <% foot_for(self) do %>
-  <div id="ss-preview-overlay" class="ss-preview-hide">
+  <div id="ss-preview-overlay" class="ss-preview-hide" data-controller="cms--preview--overlay" data-cms--preview--main-target="overlay">
     <div class="ss-preview-overlay-tool">
       <span class="ss-preview-overlay-name"><%= t("ss.links.edit") %></span>
       <div class="ss-preview-btn-group ss-preview-overlay-btn-group-edit">
@@ -112,9 +116,77 @@
     <% if @preview_notice %>
       opts.notice = <%== @preview_notice.to_json %>;
     <% end %>
+    <% if false %>
     SS_Preview.render(opts);
+    <% end %>
   </script>
 <% end %>
+
+<script type="application/json" data-cms--preview--main-target="option">
+  <%==
+    option = {
+      form_id: "ss-preview-inplace-item-form",
+      page_route: (rendered[:page] || rendered[:node]).route.to_json
+    }
+    if rendered
+      option[:item] = {}
+      option[:item][:type] = rendered[:type]
+      if rendered[:layout]
+        option[:item][:layoutId] = rendered[:layout].id
+      end
+      if rendered[:node]
+        option[:item][:nodeId] = rendered[:node].id
+      end
+      if rendered[:page]
+        option[:item][:pageId] = rendered[:page].id
+        if rendered[:page].respond_to?(:form)
+          cms_form = rendered[:page].form
+          if cms_form
+            option[:item][:formId] = cms_form.id
+            option[:item][:formSubType] = cms_form.sub_type
+          end
+        end
+      end
+    end
+    if @cur_site.subdir.present?
+      option[:preview_path] = "/#{@cur_site.subdir}"
+    end
+    if @preview_page
+      option[:request_path] = request_path
+      option[:form_item] = @preview_item
+    end
+    if mode == :preview && rendered
+      if %i[page].include?(rendered[:type])
+        option[:inplaceFormPath] = {}
+        option[:inplaceFormPath][:page] = edit_cms_apis_preview_inplace_edit_page_path(site: @cur_site, preview_date: params[:preview_date], id: ":id")
+        option[:inplaceFormPath][:columnValue] = {}
+        option[:inplaceFormPath][:columnValue][:new] = "#{new_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, preview_date: params[:preview_date], page_id: ":pageId")}?column_id=:columnId"
+        option[:inplaceFormPath][:columnValue][:edit] = edit_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, preview_date: params[:preview_date], page_id: ":pageId", id: ":id")
+        option[:inplaceFormPath][:columnValue][:destroy] = cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, preview_date: params[:preview_date], page_id: ":pageId", id: ":id")
+        option[:inplaceFormPath][:columnValue][:moveUp] = move_up_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, preview_date: params[:preview_date], page_id: ":pageId", id: ":id")
+        option[:inplaceFormPath][:columnValue][:moveDown] = move_down_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, preview_date: params[:preview_date], page_id: ":pageId", id: ":id")
+        option[:inplaceFormPath][:columnValue][:moveAt] = move_at_cms_apis_preview_inplace_edit_page_column_value_path(site: @cur_site, preview_date: params[:preview_date], page_id: ":pageId", id: ":id")
+        option[:inplaceFormPath][:palette] = palette_cms_apis_preview_inplace_edit_form_path(site: @cur_site, preview_date: params[:preview_date], id: ":id")
+        option[:publishPath] = publish_cms_apis_preview_page_path(site: @cur_site, preview_date: params[:preview_date], id: rendered[:page])
+        option[:lockPath] = lock_cms_apis_preview_page_path(site: @cur_site, preview_date: params[:preview_date], id: rendered[:page], format: :json)
+      elsif %i[node].include?(rendered[:type])
+        option[:publishPath] = publish_cms_apis_preview_node_path(site: @cur_site, preview_date: params[:preview_date], cid: rendered[:node])
+      end
+
+      option[:workflowPath] = {}
+      option[:workflowPath][:wizard] = cms_apis_preview_workflow_wizard_path(site: @cur_site, preview_date: params[:preview_date], id: ":id")
+      option[:workflowPath][:pages] = "/.s#{@cur_site.id}/workflow/pages/:id"
+      option[:workflowPath][:request] = request_path
+      option[:previewPath] = cms_preview_path(path: ":path")
+      option[:redirectorPath] = {}
+      option[:redirectorPath][:newPage] = new_page_cms_apis_preview_node_path(site: @cur_site, cid: ":nodeId")
+
+      option[:userInplaceEdit] = inplace_editable?
+    end
+
+    option.to_json
+  %>
+</script>
 
 <% if params[:action] == "form_preview" %>
   <div id="ss-preview" style="position: relative;">
@@ -123,7 +195,7 @@
             <div id="ss-preview-title"><%= t("cms.preview_page2") %></div>
         </div>
     </div>
-    <div class="ss-preview-notice-wrap" style="display: none;"></div>
+    <div class="ss-preview-notice-wrap hide" data-controller="cms--preview--notice" data-cms--preview--main-target="notice"></div>
   </div>
 <% else %>
   <div id="ss-preview">
@@ -141,7 +213,7 @@
         </div>
       <% end %>
     </div>
-    <div class="ss-preview-notice-wrap" style="display: none;"></div>
+    <div class="ss-preview-notice-wrap hide" data-controller="cms--preview--notice" data-cms--preview--main-target="notice"></div>
   </div>
 <% end %>
 

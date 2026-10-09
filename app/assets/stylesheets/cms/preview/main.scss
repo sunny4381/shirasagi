@@ -14,6 +14,11 @@
   color: #fff;
   font-family: init.$font-base;
   font-size: 0.8rem;
+
+  .hide {
+    display: none;
+  }
+
   .ss-preview-dropdown,
   #ss-preview-btn-select-draft-page {
     display: inline-block;
@@ -21,25 +26,30 @@
     text-decoration: none;
     vertical-align: top;
   }
+
   button,
   select,
   #ss-preview-btn-select-draft-page,
   input,
+  .btn,
   .ss-preview-part-list {
     @include init.btn;
     box-sizing: border-box;
     width: auto;
     height: auto;
     min-height: 2.6em;
+    text-decoration: none;
     @include init.mb {
       padding: 6px 8px;
     }
   }
+
   .ss-preview-dropdown {
     display: flex;
     align-items: center;
     justify-content: center;
     float: left;
+
     label {
       box-sizing: border-box;
       height: 29px;
@@ -49,6 +59,7 @@
       border-radius: 3px 0 0 3px;
       background: #d9d9d9;
     }
+
     #ss-preview-btn-select-node {
       @include init.btn;
       box-sizing: border-box;
@@ -61,17 +72,41 @@
       text-decoration: none;
     }
   }
+
   #ss-preview-btn-create-new-page {
-    height: 29px;
-    border: 1px solid #bbb;
-    border-radius: 0 3px 3px 0;
+    //height: 29px;
+    //border: 1px solid #bbb;
+    //border-radius: 0 3px 3px 0;
+    anchor-name: --ss-preview-btn-create-new-page;
   }
+
+  #ss-preview-btn-create-new-page-popover {
+    position-anchor: --ss-preview-btn-create-new-page;
+    position-area: block-end;
+
+    max-height: 300px;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    border: init.$border-gray4;
+    background: init.$white;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+
+    ul {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  }
+
   .ss-preview-part-list {
     height: 2.6em;
     @include init.mb {
       width: calc(100% - 52px);
     }
   }
+
   // scss-lint:disable PropertySpelling
   #ss-preview-btn-workflow-start,
   #ss-preview-btn-workflow-approve {
@@ -84,6 +119,7 @@
       background: #b23a3d;
     }
   }
+
   #ss-preview-btn-publish {
     border: 1px solid #0069cc;
     background: linear-gradient(to bottom, #007acd, #0069cc);
@@ -93,14 +129,18 @@
       background: #0165a9;
     }
   }
+
   & {
     box-shadow: 0 1px 5px #666;
   }
+
   .ss-preview-wrap {
     display: flex;
   }
+
   .ss-preview-wrap-column-edit-mode {
     margin-right: auto;
+
     .ss-preview-wrap-row {
       display: flex;
       flex-wrap: wrap;
@@ -108,6 +148,7 @@
         display: block;
       }
     }
+
     .ss-preview-btn-group:nth-child(2) {
       margin-left: 10px;
       @include init.mb {
@@ -115,9 +156,11 @@
       }
     }
   }
+
   .ss-preview-btn-group > * {
     margin-top: 10px;
   }
+
   #ss-preview-date {
     border-right: 0;
     border-radius: 3px 0 0 3px;
@@ -127,19 +170,24 @@
       padding: 6px 3px;
     }
   }
+
   .ss-preview-btn-pc {
     border: 1px solid #bbb;
     border-right: 0;
     border-radius: 0;
   }
+
   .ss-preview-btn-mobile {
     border: 1px solid #bbb;
     border-radius: 0 3px 3px 0;
   }
+
   .ss-preview-wrap-column {
     padding: 0 12px 10px;
+
     &.ss-preview-wrap-column-title-wrap {
       padding-top: 10px;
+
       .ss-preview-title {
         color: #fff;
         font-size: 20px;
@@ -147,17 +195,22 @@
       }
     }
   }
+
   .ss-preview-wrap-column ~ .ss-preview-wrap-column {
     border-left: 1px solid #666;
+
     .ss-preview-wrap-row:nth-child(2) .ss-preview-btn-group:nth-child(3) {
       margin-right: 0;
     }
   }
+
   #ss-preview-messages .ss-preview-branch-notice {
     padding-right: 5px;
   }
+
   .ss-preview-btn-group {
     display: inline-block;
+
     &.ss-preview-wrap-row {
       display: flex;
       flex-wrap: wrap;
@@ -166,6 +219,7 @@
       @include init.mb {
         justify-content: flex-start;
       }
+
       label {
         margin: 6px 10px 0 0;
         @include init.mb {
@@ -174,22 +228,27 @@
       }
     }
   }
+
   .ss-preview-btn-group ~ .ss-preview-btn-group {
     margin-right: 8px;
     @include init.mb {
       margin-left: 0;
     }
   }
+
   .ss-preview-btn-toggle-inplace {
     &::after {
       content: " onにする";
     }
+
     &.ss-preview-active::after {
       content: " offにする";
     }
   }
+
   .ss-preview-notice {
     color: #f6fa86;
+
     a {
       color: #fff;
     }
@@ -198,7 +257,12 @@
       display: inline-block;
     }
   }
+
+  [data-controller="ss--dialog"] {
+    display: inline-block;
+  }
 }
+
 .ss-preview-hide {
   display: none !important;
 }

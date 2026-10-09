@@ -1,54 +1,14 @@
-<%= jquery do %>
-  <% if params[:layout] == "iframe" %>
-    window.top.SS_SearchUI.modal({ $el: $(".ss-ajax-in-iframe-content") });
-  <% else %>
+<% if try(:turbo_frame) %>
+  <%= render "search", **local_assigns %>
+
+  <form method="dialog">
+    <%= render "index", **local_assigns %>
+  </form>
+<% else %>
+  <%= jquery do %>
     SS_SearchUI.modal();
   <% end %>
+
+  <%= render "search", **local_assigns %>
+  <%= render "index", **local_assigns %>
 <% end %>
-
-<div class="search-ui-form">
-  <%= form_tag({ action: :index }, { method: "GET", class: :search }) do %>
-    <%= hidden_field_tag :single, params[:single] if params[:single].present? %>
-    <%= hidden_field_tag :model, params[:model] if params[:model].present? %>
-    <%= hidden_field_tag :layout, params[:layout] if params[:layout].present? %>
-    <div class="input-group">
-      <%= text_field_tag 's[keyword]', params[:s].try(:[], :keyword), placeholder: t("ss.keyword") %>
-      <%= submit_tag t("cms.apis.nodes.search"), class: :btn %>
-    </div>
-  <% end %>
-</div>
-
-<table class="index">
-  <thead class="list-head">
-    <tr>
-      <% if @multi %>
-      <th class="checkbox"><input type="checkbox" /></th>
-      <% end %>
-      <th class="name"><%= @model.t :name %></th>
-      <th class="url"><%= @model.t :url %></th>
-      <th class="route"><%= t "ss.module"%></th>
-      <th class="updated"><%= @model.t :updated %></th>
-    </tr>
-  </thead>
-  <tbody class="items">
-    <% @items.each do |item| %>
-      <tr data-id="<%= item.id %>" data-name="<%= %(#{item.name} (#{item.filename})) %>"  data-filename= "<%= item.filename %>" class="list-item">
-        <% if @multi %>
-        <td class="checkbox">
-          <input type="checkbox" name="ids[]" value="<%= item.id %>" />
-        </td>
-        <% end %>
-        <td class="name"><%= link_to item.name, "#", class: @multi ? "select-item" : "select-single-item" %></td>
-        <td class="url"><%= item.url %></td>
-        <td class="route"><%= t "modules.#{item.route.sub(/\/.*/, '')}" %></td>
-        <td class="updated"><%= ss_time_tag(item.updated) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<div class="search-ui-select">
-  <%= button_tag t("cms.apis.nodes.select"), { type: :button, class: "select-items btn" } %>
-</div>
-
-<%= paginate @items if @items.try(:current_page) %>

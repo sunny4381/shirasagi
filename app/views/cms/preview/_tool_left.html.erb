@@ -3,7 +3,7 @@
   <div class="ss-preview-wrap-row">
     <% if inplace_editable? %>
     <div class="ss-preview-btn-group">
-      <button type="button" class="ss-preview-btn ss-preview-btn-outline-primary ss-preview-btn-toggle-inplace"><%= t("cms.inplace_edit") %></button>
+      <button type="button" class="ss-preview-btn ss-preview-btn-outline-primary ss-preview-btn-toggle-inplace" data-action="cms--preview--main#toggleInplace"><%= t("cms.inplace_edit") %></button>
     </div>
     <% end %>
     <%
@@ -15,15 +15,31 @@
       end
     %>
     <div class="ss-preview-btn-group" data-node-id="<%= node.try(:id) %>">
+      <% if false %>
       <span class="ss-preview-dropdown">
         <label for="ss-preview-btn-select-node"><%= node.try(:name) || @cur_site.name %></label>
         <a id="ss-preview-btn-select-node" class="ss-preview-btn ss-preview-btn-outline" href="<%= cms_apis_nodes_path(layout: "iframe", single: true) %>">▼</a>
       </span>
-      <button type="button" id="ss-preview-btn-create-new-page" class="ss-preview-btn ss-preview-btn-outline"><%= t("ss.buttons.new") %></button>
+      <% end %>
+      <% if false %>
+      <a href="<%= new_page_cms_apis_preview_node_path(site: @cur_site, cid: node) %>" id="ss-preview-btn-create-new-page" class="btn ss-preview-btn ss-preview-btn-outline">
+        <%= t("ss.buttons.new") %>
+      </a>
+      <% end %>
+      <button type="button" popovertarget="ss-preview-btn-create-new-page-popover" id="ss-preview-btn-create-new-page" class="ss-preview-btn ss-preview-btn-outline">
+        <%= t("ss.buttons.new") %>
+        ▼
+      </button>
+      <div popover id="ss-preview-btn-create-new-page-popover">
+        <ul>
+          <li><%= link_to "このフォルダー", new_page_cms_apis_preview_node_path(site: @cur_site, cid: node), class: "btn" %></li>
+          <li><%= ss_dialog_button "他のフォルダー", cms_apis_nodes_path(single: true), data: { action: "modalresult->cms--preview--main#createNewPageInOtherNode" } %></li>
+        </ul>
+      </div>
     </div>
     <div class="ss-preview-btn-group">
       <%
-        page_params = { layout: "iframe", single: true, s: { statuses: %w(ready request remand draft) } }
+        page_params = { single: true, s: { statuses: %w(ready request remand draft) } }
         if rendered && rendered[:page] && rendered[:page].parent
           page_params[:s] ||= {}
           page_params[:s][:node] = rendered[:page].parent
@@ -32,7 +48,7 @@
           page_params[:s][:node] = rendered[:node]
         end
       %>
-      <a id="ss-preview-btn-select-draft-page" class="ss-preview-btn ss-preview-btn-outline" href="<%== cms_apis_pages_path(page_params) %>"><%= t("cms.draft_page") %></a>
+      <%= ss_dialog_button t("cms.draft_page"), cms_apis_pages_path(page_params), id: "ss-preview-btn-select-draft-page", class: "ss-preview-btn ss-preview-btn-outline", data: { action: "modalresult->cms--preview--main#transferToPage" } %>
     </div>
   </div>
 <% end %>

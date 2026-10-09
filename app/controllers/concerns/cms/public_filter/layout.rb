@@ -112,6 +112,7 @@ module Cms::PublicFilter::Layout
           path: @cur_layout.private_show_path
         }
         data_attrs = layout_info.map { |k, v| "data-layout-#{k}=\"#{CGI.escapeHTML(v.to_s)}\"" }
+        data_attrs << 'data-controller="cms--preview--main"'
         html = html.sub(/<body/, %(<body #{data_attrs.join(" ")}))
       end
 

@@ -1,0 +1,19 @@
+@use "ss/init";
+
+#cms-apis-pages-node-dropdown-btn {
+  anchor-name: --cms-apis-pages-node-dropdown-btn;
+}
+
+#cms-apis-pages-node-dropdown-popover {
+  position-anchor: --cms-apis-pages-node-dropdown-btn;
+  position-area: block-end;
+
+  max-height: 300px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  border: init.$border-gray4;
+  background: init.$white;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}

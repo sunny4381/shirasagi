@@ -4,13 +4,10 @@
   page_params[:root_items] = @parent_nodes.map(&:id) if @parent_nodes.present?
 %>
 <%= jquery do %>
-  SS_Dropdown.render();
-  (new SS_TreeNavi("form.search .tree-navi")).render(<%== cms_apis_node_tree_path(page_params).to_json %>);
-
   var $form = $("form.search");
-  $form.on("click", ".item-name", function() {
-    var $treeItem = $(this).closest(".tree-item");
-    var nodeId = $treeItem.data("id");
+  $form.on("click", ".ss-tree-item", function() {
+    var $treeItem = $(this);
+    var nodeId = $treeItem.data("node-id");
 
     $form.find("[name='s[node]']").val(nodeId);
     $form[0].requestSubmit();
@@ -21,11 +18,17 @@
 
 <dt><%= t("cms.node") %></dt>
 <dd>
-  <button class="dropdown btn" type="button"><%= @selected_node ? @selected_node.name : @cur_site.name %> <span class="caret">&#x25BC;</span></button>
   <%= f.hidden_field("node", value: @selected_node.try(:id)) %>
-  <div class="dropdown-container" style="background: white; padding: 5px;">
-    <div><%= link_to @cur_site.name, "#", class: "item-name" %></div>
-    <div class="tree-navi">
-    </div>
+  <button class="btn" type="button" id="cms-apis-pages-node-dropdown-btn" popovertarget="cms-apis-pages-node-dropdown-popover">
+    <%= @selected_node ? @selected_node.name : @cur_site.name %>
+    <span class="caret">&#x25BC;</span>
+  </button>
+  <div popover="manual" id="cms-apis-pages-node-dropdown-popover">
+    <%=
+      data = { controller: "ss--tree", "current_node_id" => @selected_node.try(:id) }
+      tag.turbo_frame id: "cms-nodes-tree-frame", src: cms_frames_nodes_trees_path, loading: "lazy", data: data do
+        loading
+      end
+    %>
   </div>
 </dd>

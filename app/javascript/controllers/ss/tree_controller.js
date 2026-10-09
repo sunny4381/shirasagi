@@ -49,7 +49,7 @@ export default class extends Controller {
     });
   }
 
-  expandAll() {
+  expandAll(ev) {
     const trees = Array.from(this.element.querySelectorAll(".ss-tree-subtree-wrap"))
     for (var i = trees.length - 1; i >= 0; i--) {
       const tree = trees[i];
@@ -57,9 +57,12 @@ export default class extends Controller {
         tree.open = true;
       }
     }
+
+    ev.stopPropagation();
+    ev.preventDefault();
   }
 
-  collapseAll() {
+  collapseAll(ev) {
     const trees = Array.from(this.element.querySelectorAll(".ss-tree-subtree-wrap"))
     for (var i = trees.length - 1; i >= 0; i--) {
       const tree = trees[i];
@@ -67,5 +70,8 @@ export default class extends Controller {
         tree.open = false;
       }
     }
+
+    ev.stopPropagation();
+    ev.preventDefault();
   }
 }

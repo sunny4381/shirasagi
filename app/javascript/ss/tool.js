@@ -14,6 +14,8 @@ export const LOADING = `<img src="/assets/img/loading.gif" width="16" height="11
 export const LIST_ITEM_SELECTOR = ".list-item[data-id]";
 export const CHECKED_LIST_ITEM_SELECTOR = ".list-item[data-id]:has(input:checked)";
 
+export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export function csrfToken(el) {
   if (el && 'form' in el && el.form) {
     const authenticityTokenEl = el.form.querySelector("[name='authenticity_token']")
