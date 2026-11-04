@@ -10,6 +10,8 @@
 //= link swiper.css
 //= link jplayer.js
 //= link jplayer.css
+//= link cms/preview.js
+//= link cms/preview.css
 
 // ビルドするアセット一覧（アルファベット順）
 // 次のコマンドで、一覧を生成することができる
@@ -29,11 +31,6 @@
 //= link board/script.js
 //= link cms/compat.js
 //= link cms/form_db.js
-//= link cms/preview/datatables.js
-//= link cms/preview/datetimepicker.js
-//= link cms/preview/jquery-ui.js
-//= link cms/preview/jquery.js
-//= link cms/preview/main.js
 //= link cms/public.js
 //= link gws/affair/menu.js
 //= link gws/affair/overtime_file.js
@@ -76,12 +73,6 @@
 
 //= link cms/form_db.css
 //= link cms/mobile.css
-//= link cms/preview/ajax_in_iframe.css
-//= link cms/preview/datatables.css
-//= link cms/preview/datetimepicker.css
-//= link cms/preview/jquery-ui.css
-//= link cms/preview/jquery.css
-//= link cms/preview/main.css
 //= link cms/public.css
 //= link gws/style.css
 //= link member/public.css

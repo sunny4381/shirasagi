@@ -20,6 +20,7 @@ module.exports = {
     swiper: "./app/javascript/swiper.js",
     jplayer: "./app/javascript/jplayer.js",
     "opendata/form": "./app/javascript/legacy/opendata/form.js",
+    "cms/preview": "./app/javascript/cms/preview.js",
   },
   externals: [
     {
