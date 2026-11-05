@@ -1,0 +1,30 @@
+@keyframes show-dialog {
+  from {
+    transform: translateY(-110%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
+
+.ss-dialog-container {
+  overflow-y: hidden;
+}
+
+.ss-dialog {
+  position: fixed; // 既定では body が top までスクロールしてしまう。それを防ぐために position を fixed へ変更する
+  width: 90vw;
+  height: 90vh;
+
+  &[open] {
+    animation: show-dialog 0.5s ease normal;
+  }
+}
+
+.ss-dialog-header {
+  display: flex;
+}
+
+.ss-dialog-close {
+  margin-left: auto;
+}

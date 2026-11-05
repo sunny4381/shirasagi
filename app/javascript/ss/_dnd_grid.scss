@@ -1,0 +1,22 @@
+.ss-dnd-grid {
+  display: grid;
+  gap: 5px 0;
+}
+
+.ss-dnd-grid-item {
+  display: contents;
+}
+
+.ss-dnd-grid-item > * {
+  padding: 5px;
+  border-top: 1px solid #dcdcdc;
+  border-bottom: 1px solid #dcdcdc;
+}
+
+.ss-dnd-grid-item > *:first-child {
+  border-left: 1px solid #dcdcdc;
+}
+
+.ss-dnd-grid-item > *:last-child {
+  border-right: 1px solid #dcdcdc;
+}

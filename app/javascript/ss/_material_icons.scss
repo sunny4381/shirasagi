@@ -1,0 +1,56 @@
+// material-icons 1.13.14 は Sass 3 に対応しておらず、@use を用いて組み込むと以下の警告が大量に表示される。
+// そこで、material-icons が Sass 3 に対応するまで @import で組み込むこととする
+//
+// "Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0."
+//@use "material-icons/iconfont/material-icons.scss" with (
+//  $material-icons-font-path: '~material-icons/iconfont/'
+//);
+@import "material-icons/iconfont/material-icons.css";
+
+.material-icons,
+.material-icons-outlined,
+.material-icons-round,
+.material-icons-sharp,
+.material-icons-two-tone {
+  /* Rules for sizing the icon. */
+  &.md-13 {
+    font-size: 13px;
+  }
+  &.md-14 {
+    font-size: 14px;
+  }
+  &.md-15 {
+    font-size: 15px;
+  }
+  &.md-16 {
+    font-size: 16px;
+  }
+  &.md-18 {
+    font-size: 18px;
+  }
+  &.md-24 {
+    font-size: 24px;
+  }
+  &.md-36 {
+    font-size: 36px;
+  }
+  &.md-48 {
+    font-size: 48px;
+  }
+
+  /* Rules for using icons as black on a light background. */
+  &.md-dark {
+    color: rgba(0, 0, 0, 0.54);
+  }
+  &.md-dark.md-inactive {
+    color: rgba(0, 0, 0, 0.26);
+  }
+
+  /* Rules for using icons as white on a dark background. */
+  &.md-light {
+    color: rgba(255, 255, 255, 1);
+  }
+  &.md-light.md-inactive {
+    color: rgba(255, 255, 255, 0.3);
+  }
+}

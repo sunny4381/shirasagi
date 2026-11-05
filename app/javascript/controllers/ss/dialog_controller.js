@@ -9,7 +9,8 @@ export default class extends Controller {
 
   connect() {
     const dialogSource = this.hasContentTarget ? this.contentTarget : this.element
-    this.dialog = new Dialog(dialogSource, { attach: this.attachValue, source: this.element });
+    const rootNode = this.element.getRootNode() !== document ? this.element : null
+    this.dialog = new Dialog(dialogSource, { attach: this.attachValue, rootNode: rootNode, source: this.element });
     if (this.openValue) {
       this.open();
     }

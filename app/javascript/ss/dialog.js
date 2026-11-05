@@ -26,8 +26,8 @@ function findDialogContainer(element) {
 }
 
 class DialogFrame {
-  static connect(observer) {
-    const instance = new DialogFrame(observer)
+  static connect(observer, rootNode) {
+    const instance = new DialogFrame(observer, rootNode)
     instance.#connect()
     return instance
   }
@@ -38,8 +38,9 @@ class DialogFrame {
     return instance
   }
 
-  constructor(observer) {
+  constructor(observer, rootNode) {
     this._observer = observer
+    this._rootNode = rootNode
     this._modalResultEventHandler = undefined
   }
 
@@ -47,8 +48,9 @@ class DialogFrame {
     const dialogTemplate = document.createElement("template")
     dialogTemplate.innerHTML = DIALOG_TEMPLATE.replaceAll("close dialog", i18next.t("ss.buttons.close"))
 
+    const rootNode = this._rootNode && this._rootNode !== document ? this._rootNode : document.body
     this._attached = false;
-    this._dialogContainer = document.body.appendChild(dialogTemplate.content.firstElementChild)
+    this._dialogContainer = rootNode.appendChild(dialogTemplate.content.firstElementChild)
     this._dialog = this._dialogContainer.querySelector(".ss-dialog")
     this._dialogContent = this._dialog.querySelector(".ss-dialog-content")
     this.#bind();
@@ -114,8 +116,8 @@ export default class Dialog {
     this._dialogClosed = undefined
   }
 
-  static showModal(src, { source = undefined, data = undefined } = {}) {
-    const dialog = new Dialog(src, { source, data })
+  static showModal(src, { rootNode = undefined, source = undefined, data = undefined } = {}) {
+    const dialog = new Dialog(src, { rootNode, source, data })
     return dialog.showModal()
   }
 
@@ -136,7 +138,7 @@ export default class Dialog {
 
       await this._dialogFrame.showModal()
     } else {
-      this._dialogFrame = DialogFrame.connect(this)
+      this._dialogFrame = DialogFrame.connect(this, this.options?.rootNode)
       await this._dialogFrame.showModal()
 
       if (this.src instanceof HTMLTemplateElement) {

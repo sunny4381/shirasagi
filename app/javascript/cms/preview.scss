@@ -19,16 +19,14 @@
     vertical-align: top;
   }
 
-  button,
-  select,
   #ss-preview-btn-select-draft-page,
-  input,
   .ss-preview-part-list {
     @include init.btn;
     box-sizing: border-box;
     width: auto;
     height: auto;
     min-height: 2.6em;
+    text-decoration: none;
 
     @include init.mb {
       padding: 6px 8px;
@@ -65,9 +63,34 @@
   }
 
   #ss-preview-btn-create-new-page {
-    height: 29px;
-    border: 1px solid #bbb;
-    border-radius: 0 3px 3px 0;
+    //height: 29px;
+    //border: 1px solid #bbb;
+    //border-radius: 0 3px 3px 0;
+    anchor-name: --ss-preview-btn-create-new-page;
+  }
+
+  #ss-preview-btn-create-new-page-popover {
+    position-anchor: --ss-preview-btn-create-new-page;
+    position-area: block-end;
+
+    max-height: 300px;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    border: init.$border-gray4;
+    background: init.$white;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+
+    ul {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      appearance: none;
+      margin: 0;
+      padding: 10px;
+      list-style-type: none;
+    }
   }
 
   .ss-preview-part-list {
@@ -235,6 +258,10 @@
       display: inline-block;
     }
   }
+
+  [data-controller="ss--dialog"] {
+    display: inline-block;
+  }
 }
 
 .ss-preview-hide {
@@ -336,15 +363,7 @@
   margin-bottom: 8px;
   padding: 8px;
 
-  .btn {
-    -webkit-appearance: button;
-  }
-
   .tooltip {
-    display: none;
-  }
-
-  .hide {
     display: none;
   }
 
@@ -399,13 +418,8 @@ div.ss-preview-dialog {
     line-height: 1.4;
   }
 
-  .btn-primary,
   .commit {
     @include init.btn-red;
-  }
-
-  .btn-default {
-    @include init.btn-gray-l;
   }
 
   .btn-primary,
@@ -556,19 +570,6 @@ table.index {
   dd {
     margin: 0 0 0 180px;
     padding: 5px 0;
-
-    input[type="text"] {
-      box-sizing: border-box;
-      width: 80%;
-      padding: 6px;
-      border: 1px solid #d0d0d0;
-      border-radius: 3px;
-      vertical-align: middle;
-    }
-  }
-
-  .btn {
-    @include init.btn;
   }
 
   .dropdown-container {
@@ -583,12 +584,6 @@ table.index {
     -webkit-box-shadow: 1px 2px 4px #888;
     box-shadow: 1px 2px 4px #888;
     font-weight: normal;
-  }
-}
-
-.search-ui-select {
-  .btn {
-    @include init.btn;
   }
 }
 
