@@ -1,0 +1,11 @@
+<div class="search-ui-form">
+  <%= form_tag({ action: :index }, { method: "GET", class: :search }) do %>
+    <%= hidden_field_tag :single, params[:single], id: nil if params[:single].present? %>
+    <%= hidden_field_tag :model, params[:model], id: nil if params[:model].present? %>
+    <%= hidden_field_tag :layout, params[:layout], id: nil if params[:layout].present? %>
+    <div class="input-group">
+      <%= text_field_tag 's[keyword]', params[:s].try(:[], :keyword), id: nil, placeholder: t("ss.keyword") %>
+      <%= submit_tag t("cms.apis.nodes.search"), name: nil, class: "btn" %>
+    </div>
+  <% end %>
+</div>
