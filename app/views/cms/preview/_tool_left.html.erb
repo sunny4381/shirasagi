@@ -26,19 +26,6 @@
         </ul>
       </div>
     </div>
-    <div class="ss-preview-btn-group">
-      <%
-        page_params = { layout: "iframe", single: true, s: { statuses: %w(ready request remand draft) } }
-        if rendered && rendered[:page] && rendered[:page].parent
-          page_params[:s] ||= {}
-          page_params[:s][:node] = rendered[:page].parent
-        end
-        if rendered && rendered[:node]
-          page_params[:s][:node] = rendered[:node]
-        end
-      %>
-      <a id="ss-preview-btn-select-draft-page" class="btn ss-preview-btn-outline" href="<%== cms_apis_pages_path(page_params) %>"><%= t("cms.draft_page") %></a>
-    </div>
   </div>
 <% end %>
 
