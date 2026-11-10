@@ -1,10 +1,17 @@
 <%
   show_path ||= nil
+  if @cur_date.min < 30
+    preview_date = @cur_date.change(min: 0, sec: 0)
+  else
+    preview_date = @cur_date.change(min: 30, sec: 0)
+  end
 %>
 
 <div class="ss-preview-wrap-row ss-preview-btn-group">
   <label for="ss-preview-date"><%= t("cms.preview_date") %></label>
-  <input type="text" id="ss-preview-date" class="ss-preview-date" name="ss-preview-date" value="<%= I18n.l(@cur_date, format: :picker)  %>" />
+  <%# jquery datetimepicker は Shadow DOM に未対応のため、ブラウザ標準のものを使用する %>
+  <%# ss_datetime_field_tag "ss-preview-date", @cur_date, { inside_parent: true }, { id: "ss-preview-date", class: "ss-preview-date" } %>
+  <%= text_field_tag "ss-preview-date", preview_date.strftime("%Y-%m-%dT%H:%M"), type: "datetime-local", id: "ss-preview-date", class: "ss-preview-date", step: 1800 %>
   <% if @cur_site.mobile_enabled? %>
     <input type="button" class="btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("ss.links.pc") %>">
     <input type="button" class="btn ss-preview-btn-outline ss-preview-btn-mobile" value="<%= t("ss.links.mobile") %>">

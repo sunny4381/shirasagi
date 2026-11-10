@@ -95,11 +95,6 @@ export default class extends Controller {
   }
 
   connect() {
-    SS_DateTimePicker.renderOnce();
-    this.element.querySelectorAll(".ss-preview-date").forEach((el) => {
-      new SS_DateTimePicker(el, "datetime");
-    });
-
     this._editLock = new EditLock(this, {
       lockPath: this._option.lockPath, refreshLockInterval: this._option.refreshLockInterval
     });
