@@ -11,13 +11,8 @@
   <label for="ss-preview-date"><%= t("cms.preview_date") %></label>
   <%# jquery datetimepicker は Shadow DOM に未対応のため、ブラウザ標準のものを使用する %>
   <%# ss_datetime_field_tag "ss-preview-date", @cur_date, { inside_parent: true }, { id: "ss-preview-date", class: "ss-preview-date" } %>
-  <%= text_field_tag "ss-preview-date", preview_date.strftime("%Y-%m-%dT%H:%M"), type: "datetime-local", id: "ss-preview-date", class: "ss-preview-date", step: 1800 %>
-  <% if @cur_site.mobile_enabled? %>
-    <input type="button" class="btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("ss.links.pc") %>">
-    <input type="button" class="btn ss-preview-btn-outline ss-preview-btn-mobile" value="<%= t("ss.links.mobile") %>">
-  <% else %>
-    <input type="button" class="btn ss-preview-btn-outline ss-preview-btn-pc" value="<%= t("cms.preview_page") %>">
-  <% end %>
+  <%= text_field_tag "ss-preview-date", preview_date.strftime("%Y-%m-%dT%H:%M"), type: "datetime-local", id: "ss-preview-date", class: "ss-preview-date", step: 1800, data: { "cms--preview--main-target" => "previewDate" } %>
+  <%= button_tag t("cms.preview_page"), name: nil, type: :button, class: "btn ss-preview-btn-outline ss-preview-btn-pc", data: { action: "cms--preview--main#previewPc" } %>
 </div>
 
 <div class="ss-preview-wrap-row">

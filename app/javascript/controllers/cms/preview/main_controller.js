@@ -1,5 +1,33 @@
 import { Controller } from "@hotwired/stimulus";
+import moment from "moment/moment"
 import { csrfToken, dispatchEvent } from "../../../ss/tool";
+
+function appendParams(form, name, params) {
+  if (params.length <= 0) {
+    form.append($("<input/>", {
+      name: `${name}[]`,
+      value: "",
+      type: "hidden"
+    }));
+  }
+
+  for (let key in params) {
+    let value = params[key];
+    if (key.match(/^\d+$/)) {
+      key = "";
+    }
+
+    if (typeof value === 'object') {
+      appendParams(form, `${name}[${key}]`, value);
+    } else {
+      form.append($("<input/>", {
+        name: `${name}[${key}]`,
+        value: value,
+        type: "hidden"
+      }));
+    }
+  }
+}
 
 class EditLock {
 
@@ -80,7 +108,7 @@ class EditLock {
 }
 
 export default class extends Controller {
-  static targets = [ "option", "overlay", "notice", "formPalette" ];
+  static targets = [ "option", "overlay", "notice", "formPalette", "previewDate" ];
 
   _option = {};
   _inplaceMode = false;
@@ -132,19 +160,20 @@ export default class extends Controller {
       await this.#toggleInplaceMode();
     } finally {
       if (before === this._inplaceMode) {
-        return;
-      }
-      if (!window.history.pushState) {
-        return;
-      }
-
-      if (this._inplaceMode) {
-        window.history.pushState(null, null, window.location.pathname + "#inplace");
+        // nothing to do
+      } else if (!window.history.pushState) {
+        // nothing to do
       } else {
-        window.history.pushState(null, null, window.location.pathname);
-      }
+        if (this._inplaceMode) {
+          window.history.pushState(null, null, window.location.pathname + "#inplace");
+        } else {
+          window.history.pushState(null, null, window.location.pathname);
+        }
 
-      setTimeout(function() { dispatchEvent(this.element, "ss:inplaceModeChanged"); }, 11);
+        setTimeout(function () {
+          dispatchEvent(this.element, "ss:inplaceModeChanged");
+        }, 11);
+      }
     }
   }
 
@@ -273,4 +302,37 @@ export default class extends Controller {
     const selected = JSON.parse(ids[0]);
     window.open(this._option.redirectorPath.newPage.replace(":nodeId", selected.id));
   }
+
+  previewPc() {
+    const date = this.#dateForPreview();
+    if (! date) {
+      return;
+    }
+
+    const path = this._option.previewPathTemplate.pc.replace("$YYYYMMDDHHmmss", date);
+    if (this._option.request_path && this._option.form_item) {
+      this.#submitFormPreview(path, this._option.form_item);
+    } else {
+      location.href = path;
+    }
+  };
+
+  #dateForPreview() {
+    const dateStr = this.previewDateTarget.value;
+    if (! dateStr) {
+      return;
+    }
+
+    return moment(dateStr).format("YYYYMMDDHHmmss");
+  };
+
+  #submitFormPreview(path, formItem) {
+    const token = csrfToken();
+    const form = $("<form>").attr("method", "post").attr("action", path);
+
+    appendParams(form, "preview_item", formItem);
+    form.append($("<input/>", { name: "authenticity_token", value: token, type: "hidden"}));
+    form.appendTo("body");
+    form[0].requestSubmit();
+  };
 }
