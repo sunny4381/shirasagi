@@ -29,7 +29,7 @@
   <% end %>
   <% if show_path %>
     <div class="ss-preview-btn-group">
-      <button type="button" class="btn ss-preview-btn-outline ss-preview-btn-open-path" data-path="<%= show_path %>"><%= t("ss.links.back_to_administration") %></button>
+      <%= link_to t("ss.links.back_to_administration"), show_path, class: "btn ss-preview-btn-outline ss-preview-btn-open-path", target: "_blank", rel: "noopener" %>
     </div>
   <% end %>
 </div>
