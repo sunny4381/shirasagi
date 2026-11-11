@@ -11,13 +11,13 @@
 <% foot_for(self) do %>
 <% end %>
 
-<div id="ss-preview-shadow-outer" data-controller="cms--preview--outer">
+<div id="ss-preview-shadow-outer" data-controller="cms--preview--outer" data-state="loading" aria-busy="true">
   <template shadowrootmode="open">
     <%= stylesheet_link_tag("application", media: "all") %>
     <%= stylesheet_link_tag("ss/style", media: "all") %>
     <%= stylesheet_link_tag("cms/preview", media: "all") %>
 
-    <div id="ss-preview-shadow-root" data-controller="cms--preview--main">
+    <div id="ss-preview-shadow-root" data-controller="cms--preview--main" data-state="loading" aria-busy="true">
       <script type="application/json" data-cms--preview--main-target="option">
         <%==
           option = {

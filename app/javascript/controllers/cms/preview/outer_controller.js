@@ -37,6 +37,14 @@ export default class extends Controller {
   #myFrameController
 
   connect() {
+    this.element.shadowRoot.addEventListener("cms--preview--main:load", () => {
+      console.log(`[${this.identifier}]`, "cms--preview--main:load")
+      this.element.dataset.state = "complete";
+      this.element.setAttribute("aria-busy", "false");
+
+      // "cms--preview--main:load" イベントは Shadow DOM 外には伝播しないので、dispatch することで伝播するようにする。
+      this.dispatch("load");
+    })
     const previewRoot = this.element.shadowRoot.querySelector("#ss-preview-shadow-root")
     if (previewRoot) {
       const stimulusInitializer = new StimulusInitializer(previewRoot)

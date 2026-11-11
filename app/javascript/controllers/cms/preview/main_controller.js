@@ -150,6 +150,10 @@ export default class extends Controller {
       if (this._option.notice) {
         this.showNotice(this._option.notice);
       }
+
+      this.element.dataset.state = "complete";
+      this.element.setAttribute("aria-busy", "false");
+      this.dispatch("load");
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
