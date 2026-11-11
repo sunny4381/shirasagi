@@ -3,6 +3,9 @@
   request_path = SS.request_path(request)
 %>
 <% head_for(self) do %>
+  <%# アイコンフォントは Light DOM 側で読み込む必要がある %>
+  <%# Light DOM 側の CSS を汚染するかもしれないがこの位置で読み込む %>
+  <%= stylesheet_link_tag("material_icons", media: "all") %>
   <%= javascript_include_tag("application") %>
 <% end %>
 <% foot_for(self) do %>

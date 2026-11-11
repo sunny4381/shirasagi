@@ -6,10 +6,12 @@
 //= link choices.css
 //= link colorbox.js
 //= link colorbox.css
-//= link swiper.js
-//= link swiper.css
 //= link jplayer.js
 //= link jplayer.css
+//= link material_icons.js
+//= link material_icons.css
+//= link swiper.js
+//= link swiper.css
 //= link cms/preview.js
 //= link cms/preview.css
 
