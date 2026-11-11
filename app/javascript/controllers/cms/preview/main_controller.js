@@ -29,6 +29,15 @@ function appendParams(form, name, params) {
   }
 }
 
+function openNewWindow(path) {
+  var a = document.createElement("a");
+  a.href = path;
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.click();
+}
+
+
 class EditLock {
 
   #bound = false;
@@ -108,7 +117,7 @@ class EditLock {
 }
 
 export default class extends Controller {
-  static targets = [ "option", "overlay", "notice", "formPalette", "previewDate" ];
+  static targets = [ "option", "overlay", "notice", "formPalette", "previewDate", "layoutEdit" ];
 
   _option = {};
   _inplaceMode = false;
@@ -127,21 +136,48 @@ export default class extends Controller {
       lockPath: this._option.lockPath, refreshLockInterval: this._option.refreshLockInterval
     });
 
-    // this.#initializePart();
-    // this.#initializeLayout();
-    // this.#initializePage();
-    // this.#initializeColumn();
+    const init = () => {
+      // this.#initializePart();
+      this.#initializeLayout();
+      // this.#initializePage();
+      // this.#initializeColumn();
 
-    // var formEnd = document.getElementById("ss-preview-form-end");
-    // if (formEnd) {
-    //   this._formPalette = FormPalette.createBefore(this, formEnd);
-    // }
+      // var formEnd = document.getElementById("ss-preview-form-end");
+      // if (formEnd) {
+      //   this._formPalette = FormPalette.createBefore(this, formEnd);
+      // }
 
-    if (this._option.notice) {
-      this.showNotice(this._option.notice);
+      if (this._option.notice) {
+        this.showNotice(this._option.notice);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init(); // すでに完了している場合は即時実行
     }
 
     console.log(`[${this.identifier}]`, "connected");
+  }
+
+  #initializeLayout() {
+    const body = document.body;
+    const layoutId = body.dataset.layoutId;
+    const layouts = []
+    if (layoutId) {
+      layouts.push({
+        id: layoutId, name: body.dataset.layoutName,
+        filename: body.dataset.layoutFilename, path: body.dataset.layoutPath
+      });
+    }
+
+    if (layouts.length === 0) {
+      this.layoutEditTarget.closest(".ss-preview-btn-group").classList.add("ss-preview-hide");
+      return;
+    }
+
+    this.layoutEditTarget.href = layouts[0].path;
+    this.layoutEditTarget.closest(".ss-preview-btn-group").classList.remove("ss-preview-hide");
   }
 
   showNotice(message) {

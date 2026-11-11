@@ -24,7 +24,7 @@
       <button type="button" class="btn ss-preview-btn-outline ss-preview-btn-edit-part"><%= t("ss.buttons.edit") %></button>
     </div>
     <div class="ss-preview-btn-group ss-preview-hide">
-      <button type="button" class="btn ss-preview-btn-outline ss-preview-btn-edit-layout"><%= t("cms.layout") %></button>
+      <%= link_to t("cms.layout"), "#", class: "btn ss-preview-btn-outline ss-preview-btn-edit-layout", target: "_blank", rel: "noopener", data: { "cms--preview--main-target" => "layoutEdit" } %>
     </div>
   <% end %>
   <% if show_path %>
