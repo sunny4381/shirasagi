@@ -2,6 +2,8 @@ import { Controller } from "@hotwired/stimulus";
 import moment from "moment/moment"
 import { csrfToken, dispatchEvent } from "../../../ss/tool";
 
+const PREVIEW_TOOL_HEIGHT = 70;
+
 function appendParams(form, name, params) {
   if (params.length <= 0) {
     form.append($("<input/>", {
@@ -127,6 +129,15 @@ export default class extends Controller {
   _updateDisabled = false;
   // _formPalette = undefined;
 
+  constructor() {
+    super(...arguments)
+
+    // カスタム要素っぽくふるまいたいので、プロパティを生やす
+    Object.defineProperty(this.element, "inplaceMode", {
+      get: () => this._inplaceMode
+    });
+  }
+
   optionTargetConnected(element) {
     this._option = JSON.parse(element.innerHTML);
   }
@@ -137,7 +148,7 @@ export default class extends Controller {
     });
 
     const init = () => {
-      // this.#initializePart();
+      this.#initializePart();
       this.#initializeLayout();
       // this.#initializePage();
       // this.#initializeColumn();
@@ -164,6 +175,62 @@ export default class extends Controller {
     console.log(`[${this.identifier}]`, "connected");
   }
 
+  get #partGroup() {
+    if (this._partGroup) {
+      return this._partGroup;
+    }
+
+    this._partGroup = this.element.querySelector(".ss-preview-part-group");
+    return this._partGroup;
+  }
+
+  get #partListSelect() {
+    if (this._partListSelect) {
+      return this._partListSelect;
+    }
+    if (!this.#partGroup) {
+      return;
+    }
+
+    this._partListSelect = this.#partGroup.querySelector(".ss-preview-part-list");
+    return this._partListSelect;
+  }
+
+  #initializePart() {
+    if (!this.#partGroup) {
+      return;
+    }
+
+    this._parts = [];
+    document.querySelectorAll(".ss-preview-part").forEach((el) => {
+      const partId = el.dataset.partId;
+      if (!partId) {
+        return;
+      }
+      this._parts.push({
+        el: el, id: partId, name: el.dataset.partName,
+        filename: el.dataset.partFilename, path: el.dataset.partPath
+      });
+    });
+
+
+    if (this._parts.length === 0) {
+      this.#partGroup.classList.add("ss-preview-hide");
+      return;
+    }
+
+    this._parts.forEach((item) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = item.id;
+      optionElement.textContent = item.name;
+      this.#partListSelect.appendChild(optionElement);
+    });
+
+    this.#partListSelect.addEventListener("change", this.#handleChangePartList)
+
+    this.#partGroup.classList.remove("ss-preview-hide");
+  };
+
   #initializeLayout() {
     const body = document.body;
     const layoutId = body.dataset.layoutId;
@@ -183,6 +250,44 @@ export default class extends Controller {
     this.layoutEditTarget.href = layouts[0].path;
     this.layoutEditTarget.closest(".ss-preview-btn-group").classList.remove("ss-preview-hide");
   }
+
+  #handleChangePartList = (_ev) => {
+    if (!this.#partListSelect.value) {
+      this.overlayTarget.hideOverlay();
+      return;
+    }
+
+    var part = this.#findPartById(this.#partListSelect.value);
+    if (! part) {
+      this.overlayTarget.hideOverlay();
+      return;
+    }
+
+    this.overlayTarget.showOverlayForPart(part.el);
+    this.#scrollToPart(part.el);
+  }
+
+  #findPartById(partId) {
+    if (! partId) {
+      return null;
+    }
+
+    if ((typeof partId) === "number") {
+      partId = String(partId);
+    }
+
+    return this._parts.find((part) => part.id === partId);
+  };
+
+  #scrollToPart(element) {
+    const rect = element.getBoundingClientRect();
+    let scrollTop = rect.top - PREVIEW_TOOL_HEIGHT;
+    if (scrollTop < 0) {
+      scrollTop = 0;
+    }
+
+    window.scrollTo({ top: scrollTop, behavior: "smooth" });
+  };
 
   showNotice(message) {
     if (!this.hasNoticeTarget) {

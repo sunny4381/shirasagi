@@ -91,7 +91,7 @@
               </div>
           </div>
           <div class="ss-preview-notice-wrap hide" data-controller="cms--preview--notice" data-cms--preview--main-target="notice"></div>
-        </div>
+        </div> <!-- #ss-preview -->
       <% else %>
         <div id="ss-preview">
           <div class="ss-preview-wrap">
@@ -109,10 +109,31 @@
             <% end %>
           </div>
           <div class="ss-preview-notice-wrap hide" data-controller="cms--preview--notice" data-cms--preview--main-target="notice"></div>
-        </div>
+        </div> <!-- #ss-preview -->
       <% end %>
 
       <%= render "link_errors", local_assigns %>
+
+      <div id="ss-preview-overlay" class="ss-preview-hide" data-controller="cms--preview--overlay" data-cms--preview--main-target="overlay" data-state="loading" aria-busy="true">
+        <dialog class="ss-preview-overlay-tool" data-cms--preview--overlay-target="dialog">
+          <span class="ss-preview-overlay-name" data-cms--preview--overlay-target="name"><%= t("ss.links.edit") %></span>
+          <div class="ss-preview-btn-group ss-preview-overlay-btn-group-edit" data-cms--preview--overlay-target="edit">
+            <%= button_tag t("ss.links.edit"), name: nil, type: :button, class: "ss-preview-overlay-btn-edit", data: { action: "cms--preview--overlay#edit" } %>
+          </div>
+
+          <% if cms_form && cms_form.sub_type_entry? %>
+            <div class="ss-preview-btn-group ss-preview-overlay-btn-group-move" data-cms--preview--overlay-target="column">
+              <%= button_tag material_icons.outlined("keyboard_arrow_up", size: 14), name: nil, type: :button, class: "ss-preview-overlay-btn-move-up", data: { action: "cms--preview--overlay#moveUp" } %>
+              <select name="ss-preview-overlay-btn-move-position" class="ss-preview-overlay-btn-move-position"></select>
+              <%= button_tag material_icons.outlined("keyboard_arrow_down", size: 14), name: nil, type: :button, class: "ss-preview-overlay-btn-move-down", data: { action: "cms--preview--overlay#moveDown" } %>
+            </div>
+
+            <div class="ss-preview-btn-group ss-preview-overlay-btn-group-delete" data-cms--preview--overlay-target="delete">
+              <%= button_tag t("ss.links.delete"), name: nil, type: :button, class: "ss-preview-overlay-btn-delete", data: { action: "cms--preview--overlay#delete" } %>
+            </div>
+          <% end %>
+        </dialog>
+      </div> <!-- #ss-preview-overlay -->
     </div> <!-- #ss-preview-shadow-root -->
-  </template>
+  </template> <!-- shadowrootmode="open" -->
 </div> <!-- #ss-preview-shadow-outer -->

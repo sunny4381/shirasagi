@@ -18,10 +18,10 @@
 <div class="ss-preview-wrap-row">
   <% if desktop_pc %>
     <div class="ss-preview-btn-group ss-preview-part-group ss-preview-hide">
-      <select class="ss-preview-part-list">
+      <select name="ss-preview-part-list" class="ss-preview-part-list">
         <option value=""><%= t("cms.part") %></option>
       </select>
-      <button type="button" class="btn ss-preview-btn-outline ss-preview-btn-edit-part"><%= t("ss.buttons.edit") %></button>
+      <%= button_tag t("ss.buttons.edit"), name: nil, type: :button, class: "btn ss-preview-btn-outline ss-preview-btn-edit-part", data: { action: "cms--preview--main#openPartEdit" } %>
     </div>
     <div class="ss-preview-btn-group ss-preview-hide">
       <%= link_to t("cms.layout"), "#", class: "btn ss-preview-btn-outline ss-preview-btn-edit-layout", target: "_blank", rel: "noopener", data: { "cms--preview--main-target" => "layoutEdit" } %>
